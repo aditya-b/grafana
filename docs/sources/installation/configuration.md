@@ -174,11 +174,6 @@ The number of days the keep me logged in / remember me cookie lasts.
 
 Used for signing keep me logged in / remember me cookies.
 
-### disable_gravatar
-
-Set to `true` to disable the use of Gravatar for user profile images.
-Default is `false`.
-
 <hr>
 
 ## [users]
@@ -247,7 +242,6 @@ example:
     auth_url = https://github.com/login/oauth/authorize
     token_url = https://github.com/login/oauth/access_token
     allow_sign_up = false
-    team_ids =
 
 Restart the Grafana back-end. You should now see a GitHub login button
 on the login page. You can now login or sign up with your GitHub
@@ -257,23 +251,6 @@ You may allow users to sign-up via GitHub authentication by setting the
 `allow_sign_up` option to `true`. When this option is set to `true`, any
 user successfully authenticating via GitHub authentication will be
 automatically signed up.
-
-### team_ids
-
-Require an active team membership for at least one of the given teams on
-GitHub.  If the authenticated user isn't a member of at least one the
-teams they will not be able to register or authenticate with your
-Grafana instance. For example:
-
-    [auth.github]
-    enabled = true
-    client_id = YOUR_GITHUB_APP_CLIENT_ID
-    client_secret = YOUR_GITHUB_APP_CLIENT_SECRET
-    scopes = user:email
-    team_ids = 150,300
-    auth_url = https://github.com/login/oauth/authorize
-    token_url = https://github.com/login/oauth/access_token
-    allow_sign_up = false
 
 ## [auth.google]
 
