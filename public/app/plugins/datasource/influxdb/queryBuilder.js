@@ -1,5 +1,5 @@
 define([
-    'lodash'
+  'lodash'
 ],
 function (_) {
   'use strict';
@@ -12,6 +12,16 @@ function (_) {
 
   p.build = function() {
     return this.target.rawQuery ? this._modifyRawQuery() : this._buildQuery();
+  };
+
+  p.showTagsQuery = function() {
+    var query = 'SHOW TAG KEYS';
+
+    if (this.target.measurement) {
+      query += ' FROM "' + this.target.measurement + '"';
+    }
+
+    return query;
   };
 
   p._buildQuery = function() {
@@ -27,17 +37,23 @@ function (_) {
     var measurement = target.measurement;
     var aggregationFunc = target.function || 'mean';
 
-    if(!measurement.match('^/.*/') && !measurement.match(/^merge\(.*\)/)) {
+    if (!measurement.match('^/.*/') && !measurement.match(/^merge\(.*\)/)) {
       measurement = '"' + measurement+ '"';
     }
 
     query +=  aggregationFunc + '(value)';
-    query += ' FROM ' + measurement + ' WHERE $timeFilter';
-    query += _.map(target.tags, function(value, key) {
-      return ' AND ' + key + '=' + "'" + value + "'";
-    }).join('');
+    query += ' FROM ' + measurement + ' WHERE ';
+    var conditions = _.map(target.tags, function(tag) {
+      return tag.key + '=' + "'" + tag.value + "' ";
+    });
+    conditions.push('$timeFilter');
+
+    query += conditions.join('AND ');
 
     query += ' GROUP BY time($interval)';
+    if  (target.groupByTags && target.groupByTags.length > 0) {
+      query += ', ' + target.groupByTags.join();
+    }
 
     if (target.fill) {
       query += ' fill(' + target.fill + ')';

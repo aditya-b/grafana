@@ -128,6 +128,7 @@ require([
     'specs/influxQueryBuilder-specs',
     'specs/influx09-querybuilder-specs',
     'specs/influxdb-datasource-specs',
+    'specs/influxdbQueryCtrl-specs',
     'specs/graph-ctrl-specs',
     'specs/graph-specs',
     'specs/graph-tooltip-specs',
@@ -139,7 +140,7 @@ require([
     'specs/kbn-format-specs',
     'specs/dashboardSrv-specs',
     'specs/dashboardViewStateSrv-specs',
-    'specs/soloPanelCtrl-specs',
+    'specs/singlestat-specs',
     'specs/dynamicDashboardSrv-specs',
     'specs/unsavedChangesSrv-specs',
   ];
