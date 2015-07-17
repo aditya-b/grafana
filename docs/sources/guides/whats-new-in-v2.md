@@ -82,7 +82,7 @@ Below you should see an iframe with a graph panel (taken from a Dashboard snapsh
 
 Try hovering or zooming on the panel below!
 
-<iframe src="http://snapshot.raintank.io/dashboard/solo/snapshot/cfHSDG5ye0civ5H2sqhWpnHW4f3Ra6hZ?panelId=4&fullscreen" width="650" height="300" frameborder="0"></iframe>
+<iframe src="http://snapshot.raintank.io/dashboard-solo/snapshot/cfHSDG5ye0civ5H2sqhWpnHW4f3Ra6hZ?panelId=4&fullscreen" width="650" height="300" frameborder="0"></iframe>
 
 This feature makes it easy to include interactive visualizations from your Grafana instance anywhere you want.
 
