@@ -37,9 +37,8 @@ class LiveFeedDatasource {
         current = to;
         value += (Math.random() - 0.5) * 10;
         series.datapoints.push([value, current]);
-        console.log(series.datapoints.length);
 
-        if (series.datapoints.length > 500) {
+        if (series.datapoints.length > 300) {
           series.datapoints.splice(0, 1);
           from = series.datapoints[0][1];
         }
@@ -48,7 +47,7 @@ class LiveFeedDatasource {
           data: [series],
           range: {from: from, to: to}
         });
-      }, 50);
+      }, 100);
 
       return () => {
         console.log('LiveFeed: dispose observer');
