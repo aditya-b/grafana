@@ -131,14 +131,16 @@ class GraphCtrl extends MetricsPanelCtrl {
 
   refreshData(datasource) {
     this.annotationsPromise = this.annotationsSrv.getAnnotations(this.dashboard);
+    this.issueQueries(datasource);
+    return this.$q.when([]);
 
-    return this.issueQueries(datasource)
-    .then(res => this.dataHandler(res))
-    .catch(err => {
-      this.seriesList = [];
-      this.render([]);
-      throw err;
-    });
+    // return this.issueQueries(datasource)
+    // .then(res => this.dataHandler(res))
+    // .catch(err => {
+    //   this.seriesList = [];
+    //   this.render([]);
+    //   throw err;
+    // });
   }
 
   zoomOut(evt) {
@@ -158,6 +160,7 @@ class GraphCtrl extends MetricsPanelCtrl {
       return;
     }
 
+    this.range = results.range;
     this.datapointsWarning = false;
     this.datapointsCount = 0;
     this.datapointsOutside = false;

@@ -25,6 +25,7 @@ class MetricsPanelCtrl extends PanelCtrl {
   timeInfo: any;
   skipDataOnInit: boolean;
   datasources: any[];
+  dataSubscription: any;
 
   constructor($scope, $injector) {
     super($scope, $injector);
@@ -167,8 +168,11 @@ class MetricsPanelCtrl extends PanelCtrl {
     if (!this.panel.targets || this.panel.targets.length === 0) {
       return this.$q.when([]);
     }
-
     this.updateTimeRange();
+
+    if (this.dataSubscription) {
+      this.dataSubscription.unsubscribe();
+    }
 
     var metricsQuery = {
       range: this.range,
@@ -182,15 +186,29 @@ class MetricsPanelCtrl extends PanelCtrl {
     };
 
     this.setTimeQueryStart();
-    return datasource.query(metricsQuery).then(results => {
-      this.setTimeQueryEnd();
+    var response = datasource.query(metricsQuery);
 
-      if (this.dashboard.snapshot) {
-        this.panel.snapshotData = results;
-      }
+    if (response.then) {
+      return response.then(results => {
+        this.setTimeQueryEnd();
 
-      return results;
-    });
+        if (this.dashboard.snapshot) {
+          this.panel.snapshotData = results;
+        }
+
+        return results;
+      });
+    } else {
+      this.dataSubscription = response.subscribe(data => {
+        this.dataHandler(data);
+      }, err => {
+        console.log('data! error', err);
+      });
+    }
+  }
+
+  dataHandler(data) {
+    return data;
   }
 
   addDataQuery(datasource) {

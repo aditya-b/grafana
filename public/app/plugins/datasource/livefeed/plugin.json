@@ -1,0 +1,6 @@
+{
+  "type": "datasource",
+  "name": "Live feed",
+  "id": "livefeed",
+  "metrics": true
+}
