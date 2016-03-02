@@ -12,9 +12,9 @@ define([
   './viewStateSrv',
   './timeSrv',
   './unsavedChangesSrv',
-  './directives/dashSearchView',
   './timepicker/timepicker',
   './graphiteImportCtrl',
   './dynamicDashboardSrv',
   './importCtrl',
+  './impression_store',
 ], function () {});

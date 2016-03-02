@@ -1,19 +1,237 @@
 ///<reference path="../../../headers/common.d.ts" />
 
+import angular from 'angular';
 import _ from 'lodash';
 import $ from 'jquery';
 import 'jquery.flot';
-import {SingleStatCtrl} from './controller';
-import {PanelDirective} from '../../../features/panel/panel';
 
+import kbn from 'app/core/utils/kbn';
+import TimeSeries from 'app/core/time_series2';
+import {MetricsPanelCtrl} from 'app/plugins/sdk';
 
-class SingleStatPanel extends PanelDirective {
-  templateUrl = 'app/plugins/panel/singlestat/module.html';
-  controller = SingleStatCtrl;
+// Set and populate defaults
+var panelDefaults = {
+  links: [],
+  datasource: null,
+  maxDataPoints: 100,
+  interval: null,
+  targets: [{}],
+  cacheTimeout: null,
+  format: 'none',
+  prefix: '',
+  postfix: '',
+  nullText: null,
+  valueMaps: [
+    { value: 'null', op: '=', text: 'N/A' }
+  ],
+  nullPointMode: 'connected',
+  valueName: 'avg',
+  prefixFontSize: '50%',
+  valueFontSize: '80%',
+  postfixFontSize: '50%',
+  thresholds: '',
+  colorBackground: false,
+  colorValue: false,
+  colors: ["rgba(245, 54, 54, 0.9)", "rgba(237, 129, 40, 0.89)", "rgba(50, 172, 45, 0.97)"],
+  sparkline: {
+    show: false,
+    full: false,
+    lineColor: 'rgb(31, 120, 193)',
+    fillColor: 'rgba(31, 118, 189, 0.18)',
+  }
+};
+
+class SingleStatCtrl extends MetricsPanelCtrl {
+  static templateUrl = 'module.html';
+
+  series: any[];
+  data: any[];
+  fontSizes: any[];
+  unitFormats: any[];
 
   /** @ngInject */
-  constructor(private $location, private linkSrv, private $timeout, private templateSrv) {
-    super();
+  constructor($scope, $injector, private $location, private linkSrv) {
+    super($scope, $injector);
+    _.defaults(this.panel, panelDefaults);
+  }
+
+  initEditMode() {
+    super.initEditMode();
+    this.icon =  "fa fa-dashboard";
+    this.fontSizes = ['20%', '30%','50%','70%','80%','100%', '110%', '120%', '150%', '170%', '200%'];
+    this.addEditorTab('Options', 'public/app/plugins/panel/singlestat/editor.html', 2);
+    this.unitFormats = kbn.getUnitFormats();
+  }
+
+  setUnitFormat(subItem) {
+    this.panel.format = subItem.value;
+    this.render();
+  }
+
+  refreshData(datasource) {
+    return this.issueQueries(datasource)
+      .then(this.dataHandler.bind(this))
+      .catch(err => {
+        this.series = [];
+        this.render();
+        throw err;
+      });
+  }
+
+  loadSnapshot(snapshotData) {
+    // give element time to get attached and get dimensions
+    this.$timeout(() => this.dataHandler(snapshotData), 50);
+  }
+
+  dataHandler(results) {
+    this.series = _.map(results.data, this.seriesHandler.bind(this));
+    this.render();
+  }
+
+  seriesHandler(seriesData) {
+    var series = new TimeSeries({
+      datapoints: seriesData.datapoints,
+      alias: seriesData.target,
+    });
+
+    series.flotpairs = series.getFlotPairs(this.panel.nullPointMode);
+    return series;
+  }
+
+  setColoring(options) {
+    if (options.background) {
+      this.panel.colorValue = false;
+      this.panel.colors = ['rgba(71, 212, 59, 0.4)', 'rgba(245, 150, 40, 0.73)', 'rgba(225, 40, 40, 0.59)'];
+    } else {
+      this.panel.colorBackground = false;
+      this.panel.colors = ['rgba(50, 172, 45, 0.97)', 'rgba(237, 129, 40, 0.89)', 'rgba(245, 54, 54, 0.9)'];
+    }
+    this.render();
+  }
+
+  invertColorOrder() {
+    var tmp = this.panel.colors[0];
+    this.panel.colors[0] = this.panel.colors[2];
+    this.panel.colors[2] = tmp;
+    this.render();
+  }
+
+  getDecimalsForValue(value) {
+    if (_.isNumber(this.panel.decimals)) {
+      return {decimals: this.panel.decimals, scaledDecimals: null};
+    }
+
+    var delta = value / 2;
+    var dec = -Math.floor(Math.log(delta) / Math.LN10);
+
+    var magn = Math.pow(10, -dec),
+      norm = delta / magn, // norm is between 1.0 and 10.0
+      size;
+
+    if (norm < 1.5) {
+      size = 1;
+    } else if (norm < 3) {
+      size = 2;
+      // special case for 2.5, requires an extra decimal
+      if (norm > 2.25) {
+        size = 2.5;
+        ++dec;
+      }
+    } else if (norm < 7.5) {
+      size = 5;
+    } else {
+      size = 10;
+    }
+
+    size *= magn;
+
+    // reduce starting decimals if not needed
+    if (Math.floor(value) === value) { dec = 0; }
+
+    var result: any = {};
+    result.decimals = Math.max(0, dec);
+    result.scaledDecimals = result.decimals - Math.floor(Math.log(size) / Math.LN10) + 2;
+
+    return result;
+  }
+
+  render() {
+    var data: any = {};
+    this.setValues(data);
+
+    data.thresholds = this.panel.thresholds.split(',').map(function(strVale) {
+      return Number(strVale.trim());
+    });
+
+    data.colorMap = this.panel.colors;
+
+    this.data = data;
+    this.broadcastRender();
+  }
+
+  setValues(data) {
+    data.flotpairs = [];
+
+    if (this.series.length > 1) {
+      var error: any = new Error();
+      error.message = 'Multiple Series Error';
+      error.data = 'Metric query returns ' + this.series.length +
+        ' series. Single Stat Panel expects a single series.\n\nResponse:\n'+JSON.stringify(this.series);
+      throw error;
+    }
+
+    if (this.series && this.series.length > 0) {
+      var lastPoint = _.last(this.series[0].datapoints);
+      var lastValue = _.isArray(lastPoint) ? lastPoint[0] : null;
+
+      if (_.isString(lastValue)) {
+        data.value = 0;
+        data.valueFormated = lastValue;
+        data.valueRounded = 0;
+      } else {
+        data.value = this.series[0].stats[this.panel.valueName];
+        data.flotpairs = this.series[0].flotpairs;
+
+        var decimalInfo = this.getDecimalsForValue(data.value);
+        var formatFunc = kbn.valueFormats[this.panel.format];
+        data.valueFormated = formatFunc(data.value, decimalInfo.decimals, decimalInfo.scaledDecimals);
+        data.valueRounded = kbn.roundValue(data.value, decimalInfo.decimals);
+      }
+    }
+
+    // check value to text mappings
+    for (var i = 0; i < this.panel.valueMaps.length; i++) {
+      var map = this.panel.valueMaps[i];
+      // special null case
+      if (map.value === 'null') {
+        if (data.value === null || data.value === void 0) {
+          data.valueFormated = map.text;
+          return;
+        }
+        continue;
+      }
+
+      // value/number to text mapping
+      var value = parseFloat(map.value);
+      if (value === data.valueRounded) {
+        data.valueFormated = map.text;
+        return;
+      }
+    }
+
+    if (data.value === null || data.value === void 0) {
+      data.valueFormated = "no value";
+    }
+  };
+
+  removeValueMap(map) {
+    var index = _.indexOf(this.panel.valueMaps, map);
+    this.panel.valueMaps.splice(index, 1);
+    this.render();
+  };
+
+  addValueMap() {
+    this.panel.valueMaps.push({value: '', op: '=', text: '' });
   }
 
   link(scope, elem, attrs, ctrl) {
@@ -22,35 +240,29 @@ class SingleStatPanel extends PanelDirective {
     var $timeout = this.$timeout;
     var panel = ctrl.panel;
     var templateSrv = this.templateSrv;
-    var data, linkInfo, $panelContainer;
-    var firstRender = true;
+    var data, linkInfo;
+    var elemHeight;
+    var $panelContainer = elem.find('.panel-container');
+    // change elem to singlestat panel
+    elem = elem.find('.singlestat-panel');
+    hookupDrilldownLinkTooltip();
 
     scope.$on('render', function() {
-      if (firstRender) {
-        var inner = elem.find('.singlestat-panel');
-        if (inner.length) {
-          elem = inner;
-          $panelContainer = elem.parents('.panel-container');
-          firstRender = false;
-          hookupDrilldownLinkTooltip();
-        }
-      }
-
       render();
       ctrl.renderingCompleted();
     });
 
     function setElementHeight() {
       try {
-        var height = scope.height || panel.height || ctrl.row.height;
-        if (_.isString(height)) {
-          height = parseInt(height.replace('px', ''), 10);
+        elemHeight = ctrl.height || panel.height || ctrl.row.height;
+        if (_.isString(elemHeight)) {
+          elemHeight = parseInt(elemHeight.replace('px', ''), 10);
         }
 
-        height -= 5; // padding
-        height -= panel.title ? 24 : 9; // subtract panel title bar
+        elemHeight -= 5; // padding
+        elemHeight -= panel.title ? 24 : 9; // subtract panel title bar
 
-        elem.css('height', height + 'px');
+        elem.css('height', elemHeight + 'px');
 
         return true;
       } catch (e) { // IE throws errors sometimes
@@ -94,7 +306,7 @@ class SingleStatPanel extends PanelDirective {
 
     function addSparkline() {
       var width = elem.width() + 20;
-      var height = elem.height() || 100;
+      var height = elemHeight;
 
       var plotCanvas = $('<div></div>');
       var plotCss: any = {};
@@ -226,7 +438,7 @@ class SingleStatPanel extends PanelDirective {
 
 function getColorForValue(data, value) {
   for (var i = data.thresholds.length; i > 0; i--) {
-    if (value >= data.thresholds[i]) {
+    if (value >= data.thresholds[i-1]) {
       return data.colorMap[i];
     }
   }
@@ -234,7 +446,7 @@ function getColorForValue(data, value) {
 }
 
 export {
-  SingleStatPanel,
-  SingleStatPanel as Panel,
+  SingleStatCtrl,
+  SingleStatCtrl as PanelCtrl,
   getColorForValue
 };

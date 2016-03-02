@@ -1,10 +1,10 @@
 import {describe, beforeEach, it, sinon, expect, angularMocks} from 'test/lib/common';
 import helpers from 'test/specs/helpers';
-import Datasource from "../datasource";
+import {OpenTsDatasource} from "../datasource";
 
 describe('opentsdb', function() {
   var ctx = new helpers.ServiceTestContext();
-  var instanceSettings = {url: '' };
+  var instanceSettings = {url: '', jsonData: { tsdbVersion: 1 }};
 
   beforeEach(angularMocks.module('grafana.core'));
   beforeEach(angularMocks.module('grafana.services'));
@@ -14,7 +14,7 @@ describe('opentsdb', function() {
     ctx.$q = $q;
     ctx.$httpBackend =  $httpBackend;
     ctx.$rootScope = $rootScope;
-    ctx.ds = $injector.instantiate(Datasource, {instanceSettings: instanceSettings});
+    ctx.ds = $injector.instantiate(OpenTsDatasource, {instanceSettings: instanceSettings});
   }));
 
   describe('When performing metricFindQuery', function() {

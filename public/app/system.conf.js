@@ -2,6 +2,8 @@ System.config({
   defaultJSExtenions: true,
   baseURL: 'public',
   paths: {
+    'tether': 'vendor/npm/tether/dist/js/tether.js',
+    'tether-drop': 'vendor/npm/tether-drop/dist/js/drop.js',
     'moment': 'vendor/moment.js',
     "jquery": "vendor/jquery/dist/jquery.js",
     'lodash-src': 'vendor/lodash.js',
@@ -18,7 +20,6 @@ System.config({
     "bootstrap-tagsinput": "vendor/tagsinput/bootstrap-tagsinput.js",
     "jquery.flot": "vendor/flot/jquery.flot",
     "jquery.flot.pie": "vendor/flot/jquery.flot.pie",
-    "jquery.flot.events": "vendor/flot/jquery.flot.events",
     "jquery.flot.selection": "vendor/flot/jquery.flot.selection",
     "jquery.flot.stack": "vendor/flot/jquery.flot.stack",
     "jquery.flot.stackpercent": "vendor/flot/jquery.flot.stackpercent",
@@ -43,6 +44,8 @@ System.config({
   },
 
   map: {
+    text: 'vendor/plugin-text/text.js',
+    css: 'app/core/utils/css_loader.js'
   },
 
   meta: {

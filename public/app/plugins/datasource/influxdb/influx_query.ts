@@ -6,11 +6,15 @@ import queryPart from './query_part';
 export default class InfluxQuery {
   target: any;
   selectModels: any[];
-  groupByParts: any;
   queryBuilder: any;
+  groupByParts: any;
+  templateSrv: any;
+  scopedVars: any;
 
-  constructor(target) {
+  constructor(target, templateSrv?, scopedVars?) {
     this.target = target;
+    this.templateSrv = templateSrv;
+    this.scopedVars = scopedVars;
 
     target.policy = target.policy || 'default';
     target.dsType = 'influxdb';
@@ -126,7 +130,7 @@ export default class InfluxQuery {
     this.updatePersistedParts();
   }
 
-  private renderTagCondition(tag, index) {
+  private renderTagCondition(tag, index, interpolate) {
     var str = "";
     var operator = tag.operator;
     var value = tag.value;
@@ -135,7 +139,7 @@ export default class InfluxQuery {
     }
 
     if (!operator) {
-      if (/^\/.*\/$/.test(tag.value)) {
+      if (/^\/.*\/$/.test(value)) {
         operator = '=~';
       } else {
         operator = '=';
@@ -144,7 +148,12 @@ export default class InfluxQuery {
 
     // quote value unless regex
     if (operator !== '=~' && operator !== '!~') {
-      value = "'" + value + "'";
+      if (interpolate) {
+        value = this.templateSrv.replace(value, this.scopedVars);
+      }
+      value = "'" + value.replace('\\', '\\\\') + "'";
+    } else if (interpolate){
+      value = this.templateSrv.replace(value, this.scopedVars, 'regex');
     }
 
     return str + '"' + tag.key + '" ' + operator + ' ' + value;
@@ -167,15 +176,19 @@ export default class InfluxQuery {
     return policy + measurement;
   }
 
-  render() {
+  render(interpolate?) {
     var target = this.target;
 
     if (target.rawQuery) {
-      return target.query;
+      if (interpolate) {
+        return this.templateSrv.replace(target.query, this.scopedVars, 'regex');
+      } else {
+        return target.query;
+      }
     }
 
     if (!target.measurement) {
-      throw "Metric measurement is missing";
+      throw {message: "Metric measurement is missing"};
     }
 
     var query = 'SELECT ';
@@ -196,7 +209,7 @@ export default class InfluxQuery {
 
     query += ' FROM ' + this.getMeasurementAndPolicy() + ' WHERE ';
     var conditions = _.map(target.tags, (tag, index) => {
-      return this.renderTagCondition(tag, index);
+      return this.renderTagCondition(tag, index, interpolate);
     });
 
     query += conditions.join(' ');
@@ -219,8 +232,6 @@ export default class InfluxQuery {
     if (target.fill) {
       query += ' fill(' + target.fill + ')';
     }
-
-    target.query = query;
 
     return query;
   }

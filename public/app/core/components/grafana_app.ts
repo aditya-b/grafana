@@ -140,18 +140,23 @@ export class GrafanaCtrl {
 }
 
 /** @ngInject */
-export function grafanaAppDirective(playlistSrv) {
+export function grafanaAppDirective(playlistSrv, contextSrv) {
   return {
     restrict: 'E',
     controller: GrafanaCtrl,
     link: (scope, elem) => {
       var ignoreSideMenuHide;
+      var body = $('body');
+
       // handle sidemenu open state
       scope.$watch('contextSrv.sidemenu', newVal => {
         if (newVal !== undefined) {
-          elem.toggleClass('sidemenu-open', scope.contextSrv.sidemenu);
+          body.toggleClass('sidemenu-open', scope.contextSrv.sidemenu);
+          if (!newVal) {
+            contextSrv.setPinnedState(false);
+          }
         }
-        if (scope.contextSrv.sidemenu) {
+        if (contextSrv.sidemenu) {
           ignoreSideMenuHide = true;
           setTimeout(() => {
             ignoreSideMenuHide = false;
@@ -159,32 +164,51 @@ export function grafanaAppDirective(playlistSrv) {
         }
       });
 
+      scope.$watch('contextSrv.pinned', newVal => {
+        if (newVal !== undefined) {
+          body.toggleClass('sidemenu-pinned', newVal);
+        }
+      });
+
       // tooltip removal fix
-      scope.$on("$routeChangeSuccess", function() {
+      // manage page classes
+      var pageClass;
+      scope.$on("$routeChangeSuccess", function(evt, data) {
+        if (pageClass) {
+          body.removeClass(pageClass);
+        }
+        pageClass = data.$$route.pageClass;
+        if (pageClass) {
+          body.addClass(pageClass);
+        }
         $("#tooltip, .tooltip").remove();
       });
 
       // handle document clicks that should hide things
-      elem.click(function(evt) {
+      body.click(function(evt) {
         var target = $(evt.target);
         if (target.parents().length === 0) {
           return;
         }
 
         if (target.parents('.dash-playlist-actions').length === 0) {
-            playlistSrv.stop();
+          playlistSrv.stop();
         }
 
         // hide search
-        if (elem.find('.search-container').length > 0) {
+        if (body.find('.search-container').length > 0) {
           if (target.parents('.search-container').length === 0) {
-            scope.appEvent('hide-dash-search');
+            scope.$apply(function() {
+              scope.appEvent('hide-dash-search');
+            });
           }
         }
         // hide sidemenu
-        if (!ignoreSideMenuHide &&  elem.find('.sidemenu').length > 0) {
+        if (!ignoreSideMenuHide && !contextSrv.pinned && body.find('.sidemenu').length > 0) {
           if (target.parents('.sidemenu').length === 0) {
-            scope.$apply(() => scope.contextSrv.toggleSideMenu());
+            scope.$apply(function() {
+              scope.contextSrv.toggleSideMenu();
+            });
           }
         }
 

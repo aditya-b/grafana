@@ -3,7 +3,7 @@ import "../datasource";
 import {describe, beforeEach, it, sinon, expect, angularMocks} from 'test/lib/common';
 import moment from 'moment';
 import helpers from 'test/specs/helpers';
-import Datasource from "../datasource";
+import {CloudWatchDatasource} from "../datasource";
 
 describe('CloudWatchDatasource', function() {
   var ctx = new helpers.ServiceTestContext();
@@ -20,7 +20,7 @@ describe('CloudWatchDatasource', function() {
     ctx.$q = $q;
     ctx.$httpBackend =  $httpBackend;
     ctx.$rootScope = $rootScope;
-    ctx.ds = $injector.instantiate(Datasource, {instanceSettings: instanceSettings});
+    ctx.ds = $injector.instantiate(CloudWatchDatasource, {instanceSettings: instanceSettings});
   }));
 
   describe('When performing CloudWatch query', function() {
@@ -185,61 +185,6 @@ describe('CloudWatchDatasource', function() {
     it('should call __ListMetrics and return result', () => {
       expect(scenario.result[0].text).to.be('i-12345678');
       expect(scenario.request.data.action).to.be('ListMetrics');
-    });
-  });
-
-  describe('When performing annotationQuery', function() {
-    var parameter = {
-      annotation: {
-        region: 'us-east-1',
-        namespace: 'AWS/EC2',
-        metricName: 'CPUUtilization',
-        dimensions: {
-          InstanceId: 'i-12345678'
-        },
-        statistics: ['Average'],
-        period: 300
-      },
-      range: {
-        from: moment(1443438674760),
-        to: moment(1443460274760)
-      }
-    };
-    var alarmResponse = {
-      MetricAlarms: [
-        {
-          AlarmName: 'test_alarm_name'
-        }
-      ]
-    };
-    var historyResponse = {
-      AlarmHistoryItems: [
-        {
-          Timestamp: '2015-01-01T00:00:00.000Z',
-          HistoryItemType: 'StateUpdate',
-          AlarmName: 'test_alarm_name',
-          HistoryData: '{}',
-          HistorySummary: 'test_history_summary'
-        }
-      ]
-    };
-    beforeEach(function() {
-      ctx.backendSrv.datasourceRequest = function(params) {
-        switch (params.data.action) {
-        case 'DescribeAlarmsForMetric':
-          return ctx.$q.when({data: alarmResponse});
-        case 'DescribeAlarmHistory':
-          return ctx.$q.when({data: historyResponse});
-        }
-      };
-    });
-    it('should return annotation list', function(done) {
-      ctx.ds.annotationQuery(parameter).then(function(result) {
-        expect(result[0].title).to.be('test_alarm_name');
-        expect(result[0].text).to.be('test_history_summary');
-        done();
-      });
-      ctx.$rootScope.$apply();
     });
   });
 });

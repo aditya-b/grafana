@@ -47,39 +47,6 @@ define([
       });
     });
 
-    describe('addDataQueryTo', function() {
-      var dashboard, panel;
-
-      beforeEach(function() {
-        panel = {targets:[]};
-        dashboard = _dashboardSrv.create({});
-        dashboard.rows.push({panels: [panel]});
-      });
-
-      it('should add target', function() {
-        dashboard.addDataQueryTo(panel);
-        expect(panel.targets.length).to.be(1);
-      });
-
-      it('should set refId', function() {
-        dashboard.addDataQueryTo(panel);
-        expect(panel.targets[0].refId).to.be('A');
-      });
-
-      it('should set refId to first available letter', function() {
-        panel.targets = [{refId: 'A'}];
-        dashboard.addDataQueryTo(panel);
-        expect(panel.targets[1].refId).to.be('B');
-      });
-
-      it('duplicate should get unique refId', function() {
-        panel.targets = [{refId: 'A'}];
-        dashboard.duplicateDataQuery(panel, panel.targets[0]);
-        expect(panel.targets[1].refId).to.be('B');
-      });
-
-    });
-
     describe('row and panel manipulation', function() {
       var dashboard;
 
@@ -142,6 +109,7 @@ define([
       var model;
       var graph;
       var singlestat;
+      var table;
 
       beforeEach(function() {
         model = _dashboardSrv.create({
@@ -160,6 +128,10 @@ define([
                 {
                   type: 'singlestat', legend: true, thresholds: '10,20,30', aliasYAxis: { test: 2 }, grid: { min: 1, max: 10 },
                   targets: [{refId: 'A'}, {}],
+                },
+                {
+                  type: 'table', legend: true, styles: [{ thresholds: ["10", "20", "30"]}, { thresholds: ["100", "200", "300"]}],
+                  targets: [{refId: 'A'}, {}],
                 }
               ]
             }
@@ -168,6 +140,7 @@ define([
 
         graph = model.rows[0].panels[0];
         singlestat = model.rows[0].panels[1];
+        table = model.rows[0].panels[2];
       });
 
       it('should have title', function() {
@@ -213,8 +186,15 @@ define([
         expect(model.annotations.list[0].name).to.be('old');
       });
 
+      it('table panel should only have two thresholds values', function() {
+        expect(table.styles[0].thresholds[0]).to.be("20");
+        expect(table.styles[0].thresholds[1]).to.be("30");
+        expect(table.styles[1].thresholds[0]).to.be("200");
+        expect(table.styles[1].thresholds[1]).to.be("300");
+      });
+
       it('dashboard schema version should be set to latest', function() {
-        expect(model.schemaVersion).to.be(9);
+        expect(model.schemaVersion).to.be(10);
       });
 
     });
@@ -340,6 +320,28 @@ define([
       it('should add empty list', function() {
         expect(model.annotations.list.length).to.be(0);
         expect(model.templating.list.length).to.be(0);
+      });
+    });
+
+    describe('Formatting epoch timestamp when timezone is set as utc', function() {
+      var dashboard;
+
+      beforeEach(function() {
+        dashboard = _dashboardSrv.create({
+          timezone: 'utc',
+        });
+      });
+
+      it('Should format timestamp with second resolution by default', function() {
+        expect(dashboard.formatDate(1234567890000)).to.be('2009-02-13 23:31:30');
+      });
+
+      it('Should format timestamp with second resolution even if second format is passed as parameter', function() {
+        expect(dashboard.formatDate(1234567890007,'YYYY-MM-DD HH:mm:ss')).to.be('2009-02-13 23:31:30');
+      });
+
+      it('Should format timestamp with millisecond resolution if format is passed as parameter', function() {
+        expect(dashboard.formatDate(1234567890007,'YYYY-MM-DD HH:mm:ss.SSS')).to.be('2009-02-13 23:31:30.007');
       });
     });
 

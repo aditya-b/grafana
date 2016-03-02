@@ -7,6 +7,7 @@ import (
 	"time"
 
 	m "github.com/grafana/grafana/pkg/models"
+	"github.com/grafana/grafana/pkg/setting"
 )
 
 type LoginCommand struct {
@@ -42,6 +43,8 @@ type DashboardMeta struct {
 	Created    time.Time `json:"created"`
 	Updated    time.Time `json:"updated"`
 	UpdatedBy  string    `json:"updatedBy"`
+	CreatedBy  string    `json:"createdBy"`
+	Version    int       `json:"version"`
 }
 
 type DashboardFullWithMeta struct {
@@ -87,5 +90,5 @@ func GetGravatarUrl(text string) string {
 
 	hasher := md5.New()
 	hasher.Write([]byte(strings.ToLower(text)))
-	return fmt.Sprintf("https://secure.gravatar.com/avatar/%x?s=90&default=mm", hasher.Sum(nil))
+	return fmt.Sprintf(setting.AppSubUrl+"/avatar/%x", hasher.Sum(nil))
 }

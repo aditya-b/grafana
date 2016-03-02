@@ -14,18 +14,18 @@ export class NavbarCtrl {
 export function navbarDirective() {
   return {
     restrict: 'E',
-    templateUrl: 'app/core/components/navbar/navbar.html',
+    templateUrl: 'public/app/core/components/navbar/navbar.html',
     controller: NavbarCtrl,
     bindToController: true,
-    controllerAs: 'ctrl',
     transclude: true,
+    controllerAs: 'ctrl',
     scope: {
       title: "@",
       titleUrl: "@",
     },
     link: function(scope, elem, attrs, ctrl) {
       ctrl.icon = attrs.icon;
-      ctrl.subnav = attrs.subnav;
+      elem.addClass('navbar');
     }
   };
 }

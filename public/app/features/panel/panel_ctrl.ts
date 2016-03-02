@@ -2,6 +2,7 @@
 
 import config from 'app/core/config';
 import _ from 'lodash';
+import angular from 'angular';
 
 export class PanelCtrl {
   panel: any;
@@ -63,12 +64,6 @@ export class PanelCtrl {
   }
 
   editPanel() {
-    if (!this.editModeInitiated) {
-      this.editorTabs = [];
-      this.addEditorTab('General', 'public/app/partials/panelgeneral.html');
-      this.initEditMode();
-    }
-
     this.changeView(true, true);
   }
 
@@ -77,7 +72,9 @@ export class PanelCtrl {
   }
 
   initEditMode() {
-    return;
+    this.editorTabs = [];
+    this.addEditorTab('General', 'public/app/partials/panelgeneral.html');
+    this.editModeInitiated = true;
   }
 
   addEditorTab(title, directiveFn, index?) {
@@ -99,7 +96,9 @@ export class PanelCtrl {
     let menu = [];
     menu.push({text: 'View', click: 'ctrl.viewPanel(); dismiss();'});
     menu.push({text: 'Edit', click: 'ctrl.editPanel(); dismiss();', role: 'Editor'});
-    menu.push({text: 'Duplicate', click: 'ctrl.duplicate()', role: 'Editor' });
+    if (!this.fullscreen) { //  duplication is not supported in fullscreen mode
+      menu.push({ text: 'Duplicate', click: 'ctrl.duplicate()', role: 'Editor' });
+    }
     menu.push({text: 'Share', click: 'ctrl.sharePanel(); dismiss();'});
     return menu;
   }
@@ -166,14 +165,26 @@ export class PanelCtrl {
     });
   }
 
- sharePanel() {
-   var shareScope = this.$scope.$new();
-   shareScope.panel = this.panel;
-   shareScope.dashboard = this.dashboard;
+  sharePanel() {
+    var shareScope = this.$scope.$new();
+    shareScope.panel = this.panel;
+    shareScope.dashboard = this.dashboard;
 
-   this.publishAppEvent('show-modal', {
-     src: './app/features/dashboard/partials/shareModal.html',
+    this.publishAppEvent('show-modal', {
+     src: 'public/app/features/dashboard/partials/shareModal.html',
      scope: shareScope
    });
- }
+  }
+
+  openInspector() {
+    var modalScope = this.$scope.$new();
+    modalScope.panel = this.panel;
+    modalScope.dashboard = this.dashboard;
+    modalScope.inspector = angular.copy(this.inspector);
+
+    this.publishAppEvent('show-modal', {
+      src: 'public/app/partials/inspector.html',
+      scope: modalScope
+    });
+  }
 }

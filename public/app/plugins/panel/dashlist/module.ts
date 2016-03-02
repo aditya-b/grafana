@@ -2,7 +2,8 @@
 
 import _ from 'lodash';
 import config from 'app/core/config';
-import {PanelDirective, PanelCtrl} from '../../../features/panel/panel';
+import {PanelCtrl} from 'app/plugins/sdk';
+import {impressions} from 'app/features/dashboard/impression_store';
 
  // Set and populate defaults
 var panelDefaults = {
@@ -13,6 +14,8 @@ var panelDefaults = {
 };
 
 class DashListCtrl extends PanelCtrl {
+  static templateUrl = 'module.html';
+
   dashList: any[];
   modes: any[];
 
@@ -28,15 +31,35 @@ class DashListCtrl extends PanelCtrl {
   }
 
   initEditMode() {
-    this.modes = ['starred', 'search'];
+    super.initEditMode();
+    this.modes = ['starred', 'search', 'recently viewed'];
     this.icon = "fa fa-star";
     this.addEditorTab('Options', () => {
-      return {templateUrl: 'app/plugins/panel/dashlist/editor.html'};
+      return {templateUrl: 'public/app/plugins/panel/dashlist/editor.html'};
     });
   }
 
   refresh() {
     var params: any = {limit: this.panel.limit};
+
+    if (this.panel.mode === 'recently viewed') {
+
+      var dashListNames = impressions.getDashboardOpened().filter((imp) => {
+        return imp.orgId === config.bootData.user.orgId;
+      });
+
+      dashListNames = _.first(dashListNames, params.limit).map((dashboard) => {
+        return {
+          title: dashboard.title,
+          uri: dashboard.type + '/' + dashboard.slug
+        };
+      });
+
+
+      this.dashList = dashListNames;
+      this.renderingCompleted();
+      return;
+    }
 
     if (this.panel.mode === 'starred') {
       params.starred = "true";
@@ -52,12 +75,4 @@ class DashListCtrl extends PanelCtrl {
   }
 }
 
-class DashListPanel extends PanelDirective {
-  controller = DashListCtrl;
-  templateUrl = 'public/app/plugins/panel/dashlist/module.html';
-}
-
-export {
-  DashListCtrl,
-  DashListPanel as Panel
-}
+export {DashListCtrl, DashListCtrl as PanelCtrl}

@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/grafana/grafana",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.5.1",
 	"Packages": [
 		"./pkg/..."
 	],
@@ -70,8 +70,17 @@
 			"Rev": "72a68649ba712ee7c4b5b4a943a626bcd7d90eb8"
 		},
 		{
+			"ImportPath": "github.com/codegangsta/cli",
+			"Comment": "1.2.0-187-gc31a797",
+			"Rev": "c31a7975863e7810c92e2e288a9ab074f9a88f29"
+		},
+		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Rev": "2df174808ee097f90d259e432cc04442cf60be21"
+		},
+		{
+			"ImportPath": "github.com/franela/goreq",
+			"Rev": "3ddeded65be21dacb5a2e2d0b95af9ff6862a2b5"
 		},
 		{
 			"ImportPath": "github.com/go-ini/ini",
@@ -101,21 +110,30 @@
 		},
 		{
 			"ImportPath": "github.com/go-sql-driver/mysql",
-			"Comment": "v1.2-26-g9543750",
-			"Rev": "9543750295406ef070f7de8ae9c43ccddd44e15e"
+			"Comment": "v1.2-171-g267b128",
+			"Rev": "267b128680c46286b9ca13475c3cca5de8f79bd7"
 		},
 		{
 			"ImportPath": "github.com/go-xorm/core",
-			"Rev": "be6e7ac47dc57bd0ada25322fa526944f66ccaa6"
+			"Comment": "v0.4.4-7-g9e608f7",
+			"Rev": "9e608f7330b9d16fe2818cfe731128b3f156cb9a"
 		},
 		{
 			"ImportPath": "github.com/go-xorm/xorm",
-			"Comment": "v0.4.2-58-ge2889e5",
-			"Rev": "e2889e5517600b82905f1d2ba8b70deb71823ffe"
+			"Comment": "v0.4.4-44-gf561133",
+			"Rev": "f56113384f2c63dfe4cd8e768e349f1c35122b58"
+		},
+		{
+			"ImportPath": "github.com/gopherjs/gopherjs/js",
+			"Rev": "14d893dca2e4adb93a5ccc9494040acc0821cd8d"
 		},
 		{
 			"ImportPath": "github.com/gosimple/slug",
 			"Rev": "8d258463b4459f161f51d6a357edacd3eef9d663"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/go-version",
+			"Rev": "7e3c02b30806fa5779d3bdfc152ce4c6f40e7b38"
 		},
 		{
 			"ImportPath": "github.com/jmespath/go-jmespath",
