@@ -83,6 +83,7 @@ API.txt for details.
 					case 'q':
 						c = "" + (Math.floor(d.getMonth() / 3) + 1); break;
 					case 'S': c = leftPad(d.getSeconds()); break;
+					case 's': c = leftPad(d.getMilliseconds()); break;
 					case 'y': c = leftPad(d.getFullYear() % 100); break;
 					case 'Y': c = "" + d.getFullYear(); break;
 					case 'p': c = (isAM) ? ("" + "am") : ("" + "pm"); break;
@@ -162,6 +163,7 @@ API.txt for details.
 	// map of app. size of time units in milliseconds
 
 	var timeUnitSize = {
+		"ms": 1,
 		"second": 1000,
 		"minute": 60 * 1000,
 		"hour": 60 * 60 * 1000,
@@ -175,6 +177,7 @@ API.txt for details.
 	// an integer algorithm
 
 	var baseSpec = [
+	  [50, "ms"], [100, "ms"], [200, "ms"], [500, "ms"],
 		[1, "second"], [2, "second"], [5, "second"], [10, "second"],
 		[30, "second"],
 		[1, "minute"], [2, "minute"], [5, "minute"], [10, "minute"],
@@ -223,6 +226,7 @@ API.txt for details.
 							}
 						}
 
+            console.log('delta', axis.delta);
 						for (var i = 0; i < spec.length - 1; ++i) {
 							if (axis.delta < (spec[i][0] * timeUnitSize[spec[i][1]]
 											  + spec[i + 1][0] * timeUnitSize[spec[i + 1][1]]) / 2
@@ -233,6 +237,7 @@ API.txt for details.
 
 						var size = spec[i][0];
 						var unit = spec[i][1];
+						console.log('size: ' + size + ' unit: ' + unit);
 
 						// special-case the possibility of several years
 

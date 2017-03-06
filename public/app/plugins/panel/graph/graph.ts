@@ -537,6 +537,9 @@ coreModule.directive('grafanaGraph', function($rootScope, timeSrv) {
           var oneDay = 86400000;
           var oneYear = 31536000000;
 
+          if (secPerTick <= 1) {
+            return "%M:%S.%s";
+          }
           if (secPerTick <= 45) {
             return "%H:%M:%S";
           }
