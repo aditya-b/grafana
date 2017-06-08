@@ -43,8 +43,14 @@ export class HistoryListCtrl {
     this.start = 0;
     this.canCompare = false;
 
+    this.$scope.$on('$routeUpdate', this.routeUpdated.bind(this));
     this.$rootScope.onAppEvent('dashboard-saved', this.onDashboardSaved.bind(this), $scope);
     this.resetFromSource();
+  }
+
+  routeUpdated() {
+    var params = this.$location.search();
+    console.log(params);
   }
 
   onDashboardSaved() {
@@ -111,7 +117,7 @@ export class HistoryListCtrl {
     };
 
     return this.historySrv.calculateDiff(options).then(response => {
-      this.delta[this.diff] = response;
+      this.delta[this.diff] = response.html;
     }).catch(() => {
       this.mode = 'list';
     }).finally(() => {

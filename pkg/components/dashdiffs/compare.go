@@ -3,6 +3,7 @@ package dashdiffs
 import (
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/grafana/grafana/pkg/bus"
 	"github.com/grafana/grafana/pkg/components/simplejson"
@@ -44,7 +45,17 @@ type DiffTarget struct {
 }
 
 type Result struct {
-	Delta []byte `json:"delta"`
+	BaseTargetInfo `json:"baseInfo"`
+	NewTargetInfo  `json:"newInfo"`
+
+	Html string `json:"html"`
+}
+
+type DiffTargetInfo struct {
+	DashboardId int64                 `json:"dashboardId"`
+	Version     int                   `json:"version"`
+	CreatedOn   time.Time             `json:"createdOn"`
+	CreatedBy   models.UserProfileDTO `json:"createdBy"`
 }
 
 func ParseDiffType(diff string) DiffType {
@@ -60,7 +71,7 @@ func ParseDiffType(diff string) DiffType {
 }
 
 // CompareDashboardVersionsCommand computes the JSON diff of two versions,
-// assigning the delta of the diff to the `Delta` field.
+// assigning the delta of the diff to the `Html` field.
 func CalculateDiff(options *Options) (*Result, error) {
 	baseVersionQuery := models.GetDashboardVersionQuery{
 		DashboardId: options.Base.DashboardId,
@@ -99,26 +110,27 @@ func CalculateDiff(options *Options) (*Result, error) {
 		if err != nil {
 			return nil, err
 		}
-		result.Delta = []byte(deltaOutput)
+		result.Html = deltaOutput
 
 	case DiffJSON:
 		jsonOutput, err := NewJSONFormatter(left).Format(jsonDiff)
 		if err != nil {
 			return nil, err
 		}
-		result.Delta = []byte(jsonOutput)
+		result.Html = jsonOutput
 
 	case DiffBasic:
 		basicOutput, err := NewBasicFormatter(left).Format(jsonDiff)
 		if err != nil {
 			return nil, err
 		}
-		result.Delta = basicOutput
+		result.Html = basicOutput
 
 	default:
 		return nil, ErrUnsupportedDiffType
 	}
 
+	result.BaseTargetInfo = BaseTargetInfo{}
 	return result, nil
 }
 

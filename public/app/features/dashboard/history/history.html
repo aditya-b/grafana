@@ -55,7 +55,7 @@
               <td>{{revision.createdDateString}}</td>
               <td>{{revision.createdBy}}</td>
               <td>{{revision.message}}</td>
-              <td class="text-right">
+              <td class="filter-table__switch-cell">
                 <a class="btn btn-inverse btn-small" ng-show="revision.version !== ctrl.dashboard.version" ng-click="ctrl.restore(revision.version)">
                   <i class="fa fa-history"></i>&nbsp;&nbsp;Restore
                 </a>

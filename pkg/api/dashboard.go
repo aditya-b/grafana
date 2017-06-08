@@ -352,11 +352,7 @@ func CalculateDashboardDiff(c *middleware.Context, apiOptions dtos.CalculateDiff
 		return ApiError(500, "Unable to compute diff", err)
 	}
 
-	if options.DiffType == dashdiffs.DiffDelta {
-		return Respond(200, result.Delta).Header("Content-Type", "application/json")
-	} else {
-		return Respond(200, result.Delta).Header("Content-Type", "text/html")
-	}
+	return Json(200, result)
 }
 
 // RestoreDashboardVersion restores a dashboard to the given version.

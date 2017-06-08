@@ -71,12 +71,12 @@ func NewBasicFormatter(left interface{}) *BasicFormatter {
 	}
 }
 
-func (b *BasicFormatter) Format(d diff.Diff) ([]byte, error) {
+func (b *BasicFormatter) Format(d diff.Diff) (string, error) {
 	// calling jsonDiff.Format(d) populates the JSON diff's "Lines" value,
 	// which we use to compute the basic dif
 	_, err := b.jsonDiff.Format(d)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	bd := &BasicDiff{}
@@ -85,9 +85,9 @@ func (b *BasicFormatter) Format(d diff.Diff) ([]byte, error) {
 
 	err = b.tpl.ExecuteTemplate(buf, "block", blocks)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return buf.Bytes(), nil
+	return buf.String(), nil
 }
 
 // Basic is V2 of the basic diff
