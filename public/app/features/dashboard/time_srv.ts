@@ -163,7 +163,7 @@ class TimeSrv {
     _.extend(this.time, time);
 
     // disable refresh if zoom in or zoom out
-    if (moment.isMoment(time.to)) {
+    if (false) {
       this.oldRefresh = this.dashboard.refresh || this.oldRefresh;
       this.setAutoRefresh(false);
     } else if (this.oldRefresh && this.oldRefresh !== this.dashboard.refresh) {

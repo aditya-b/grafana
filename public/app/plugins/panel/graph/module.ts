@@ -192,16 +192,6 @@ class GraphCtrl extends MetricsPanelCtrl {
         title: 'No data points',
         tip: 'No datapoints returned from data query',
       };
-    } else {
-      for (let series of this.seriesList) {
-        if (series.isOutsideRange) {
-          this.dataWarning = {
-            title: 'Data points outside time range',
-            tip: 'Can be caused by timezone mismatch or missing time filter in query',
-          };
-          break;
-        }
-      }
     }
 
     this.annotationsPromise.then(
