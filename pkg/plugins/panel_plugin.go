@@ -1,6 +1,8 @@
 package plugins
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 var PluginTypePanel string = "panel"
 
@@ -10,7 +12,8 @@ type PanelPlugin struct {
 
 func init() {
 	RegisterPluginType(&PluginTypeDescriptor{
-		Id: PluginTypePanel,
+		Id:          PluginTypePanel,
+		PluginModel: PanelPlugin{},
 	})
 }
 

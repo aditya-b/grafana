@@ -39,7 +39,7 @@ func (e PluginNotFoundError) Error() string {
 	return fmt.Sprintf("Plugin with id %s not found", e.PluginId)
 }
 
-type PluginLoader interface {
+type ModelLoader interface {
 	Load(decoder *json.Decoder, pluginDir string) error
 }
 

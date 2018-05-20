@@ -57,22 +57,21 @@ func (pm *PluginManager) Init() error {
 	pm.log = log.New("plugins")
 
 	pm.log.Info("Starting plugin search")
-	scan(path.Join(setting.StaticRootPath, "app/plugins"))
+	pm.scanForPlugins(path.Join(setting.StaticRootPath, "app/plugins"))
 
 	// check if plugins dir exists
 	if _, err := os.Stat(setting.PluginsPath); os.IsNotExist(err) {
 		if err = os.MkdirAll(setting.PluginsPath, os.ModePerm); err != nil {
-			plog.Error("Failed to create plugin dir", "dir", setting.PluginsPath, "error", err)
+			pm.log.Error("Failed to create plugin dir", "dir", setting.PluginsPath, "error", err)
 		} else {
-			plog.Info("Plugin dir created", "dir", setting.PluginsPath)
-			scan(setting.PluginsPath)
+			pm.log.Info("Plugin dir created", "dir", setting.PluginsPath)
+			pm.scanForPlugins(setting.PluginsPath)
 		}
 	} else {
-		scan(setting.PluginsPath)
+		pm.scanForPlugins(setting.PluginsPath)
 	}
 
-	// check plugin paths defined in config
-	checkPluginPaths()
+	pm.scanSpecificPluginPaths()
 
 	for _, panel := range Panels {
 		panel.initFrontendPlugin()
@@ -127,38 +126,27 @@ func (pm *PluginManager) Run(ctx context.Context) error {
 	return ctx.Err()
 }
 
-func checkPluginPaths() error {
+func (pm *PluginManager) scanSpecificPluginPaths() error {
 	for _, section := range setting.Raw.Sections() {
 		if strings.HasPrefix(section.Name(), "plugin.") {
 			path := section.Key("path").String()
 			if path != "" {
-				scan(path)
+				pm.scanForPlugins(path)
 			}
 		}
 	}
 	return nil
 }
 
-func scan(pluginDir string) error {
-	scanner := &PluginScanner{
-		pluginPath: pluginDir,
-	}
-
-	if err := util.Walk(pluginDir, true, true, scanner.walker); err != nil {
+func (pm *PluginManager) scanForPlugins(pluginDir string) {
+	if err := util.Walk(pluginDir, true, true, pm.walker); err != nil {
 		if pluginDir != "data/plugins" {
-			log.Warn("Could not scan dir \"%v\" error: %s", pluginDir, err)
+			pm.log.Warn("Could not scan dir \"%v\" error: %s", pluginDir, err)
 		}
-		return err
 	}
-
-	if len(scanner.errors) > 0 {
-		return errors.New("Some plugins failed to load")
-	}
-
-	return nil
 }
 
-func (scanner *PluginScanner) walker(currentPath string, f os.FileInfo, err error) error {
+func (pm *PluginManager) walker(currentPath string, f os.FileInfo, err error) error {
 	if err != nil {
 		return err
 	}
@@ -172,16 +160,16 @@ func (scanner *PluginScanner) walker(currentPath string, f os.FileInfo, err erro
 	}
 
 	if f.Name() == "plugin.json" {
-		err := scanner.loadPluginJson(currentPath)
+		err := pm.loadPluginJson(currentPath)
 		if err != nil {
-			log.Error(3, "Plugins: Failed to load plugin json file: %v,  err: %v", currentPath, err)
-			scanner.errors = append(scanner.errors, err)
+			pm.log.Error("Error loading plugin.json", "file", currentPath, "error", err)
 		}
 	}
+
 	return nil
 }
 
-func (scanner *PluginScanner) loadPluginJson(pluginJsonFilePath string) error {
+func (pm *PluginManager) loadPluginJson(pluginJsonFilePath string) error {
 	currentDir := filepath.Dir(pluginJsonFilePath)
 	reader, err := os.Open(pluginJsonFilePath)
 	if err != nil {
@@ -200,14 +188,16 @@ func (scanner *PluginScanner) loadPluginJson(pluginJsonFilePath string) error {
 		return errors.New("Did not find type and id property in plugin.json")
 	}
 
-	var loader PluginLoader
-	pluginGoType, exists := PluginTypes[pluginCommon.Type]
+	var loader ModelLoader
+	typeDescriptor, exists := PluginTypes[pluginCommon.Type]
 	if !exists {
 		return errors.New("Unknown plugin type " + pluginCommon.Type)
 	}
-	loader = reflect.New(reflect.TypeOf(pluginGoType)).Interface().(PluginLoader)
+
+	loader = reflect.New(reflect.TypeOf(typeDescriptor.PluginModel)).Interface().(ModelLoader)
 
 	reader.Seek(0, 0)
+
 	return loader.Load(jsonParser, currentDir)
 }
 
