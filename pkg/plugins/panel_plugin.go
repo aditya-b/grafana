@@ -2,8 +2,16 @@ package plugins
 
 import "encoding/json"
 
+var PluginTypePanel string = "panel"
+
 type PanelPlugin struct {
 	FrontendPluginBase
+}
+
+func init() {
+	RegisterPluginType(&PluginTypeDescriptor{
+		Id: PluginTypePanel,
+	})
 }
 
 func (p *PanelPlugin) Load(decoder *json.Decoder, pluginDir string) error {

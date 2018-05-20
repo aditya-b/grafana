@@ -25,7 +25,6 @@ var (
 	StaticRoutes []*PluginStaticRoute
 	Apps         map[string]*AppPlugin
 	Plugins      map[string]*PluginBase
-	PluginTypes  map[string]interface{}
 	Renderer     *RendererPlugin
 
 	GrafanaLatestVersion string
@@ -44,23 +43,18 @@ type PluginManager struct {
 
 func init() {
 	registry.RegisterService(&PluginManager{})
-}
 
-func (pm *PluginManager) Init() error {
-	pm.log = log.New("plugins")
+	// TODO: move thee to PluginManager instance
 	plog = log.New("plugins")
-
 	DataSources = map[string]*DataSourcePlugin{}
 	StaticRoutes = []*PluginStaticRoute{}
 	Panels = map[string]*PanelPlugin{}
 	Apps = map[string]*AppPlugin{}
 	Plugins = map[string]*PluginBase{}
-	PluginTypes = map[string]interface{}{
-		"panel":      PanelPlugin{},
-		"datasource": DataSourcePlugin{},
-		"app":        AppPlugin{},
-		"renderer":   RendererPlugin{},
-	}
+}
+
+func (pm *PluginManager) Init() error {
+	pm.log = log.New("plugins")
 
 	pm.log.Info("Starting plugin search")
 	scan(path.Join(setting.StaticRootPath, "app/plugins"))

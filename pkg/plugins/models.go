@@ -8,14 +8,28 @@ import (
 
 	m "github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/setting"
+	plugin "github.com/hashicorp/go-plugin"
 )
 
 var (
 	PluginTypeApp        = "app"
 	PluginTypeDatasource = "datasource"
-	PluginTypePanel      = "panel"
 	PluginTypeDashboard  = "dashboard"
 )
+
+var PluginTypes map[string]*PluginTypeDescriptor = map[string]*PluginTypeDescriptor{}
+
+type PluginTypeDescriptor struct {
+	Id               string
+	Backend          bool
+	ProtocolVersion  int
+	ServiceInterface plugin.Plugin
+	PluginModel      interface{}
+}
+
+func RegisterPluginType(typeDescriptor *PluginTypeDescriptor) {
+	PluginTypes[typeDescriptor.Id] = typeDescriptor
+}
 
 type PluginNotFoundError struct {
 	PluginId string

@@ -41,6 +41,9 @@ type JwtTokenAuth struct {
 	Params map[string]string `json:"params"`
 }
 
+func init() {
+}
+
 func (app *AppPlugin) Load(decoder *json.Decoder, pluginDir string) error {
 	if err := decoder.Decode(&app); err != nil {
 		return err

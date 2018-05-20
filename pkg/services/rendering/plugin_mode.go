@@ -22,8 +22,6 @@ func (rs *RenderingService) startPlugin(ctx context.Context) error {
 		MagicCookieValue: "renderer",
 	}
 
-	rs.log.Info("Renderer plugin found, starting", "cmd", cmd)
-
 	rs.pluginClient = plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: handshakeConfig,
 		Plugins: map[string]plugin.Plugin{
