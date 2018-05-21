@@ -25,6 +25,7 @@ var (
 	StaticRoutes []*PluginStaticRoute
 	Apps         map[string]*AppPlugin
 	Plugins      map[string]*PluginBase
+	PluginTypes  map[string]interface{}
 	Renderer     *RendererPlugin
 
 	GrafanaLatestVersion string
@@ -43,35 +44,41 @@ type PluginManager struct {
 
 func init() {
 	registry.RegisterService(&PluginManager{})
+}
 
-	// TODO: move thee to PluginManager instance
+func (pm *PluginManager) Init() error {
+	pm.log = log.New("plugins")
 	plog = log.New("plugins")
+
 	DataSources = map[string]*DataSourcePlugin{}
 	StaticRoutes = []*PluginStaticRoute{}
 	Panels = map[string]*PanelPlugin{}
 	Apps = map[string]*AppPlugin{}
 	Plugins = map[string]*PluginBase{}
-}
-
-func (pm *PluginManager) Init() error {
-	pm.log = log.New("plugins")
+	PluginTypes = map[string]interface{}{
+		"panel":      PanelPlugin{},
+		"datasource": DataSourcePlugin{},
+		"app":        AppPlugin{},
+		"renderer":   RendererPlugin{},
+	}
 
 	pm.log.Info("Starting plugin search")
-	pm.scanForPlugins(path.Join(setting.StaticRootPath, "app/plugins"))
+	scan(path.Join(setting.StaticRootPath, "app/plugins"))
 
 	// check if plugins dir exists
 	if _, err := os.Stat(setting.PluginsPath); os.IsNotExist(err) {
 		if err = os.MkdirAll(setting.PluginsPath, os.ModePerm); err != nil {
-			pm.log.Error("Failed to create plugin dir", "dir", setting.PluginsPath, "error", err)
+			plog.Error("Failed to create plugin dir", "dir", setting.PluginsPath, "error", err)
 		} else {
-			pm.log.Info("Plugin dir created", "dir", setting.PluginsPath)
-			pm.scanForPlugins(setting.PluginsPath)
+			plog.Info("Plugin dir created", "dir", setting.PluginsPath)
+			scan(setting.PluginsPath)
 		}
 	} else {
-		pm.scanForPlugins(setting.PluginsPath)
+		scan(setting.PluginsPath)
 	}
 
-	pm.scanSpecificPluginPaths()
+	// check plugin paths defined in config
+	checkPluginPaths()
 
 	for _, panel := range Panels {
 		panel.initFrontendPlugin()
@@ -126,27 +133,38 @@ func (pm *PluginManager) Run(ctx context.Context) error {
 	return ctx.Err()
 }
 
-func (pm *PluginManager) scanSpecificPluginPaths() error {
+func checkPluginPaths() error {
 	for _, section := range setting.Raw.Sections() {
 		if strings.HasPrefix(section.Name(), "plugin.") {
 			path := section.Key("path").String()
 			if path != "" {
-				pm.scanForPlugins(path)
+				scan(path)
 			}
 		}
 	}
 	return nil
 }
 
-func (pm *PluginManager) scanForPlugins(pluginDir string) {
-	if err := util.Walk(pluginDir, true, true, pm.walker); err != nil {
-		if pluginDir != "data/plugins" {
-			pm.log.Warn("Could not scan dir \"%v\" error: %s", pluginDir, err)
-		}
+func scan(pluginDir string) error {
+	scanner := &PluginScanner{
+		pluginPath: pluginDir,
 	}
+
+	if err := util.Walk(pluginDir, true, true, scanner.walker); err != nil {
+		if pluginDir != "data/plugins" {
+			log.Warn("Could not scan dir \"%v\" error: %s", pluginDir, err)
+		}
+		return err
+	}
+
+	if len(scanner.errors) > 0 {
+		return errors.New("Some plugins failed to load")
+	}
+
+	return nil
 }
 
-func (pm *PluginManager) walker(currentPath string, f os.FileInfo, err error) error {
+func (scanner *PluginScanner) walker(currentPath string, f os.FileInfo, err error) error {
 	if err != nil {
 		return err
 	}
@@ -160,16 +178,16 @@ func (pm *PluginManager) walker(currentPath string, f os.FileInfo, err error) er
 	}
 
 	if f.Name() == "plugin.json" {
-		err := pm.loadPluginJson(currentPath)
+		err := scanner.loadPluginJson(currentPath)
 		if err != nil {
-			pm.log.Error("Error loading plugin.json", "file", currentPath, "error", err)
+			log.Error(3, "Plugins: Failed to load plugin json file: %v,  err: %v", currentPath, err)
+			scanner.errors = append(scanner.errors, err)
 		}
 	}
-
 	return nil
 }
 
-func (pm *PluginManager) loadPluginJson(pluginJsonFilePath string) error {
+func (scanner *PluginScanner) loadPluginJson(pluginJsonFilePath string) error {
 	currentDir := filepath.Dir(pluginJsonFilePath)
 	reader, err := os.Open(pluginJsonFilePath)
 	if err != nil {
@@ -188,16 +206,14 @@ func (pm *PluginManager) loadPluginJson(pluginJsonFilePath string) error {
 		return errors.New("Did not find type and id property in plugin.json")
 	}
 
-	var loader ModelLoader
-	typeDescriptor, exists := PluginTypes[pluginCommon.Type]
+	var loader PluginLoader
+	pluginGoType, exists := PluginTypes[pluginCommon.Type]
 	if !exists {
 		return errors.New("Unknown plugin type " + pluginCommon.Type)
 	}
-
-	loader = reflect.New(reflect.TypeOf(typeDescriptor.PluginModel)).Interface().(ModelLoader)
+	loader = reflect.New(reflect.TypeOf(pluginGoType)).Interface().(PluginLoader)
 
 	reader.Seek(0, 0)
-
 	return loader.Load(jsonParser, currentDir)
 }
 

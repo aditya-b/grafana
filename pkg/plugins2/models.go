@@ -1,7 +1,6 @@
-package plugins
+package plugins2
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -10,23 +9,12 @@ import (
 	"github.com/grafana/grafana/pkg/setting"
 )
 
-var (
-	PluginTypeApp        = "app"
-	PluginTypeDatasource = "datasource"
-	PluginTypePanel      = "panel"
-	PluginTypeDashboard  = "dashboard"
-)
-
 type PluginNotFoundError struct {
 	PluginId string
 }
 
 func (e PluginNotFoundError) Error() string {
 	return fmt.Sprintf("Plugin with id %s not found", e.PluginId)
-}
-
-type PluginLoader interface {
-	Load(decoder *json.Decoder, pluginDir string) error
 }
 
 type PluginBase struct {
@@ -133,16 +121,35 @@ type PluginStaticRoute struct {
 	PluginId  string
 }
 
-type EnabledPlugins struct {
-	Panels      []*PanelPlugin
-	DataSources map[string]*DataSourcePlugin
-	Apps        []*AppPlugin
+type AppPluginRoute struct {
+	Path      string                 `json:"path"`
+	Method    string                 `json:"method"`
+	ReqRole   m.RoleType             `json:"reqRole"`
+	Url       string                 `json:"url"`
+	Headers   []AppPluginRouteHeader `json:"headers"`
+	TokenAuth *JwtTokenAuth          `json:"tokenAuth"`
 }
 
-func NewEnabledPlugins() EnabledPlugins {
-	return EnabledPlugins{
-		Panels:      make([]*PanelPlugin, 0),
-		DataSources: make(map[string]*DataSourcePlugin),
-		Apps:        make([]*AppPlugin, 0),
-	}
+type AppPluginRouteHeader struct {
+	Name    string `json:"name"`
+	Content string `json:"content"`
 }
+
+type JwtTokenAuth struct {
+	Url    string            `json:"url"`
+	Params map[string]string `json:"params"`
+}
+
+// type EnabledPlugins struct {
+// 	Panels      []*PanelPlugin
+// 	DataSources map[string]*DataSourcePlugin
+// 	Apps        []*AppPlugin
+// }
+//
+// func NewEnabledPlugins() EnabledPlugins {
+// 	return EnabledPlugins{
+// 		Panels:      make([]*PanelPlugin, 0),
+// 		DataSources: make(map[string]*DataSourcePlugin),
+// 		Apps:        make([]*AppPlugin, 0),
+// 	}
+// }

@@ -1,9 +1,20 @@
-package plugins
+package panel
 
-import "encoding/json"
+import (
+	"encoding/json"
 
-type PanelPlugin struct {
+	"github.com/grafana/grafana/pkg/plugins"
+)
+
+type PanelPluginMeta struct {
 	FrontendPluginBase
+}
+
+func init() {
+	RegisterPluginType(&plugins.PluginTypeDescriptor{
+		Id:         "panel",
+		PluginMeta: PanelPluginMeta{},
+	})
 }
 
 func (p *PanelPlugin) Load(decoder *json.Decoder, pluginDir string) error {
