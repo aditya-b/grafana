@@ -13,6 +13,7 @@ import (
 	"github.com/grafana/grafana/pkg/log"
 	"github.com/grafana/grafana/pkg/plugins"
 	"github.com/grafana/grafana/pkg/plugins2"
+	_ "github.com/grafana/grafana/pkg/plugins2/panel"
 	"github.com/grafana/grafana/pkg/registry"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
@@ -20,7 +21,6 @@ import (
 
 type PluginManager struct {
 	log log.Logger
-	plugins
 }
 
 func init() {

@@ -1,7 +1,10 @@
 package plugins2
 
-type FrontendPluginBase struct {
-	PluginBase
+type FrontendPlugin struct {
+	PluginMeta
+
+	Module  string `json:"module,omitempty"`
+	BaseUrl string `json:"baseUrl,omitempty"`
 }
 
 // func (fp *FrontendPluginBase) initFrontendPlugin() {

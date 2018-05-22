@@ -9,7 +9,6 @@ import (
 
 type RendererPluginMeta struct {
 	plugins.PluginBase
-	Executable string `json:"executable,omitempty"`
 }
 
 func init() {

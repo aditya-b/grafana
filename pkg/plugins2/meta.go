@@ -1,69 +1,27 @@
 package plugins2
 
 import (
-	"errors"
-	"fmt"
-	"strings"
-
 	m "github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/setting"
 )
 
-type PluginNotFoundError struct {
-	PluginId string
-}
-
-func (e PluginNotFoundError) Error() string {
-	return fmt.Sprintf("Plugin with id %s not found", e.PluginId)
-}
-
-type PluginBase struct {
+type PluginMeta struct {
 	Type         string             `json:"type"`
 	Name         string             `json:"name"`
 	Id           string             `json:"id"`
 	Info         PluginInfo         `json:"info"`
-	Dependencies PluginDependencies `json:"dependencies"`
-	Includes     []*PluginInclude   `json:"includes"`
-	Module       string             `json:"module"`
-	BaseUrl      string             `json:"baseUrl"`
+	Dependencies PluginDependencies `json:"dependencies,omitempty"`
 	HideFromList bool               `json:"hideFromList,omitempty"`
+	Routes       []*AppPluginRoute  `json:"routes,omitempty"`
+	Executable   string             `json:"executable,omitempty"`
 	State        string             `json:"state,omitempty"`
 
-	IncludedInAppId string `json:"-"`
-	PluginDir       string `json:"-"`
-	DefaultNavUrl   string `json:"-"`
-	IsCorePlugin    bool   `json:"-"`
-
-	GrafanaNetVersion   string `json:"-"`
-	GrafanaNetHasUpdate bool   `json:"-"`
-}
-
-func (pb *PluginBase) registerPlugin(pluginDir string) error {
-	if _, exists := Plugins[pb.Id]; exists {
-		return errors.New("Plugin with same id already exists")
-	}
-
-	if !strings.HasPrefix(pluginDir, setting.StaticRootPath) {
-		plog.Info("Registering plugin", "name", pb.Name)
-	}
-
-	if len(pb.Dependencies.Plugins) == 0 {
-		pb.Dependencies.Plugins = []PluginDependencyItem{}
-	}
-
-	if pb.Dependencies.GrafanaVersion == "" {
-		pb.Dependencies.GrafanaVersion = "*"
-	}
-
-	for _, include := range pb.Includes {
-		if include.Role == "" {
-			include.Role = m.ROLE_VIEWER
-		}
-	}
-
-	pb.PluginDir = pluginDir
-	Plugins[pb.Id] = pb
-	return nil
+	// IncludedInAppId string `json:"-"`
+	// PluginDir       string `json:"-"`
+	// DefaultNavUrl   string `json:"-"`
+	// IsCorePlugin    bool   `json:"-"`
+	//
+	// GrafanaNetVersion   string `json:"-"`
+	// GrafanaNetHasUpdate bool   `json:"-"`
 }
 
 type PluginDependencies struct {

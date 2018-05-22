@@ -3,15 +3,15 @@ package panel
 import (
 	"encoding/json"
 
-	"github.com/grafana/grafana/pkg/plugins"
+	"github.com/grafana/grafana/pkg/plugins2"
 )
 
-type PanelPluginMeta struct {
-	FrontendPluginBase
+type PanelPlugin struct {
+	plugins2.FrontendPluginMeta
 }
 
 func init() {
-	RegisterPluginType(&plugins.PluginTypeDescriptor{
+	RegisterPluginType(&plugins2.PluginTypeDescriptor{
 		Id:         "panel",
 		PluginMeta: PanelPluginMeta{},
 	})
