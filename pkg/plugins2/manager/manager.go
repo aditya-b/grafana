@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -11,16 +12,15 @@ import (
 	"strings"
 
 	"github.com/grafana/grafana/pkg/log"
-	"github.com/grafana/grafana/pkg/plugins"
 	"github.com/grafana/grafana/pkg/plugins2"
-	_ "github.com/grafana/grafana/pkg/plugins2/panel"
 	"github.com/grafana/grafana/pkg/registry"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
 )
 
 type PluginManager struct {
-	log log.Logger
+	log     log.Logger
+	plugins map[string]plugins2.Plugin
 }
 
 func init() {
@@ -46,6 +46,12 @@ func (pm *PluginManager) Init() error {
 	}
 
 	pm.scanSpecificPluginPaths()
+
+	// init plugins
+	for _, plugin := range pm.plugins {
+		plugin.Init()
+	}
+
 	return nil
 }
 
@@ -98,7 +104,7 @@ func (pm *PluginManager) walker(currentPath string, f os.FileInfo, err error) er
 }
 
 func (pm *PluginManager) loadPluginJson(pluginJsonFilePath string) error {
-	currentDir := filepath.Dir(pluginJsonFilePath)
+	pluginDir := filepath.Dir(pluginJsonFilePath)
 	reader, err := os.Open(pluginJsonFilePath)
 	if err != nil {
 		return err
@@ -107,7 +113,7 @@ func (pm *PluginManager) loadPluginJson(pluginJsonFilePath string) error {
 	defer reader.Close()
 
 	jsonParser := json.NewDecoder(reader)
-	pluginCommon := plugins.PluginBase{}
+	pluginCommon := plugins2.PluginBase{}
 	if err := jsonParser.Decode(&pluginCommon); err != nil {
 		return err
 	}
@@ -116,15 +122,51 @@ func (pm *PluginManager) loadPluginJson(pluginJsonFilePath string) error {
 		return errors.New("Did not find type and id property in plugin.json")
 	}
 
-	var loader plugins2.MetaLoader
 	typeDescriptor, exists := plugins2.PluginTypes[pluginCommon.Type]
 	if !exists {
-		return errors.New("Unknown plugin type " + pluginCommon.Type)
+		// return errors.New("Unknown plugin type " + pluginCommon.Type)
+		return nil
 	}
 
-	loader = reflect.New(reflect.TypeOf(typeDescriptor.Meta)).Interface().(plugins2.MetaLoader)
+	pluginObj := reflect.New(reflect.TypeOf(typeDescriptor.Type)).Interface()
 
 	reader.Seek(0, 0)
 
-	return loader.Load(jsonParser, currentDir)
+	if err := jsonParser.Decode(&pluginObj); err != nil {
+		return fmt.Errorf("Failed to unmarshal plugin json, %v %v", pluginCommon.Type, err)
+	}
+
+	if err := pm.registerPlugin(pluginObj, pluginDir); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (pm *PluginManager) registerPlugin(plugin plugins2.Plugin, pluginDir string) error {
+	if _, exists := pm.plugins[pb.Id]; exists {
+		return fmt.Errorf("Plugin with same id already exists: %v", pb.Id)
+	}
+
+	if !strings.HasPrefix(pluginDir, setting.StaticRootPath) {
+		plog.Info("Registering plugin", "name", pb.Name)
+	}
+
+	if len(pb.Dependencies.Plugins) == 0 {
+		pb.Dependencies.Plugins = []PluginDependencyItem{}
+	}
+
+	if pb.Dependencies.GrafanaVersion == "" {
+		pb.Dependencies.GrafanaVersion = "*"
+	}
+
+	for _, include := range pb.Includes {
+		if include.Role == "" {
+			include.Role = m.ROLE_VIEWER
+		}
+	}
+
+	pb.PluginDir = pluginDir
+	Plugins[pb.Id] = pb
+	return nil
 }

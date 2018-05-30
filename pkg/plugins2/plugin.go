@@ -4,24 +4,23 @@ import (
 	m "github.com/grafana/grafana/pkg/models"
 )
 
-type PluginMeta struct {
+type PluginBase struct {
 	Type         string             `json:"type"`
 	Name         string             `json:"name"`
 	Id           string             `json:"id"`
 	Info         PluginInfo         `json:"info"`
 	Dependencies PluginDependencies `json:"dependencies,omitempty"`
-	HideFromList bool               `json:"hideFromList,omitempty"`
 	Routes       []*AppPluginRoute  `json:"routes,omitempty"`
 	Executable   string             `json:"executable,omitempty"`
 	State        string             `json:"state,omitempty"`
 
-	// IncludedInAppId string `json:"-"`
-	// PluginDir       string `json:"-"`
-	// DefaultNavUrl   string `json:"-"`
-	// IsCorePlugin    bool   `json:"-"`
-	//
-	// GrafanaNetVersion   string `json:"-"`
-	// GrafanaNetHasUpdate bool   `json:"-"`
+	IncludedInAppId string `json:"-"`
+	PluginDir       string `json:"-"`
+	DefaultNavUrl   string `json:"-"`
+	IsCorePlugin    bool   `json:"-"`
+
+	GrafanaNetVersion   string `json:"-"`
+	GrafanaNetHasUpdate bool   `json:"-"`
 }
 
 type PluginDependencies struct {

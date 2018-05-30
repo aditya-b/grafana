@@ -9,7 +9,7 @@ type PluginTypeDescriptor struct {
 	Backend          bool
 	ProtocolVersion  int
 	ServiceInterface plugin.Plugin
-	Meta             interface{}
+	Type             interface{}
 }
 
 func RegisterPluginType(typeDescriptor *PluginTypeDescriptor) {
