@@ -2829,7 +2829,7 @@ css-color-names@0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/css-color-names/-/css-color-names-0.0.4.tgz#808adc2e79cf84738069b646cb20ec27beb629e0"
 
-css-loader@^0.28.7:
+css-loader@^0.28.11:
   version "0.28.11"
   resolved "https://registry.yarnpkg.com/css-loader/-/css-loader-0.28.11.tgz#c3f9864a700be2711bb5a2462b2389b1a392dab7"
   dependencies:
@@ -7946,6 +7946,14 @@ moment@^2.18.1:
   version "2.22.2"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.22.2.tgz#3c257f9839fc0e93ff53149632239eb90783ff66"
 
+monaco-editor-webpack-plugin@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/monaco-editor-webpack-plugin/-/monaco-editor-webpack-plugin-1.2.1.tgz#577ed091420f422bb8f0ff3a8899dd82344da56d"
+
+monaco-editor@^0.13.1:
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.13.1.tgz#6b9ce20e4d1c945042d256825eb133cb23315a52"
+
 mousetrap-global-bind@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/mousetrap-global-bind/-/mousetrap-global-bind-1.1.0.tgz#cd7de9222bd0646fa2e010d54c84a74c26a88edd"
@@ -10023,6 +10031,14 @@ react-is@^16.4.0:
 react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
+
+react-monaco-editor@^0.17.2:
+  version "0.17.2"
+  resolved "https://registry.yarnpkg.com/react-monaco-editor/-/react-monaco-editor-0.17.2.tgz#6c85d291487f992a62ad71801d50a9339f43972e"
+  dependencies:
+    "@types/react" "*"
+    monaco-editor "^0.13.1"
+    prop-types "^15.6.1"
 
 react-popper@^0.7.5:
   version "0.7.5"

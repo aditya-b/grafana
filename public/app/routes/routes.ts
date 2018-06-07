@@ -117,6 +117,12 @@ export function setupAngularRoutes($routeProvider, $locationProvider) {
         component: () => import(/* webpackChunkName: "explore" */ 'app/containers/Explore/Wrapper'),
       },
     })
+    .when('/monaco', {
+      template: '<react-container />',
+      resolve: {
+        component: () => import(/* webpackChunkName: "monaco" */ 'app/containers/Monaco'),
+      },
+    })
     .when('/org', {
       templateUrl: 'public/app/features/org/partials/orgDetails.html',
       controller: 'OrgDetailsCtrl',

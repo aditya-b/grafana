@@ -7,6 +7,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 module.exports = merge(common, {
   entry: {
@@ -61,6 +62,10 @@ module.exports = merge(common, {
         }],
       },
       {
+        test: /\.css$/,
+        use: [ 'style-loader', 'css-loader' ]
+      },
+      {
         test: /\.scss$/,
         use: [
           "style-loader", // creates style nodes from JS strings
@@ -84,6 +89,7 @@ module.exports = merge(common, {
       alwaysWriteToDisk: true
     }),
     new HtmlWebpackHarddiskPlugin(),
+    new MonacoWebpackPlugin(),
     new webpack.NamedModulesPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin({
