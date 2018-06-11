@@ -63,6 +63,7 @@ module.exports = {
   plugins: [
     new ForkTsCheckerWebpackPlugin({
       checkSyntacticErrors: true,
+      memoryLimit: 8096,
     }),
   ]
 };

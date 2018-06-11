@@ -63,7 +63,7 @@ module.exports = merge(common, {
       },
       {
         test: /\.css$/,
-        use: [ 'style-loader', 'css-loader' ]
+        use: ['style-loader', 'css-loader']
       },
       {
         test: /\.scss$/,
@@ -89,7 +89,16 @@ module.exports = merge(common, {
       alwaysWriteToDisk: true
     }),
     new HtmlWebpackHarddiskPlugin(),
-    new MonacoWebpackPlugin(),
+    new MonacoWebpackPlugin({
+      languages: ['coffee'],
+      features: [
+        'bracketMatching',
+        'caretOperations',
+        'clipboard',
+        'comment',
+        'coreCommands', 'cursorUndo', 'dnd', 'find', 'folding', 'format', 'hover', 'inPlaceReplace', 'inspectTokens', 'linesOperations', 'links', 'multicursor', 'parameterHints', 'quickCommand', 'quickFixCommands', 'quickOutline', 'referenceSearch', 'rename', 'smartSelect', 'snippets', 'suggest', 'toggleHighContrast', 'toggleTabFocusMode', 'transpose', 'wordHighlighter', 'wordOperations'
+      ]
+    }),
     new webpack.NamedModulesPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin({

@@ -18,6 +18,15 @@ function setTheme(monaco) {
   });
 }
 
+const OPTIONS = {
+  codeLens: false,
+  contextmenu: false,
+  // lineNumbers: 'off',
+  minimap: {
+    enabled: false,
+  },
+};
+
 export default class Monaco extends React.Component<any, any> {
   constructor(props) {
     super(props);
@@ -34,17 +43,14 @@ export default class Monaco extends React.Component<any, any> {
   };
   render() {
     const code = this.state.code;
-    const options = {
-      selectOnLineNumbers: true,
-    };
     return (
       <MonacoEditor
         width="800"
         height="600"
-        language="javascript"
+        language="coffee"
         theme="myTheme"
         value={code}
-        options={options}
+        options={OPTIONS}
         onChange={this.onChange}
         editorDidMount={this.editorDidMount}
         editorWillMount={setTheme}

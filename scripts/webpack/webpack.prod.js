@@ -9,6 +9,7 @@ const ngAnnotatePlugin = require('ng-annotate-webpack-plugin');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 module.exports = merge(common, {
   mode: 'production',
@@ -43,6 +44,10 @@ module.exports = merge(common, {
           },
         },
       },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      },
       require('./sass.rule.js')({
         sourceMap: false, minimize: false, preserveUrl: false
       })
@@ -53,7 +58,8 @@ module.exports = merge(common, {
     splitChunks: {
       cacheGroups: {
         commons: {
-          test: /[\\/]node_modules[\\/]/,
+          minSize: 30000,
+          test: /[\\/]node_modules[\\/].*[tj]s$/,
           name: "vendor",
           chunks: "all"
         }
@@ -79,6 +85,16 @@ module.exports = merge(common, {
       template: path.resolve(__dirname, '../../public/views/index.template.html'),
       inject: 'body',
       chunks: ['vendor', 'app'],
+    }),
+    new MonacoWebpackPlugin({
+      languages: ['coffee'],
+      features: [
+        'bracketMatching',
+        'caretOperations',
+        'clipboard',
+        'comment',
+        'coreCommands', 'cursorUndo', 'dnd', 'find', 'folding', 'format', 'hover', 'inPlaceReplace', 'inspectTokens', 'linesOperations', 'links', 'multicursor', 'parameterHints', 'quickCommand', 'quickFixCommands', 'quickOutline', 'referenceSearch', 'rename', 'smartSelect', 'snippets', 'suggest', 'toggleHighContrast', 'toggleTabFocusMode', 'transpose', 'wordHighlighter', 'wordOperations'
+      ]
     }),
     function () {
       this.plugin("done", function (stats) {
