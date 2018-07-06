@@ -33,8 +33,12 @@ import { Subject } from 'rxjs/Subject';
 // these imports add functions to Observable
 import 'rxjs/add/observable/empty';
 import 'rxjs/add/observable/from';
+import 'rxjs/add/observable/fromArray';
+import 'rxjs/add/observable/defer';
+import 'rxjs/add/operator/concat';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/combineAll';
+import 'rxjs/add/operator/combineLatest';
 
 // add cache busting
 const bust = `?_cache=${Date.now()}`;
