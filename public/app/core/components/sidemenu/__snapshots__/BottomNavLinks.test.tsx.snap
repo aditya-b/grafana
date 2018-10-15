@@ -2,7 +2,7 @@
 
 exports[`Render should render children 1`] = `
 <div
-  className="sidemenu-item dropdown dropup"
+  className="sidemenu-item dropdown"
 >
   <a
     className="sidemenu-link"
@@ -12,9 +12,16 @@ exports[`Render should render children 1`] = `
     />
   </a>
   <ul
-    className="dropdown-menu dropdown-menu--sidemenu"
+    className="dropdown-menu dropdown-menu--sidemenu dropdown-menu--right"
     role="menu"
   >
+    <li
+      className="side-menu-header"
+    >
+      <span
+        className="sidemenu-item-text"
+      />
+    </li>
     <li
       key="undefined-0"
     >
@@ -36,20 +43,13 @@ exports[`Render should render children 1`] = `
         onClick={[Function]}
       />
     </li>
-    <li
-      className="side-menu-header"
-    >
-      <span
-        className="sidemenu-item-text"
-      />
-    </li>
   </ul>
 </div>
 `;
 
 exports[`Render should render component 1`] = `
 <div
-  className="sidemenu-item dropdown dropup"
+  className="sidemenu-item dropdown"
 >
   <a
     className="sidemenu-link"
@@ -59,7 +59,7 @@ exports[`Render should render component 1`] = `
     />
   </a>
   <ul
-    className="dropdown-menu dropdown-menu--sidemenu"
+    className="dropdown-menu dropdown-menu--sidemenu dropdown-menu--right"
     role="menu"
   >
     <li
@@ -75,7 +75,7 @@ exports[`Render should render component 1`] = `
 
 exports[`Render should render organisation switcher 1`] = `
 <div
-  className="sidemenu-item dropdown dropup"
+  className="sidemenu-item dropdown"
 >
   <a
     className="sidemenu-link"
@@ -85,9 +85,16 @@ exports[`Render should render organisation switcher 1`] = `
     />
   </a>
   <ul
-    className="dropdown-menu dropdown-menu--sidemenu"
+    className="dropdown-menu dropdown-menu--sidemenu dropdown-menu--right"
     role="menu"
   >
+    <li
+      className="side-menu-header"
+    >
+      <span
+        className="sidemenu-item-text"
+      />
+    </li>
     <li
       className="sidemenu-org-switcher"
     >
@@ -116,20 +123,13 @@ exports[`Render should render organisation switcher 1`] = `
         </div>
       </a>
     </li>
-    <li
-      className="side-menu-header"
-    >
-      <span
-        className="sidemenu-item-text"
-      />
-    </li>
   </ul>
 </div>
 `;
 
 exports[`Render should render subtitle 1`] = `
 <div
-  className="sidemenu-item dropdown dropup"
+  className="sidemenu-item dropdown"
 >
   <a
     className="sidemenu-link"
@@ -139,9 +139,16 @@ exports[`Render should render subtitle 1`] = `
     />
   </a>
   <ul
-    className="dropdown-menu dropdown-menu--sidemenu"
+    className="dropdown-menu dropdown-menu--sidemenu dropdown-menu--right"
     role="menu"
   >
+    <li
+      className="side-menu-header"
+    >
+      <span
+        className="sidemenu-item-text"
+      />
+    </li>
     <li
       className="sidemenu-subtitle"
     >
@@ -150,13 +157,6 @@ exports[`Render should render subtitle 1`] = `
       >
         subtitle
       </span>
-    </li>
-    <li
-      className="side-menu-header"
-    >
-      <span
-        className="sidemenu-item-text"
-      />
     </li>
   </ul>
 </div>
