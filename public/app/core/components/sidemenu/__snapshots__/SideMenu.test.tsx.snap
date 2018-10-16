@@ -19,14 +19,64 @@ Array [
        Close
     </span>
   </div>,
-  <TopSection
-    key="topsection"
-  />,
+  <div
+    className="sidemenu__menu"
+    key="main-menu"
+  >
+    <div
+      className="sidemenu-item"
+    >
+      <a
+        className="sidemenu-link"
+        href="/dashboard/new"
+      >
+        <span
+          className="icon-circle sidemenu-icon"
+        >
+          <i
+            className="fa fa-fw fa-home"
+          />
+        </span>
+      </a>
+    </div>
+    <div
+      className="sidemenu-item"
+    >
+      <button
+        className="sidemenu-link btn btn-transparent"
+        onClick={[Function]}
+      >
+        <span
+          className="icon-circle sidemenu-icon"
+        >
+          <i
+            className="fa fa-fw fa-bars"
+          />
+        </span>
+      </button>
+    </div>
+    <div
+      className="sidemenu-item"
+    >
+      <button
+        className="sidemenu-link btn btn-transparent"
+      >
+        <span
+          className="icon-circle sidemenu-icon"
+        >
+          <i
+            className="fa fa-fw fa-rocket"
+          />
+        </span>
+      </button>
+    </div>
+  </div>,
   <BrandingSection
     key="brandingsection"
   />,
   <BottomSection
     key="bottomsection"
   />,
+  "",
 ]
 `;
