@@ -3,16 +3,23 @@
   align-items: center;
   padding: 0 20px;
   margin: 0 auto;
-  box-shadow: $search-shadow;
+  // box-shadow: $search-shadow;
+  background-color: $side-menu-bg;
 }
 
-.sidemenu__top {
-  flex-grow: 1;
+.sidemenu__branding {
+  justify-self: center;
+  margin: auto;
 }
 
 .sidemenu__bottom,
 .sidemenu__top {
   display: flex !important;
+  width: 25%;
+}
+
+.sidemenu__bottom {
+  justify-content: flex-end;
 }
 
 .sidemenu__logo_small_breakpoint {

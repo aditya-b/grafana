@@ -1,12 +1,13 @@
 import React, { SFC } from 'react';
-import _ from 'lodash';
+// import _ from 'lodash';
 import TopSectionItem from './TopSectionItem';
 import config from '../../config';
 
 const TopSection: SFC<any> = () => {
-  const navTree = _.cloneDeep(config.bootData.navTree);
-  const mainLinks = _.filter(navTree, item => !item.hideFromMenu);
-
+  // const navTree = _.cloneDeep(config.bootData.navTree);
+  const navTree = Object.assign([], config.bootData.navTree);
+  // const mainLinks = _.filter(navTree, item => !item.hideFromMenu);
+  const mainLinks = navTree.filter(item => !item.hideFromMenu);
   return (
     <div className="sidemenu__top">
       {mainLinks.map((link, index) => {

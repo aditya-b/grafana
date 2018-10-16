@@ -6,12 +6,31 @@ exports[`Render should render component 1`] = `
 >
   <a
     className="sidemenu-link"
+    href="/href/to/icon"
+    target="_blank"
   >
     <span
       className="icon-circle sidemenu-icon"
     >
-      <i />
+      <i
+        className="icon-class"
+      />
+      <img
+        src="/src/to/img"
+      />
     </span>
   </a>
+  <SideMenuDropDown
+    link={
+      Object {
+        "children": "children",
+        "icon": "icon-class",
+        "id": "0",
+        "img": "/src/to/img",
+        "target": "_blank",
+        "url": "/href/to/icon",
+      }
+    }
+  />
 </div>
 `;

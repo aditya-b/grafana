@@ -2,16 +2,6 @@
 
 exports[`Render should render component 1`] = `
 Array [
-  <a
-    className="sidemenu__logo"
-    href="/"
-    key="logo"
-  >
-    <img
-      alt="Grafana"
-      src="public/img/grafana_icon.svg"
-    />
-  </a>,
   <div
     className="sidemenu__logo_small_breakpoint"
     key="hamburger"
@@ -31,6 +21,9 @@ Array [
   </div>,
   <TopSection
     key="topsection"
+  />,
+  <BrandingSection
+    key="brandingsection"
   />,
   <BottomSection
     key="bottomsection"

@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import appEvents from '../../app_events';
 import { contextSrv } from 'app/core/services/context_srv';
 import TopSection from './TopSection';
+import BrandingSection from './BrandingSection';
 import BottomSection from './BottomSection';
 
 export class SideMenu extends PureComponent {
@@ -16,9 +17,6 @@ export class SideMenu extends PureComponent {
 
   render() {
     return [
-      <a href="/" className="sidemenu__logo" key="logo">
-        <img src="public/img/grafana_icon.svg" alt="Grafana" />
-      </a>,
       <div className="sidemenu__logo_small_breakpoint" onClick={this.toggleSideMenuSmallBreakpoint} key="hamburger">
         <i className="fa fa-bars" />
         <span className="sidemenu__close">
@@ -26,6 +24,7 @@ export class SideMenu extends PureComponent {
         </span>
       </div>,
       <TopSection key="topsection" />,
+      <BrandingSection key="brandingsection" />,
       <BottomSection key="bottomsection" />,
     ];
   }
