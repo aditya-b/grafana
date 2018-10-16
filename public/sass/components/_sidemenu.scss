@@ -3,7 +3,7 @@
   align-items: center;
   padding: 0 20px;
   margin: 0 auto;
-  // box-shadow: $search-shadow;
+  box-shadow: $search-shadow;
   background-color: $side-menu-bg;
 }
 
@@ -37,10 +37,10 @@
   width: 280px;
   max-height: calc(100% - 100px);
   flex-direction: column;
-  background: $dark-4;
-  box-shadow: 0 12px 24px -6px rgba(9, 45, 66, 0.25), 0 0 0 1px rgba(9, 45, 66, 0.08);
+  background: $black;
+  box-shadow: $search-shadow;
   z-index: 10000;
-  top: 56px;
+  top: 35px;
   left: 0;
   border-radius: 0 3px 3px 0;
   padding: 15px;
@@ -54,23 +54,24 @@
   display: flex;
   align-items: center;
   margin: 0 0 5px;
-  background-color: $side-menu-item-hover-bg;
-  padding: 6px;
+  // background-color: $side-menu-item-hover-bg;
+  // padding: 6px;
   border-radius: 5px;
+  font-size: $font-size-lg;
 }
 
 .menu__item-label {
   padding-left: 5px;
-  text-transform: uppercase;
 }
 
 .menu__item-children {
-  margin-left: 6px;
+  margin-left: 15px;
 }
 
 .menu__item-child {
   list-style-type: none;
   margin-bottom: 5px;
+  font-size: $font-size-md;
 }
 
 .menu__item-child-label {
@@ -169,8 +170,8 @@
 
 .sidemenu-link {
   color: $link-color;
-  line-height: 42px;
-  padding: 0px 10px 0px 10px;
+  line-height: 35px;
+  padding: 0px 5px 0px 5px;
   display: block;
   position: relative;
   font-size: 16px;
@@ -271,11 +272,12 @@ li.sidemenu-org-switcher {
 
 .sidemenu__logo {
   display: block;
-  padding: 0.4rem 1rem 0.4rem 0.65rem;
+  // padding: 0.4rem 1rem 0.4rem 0.65rem;
   margin-left: -0.65rem; // Sync with left padding, so the logo aligns with the content
   min-height: $navbarHeight;
   position: relative;
   height: $navbarHeight - 1px;
+  display: flex;
 
   &:hover {
     background: $navbarButtonBackgroundHighlight;
@@ -284,8 +286,6 @@ li.sidemenu-org-switcher {
   img {
     width: 30px;
     position: relative;
-    top: 5px;
-    left: 4px;
   }
 }
 
