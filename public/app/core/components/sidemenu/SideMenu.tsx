@@ -93,7 +93,6 @@ export class SideMenu extends PureComponent<Props, State> {
           <i className="fa fa-times" />&nbsp;Close
         </span>
       </div>,
-
       <div className="sidemenu__menu" key="main-menu">
         <div className="sidemenu-item">
           <a className="sidemenu-link" href="/dashboard/new">
@@ -110,11 +109,11 @@ export class SideMenu extends PureComponent<Props, State> {
           </button>
         </div>
         <div className="sidemenu-item">
-          <button className="sidemenu-link btn btn-transparent">
+          <a className="sidemenu-link" href="/explore">
             <span className="icon-circle sidemenu-icon">
               <i className="fa fa-fw fa-rocket" />
             </span>
-          </button>
+          </a>
         </div>
       </div>,
       <div className="sidemenu__search" key="sidemenusearch">
