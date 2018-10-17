@@ -15,6 +15,7 @@
   right: 0;
   bottom: 0;
   z-index: ($zindex-modal-backdrop + 10);
+  z-index: 10500;
   position: fixed;
 }
 
@@ -29,8 +30,9 @@
   & > input {
     max-width: 653px;
     //padding: 0.5rem 1.5rem 0.5rem 0;
-    padding: 1rem 1rem 0.75rem 1rem;
+    padding: 0.75rem 1rem 0.75rem 0rem;
     height: 51px;
+    height: 40px;
     box-sizing: border-box;
     outline: none;
     background: $side-menu-bg;
@@ -46,6 +48,7 @@
 .search-field-icon {
   font-size: $font-size-lg;
   padding: 1rem 1rem 0.75rem 1.5rem;
+  padding: 0.5rem 0.5rem 0 1rem;
 }
 
 .search-dropdown {
@@ -266,6 +269,7 @@
 @include media-breakpoint-up(sm) {
   .search-container {
     left: $side-menu-width;
+    left: 140px;
   }
 
   .search-item__tags {

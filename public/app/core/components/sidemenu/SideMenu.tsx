@@ -5,19 +5,39 @@ import { contextSrv } from 'app/core/services/context_srv';
 import BrandingSection from './BrandingSection';
 import BottomSection from './BottomSection';
 import Menu from './Menu';
+import { store } from 'app/store/configureStore';
 
 interface Props {}
 
 interface State {
   isMenuOpen: boolean;
+  searchText: string;
 }
 export class SideMenu extends PureComponent<Props, State> {
+  private unsubscribe = undefined;
+
   constructor(props) {
     super(props);
 
     this.state = {
       isMenuOpen: false,
+      searchText: '',
     };
+  }
+
+  componentWillMount() {
+    this.unsubscribe = store.subscribe(() => {
+      this.setState(store => {
+        return {
+          ...store,
+          isMenuOpen: false,
+        };
+      });
+    });
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe();
   }
 
   toggleMenuOpen = () => {
@@ -50,9 +70,22 @@ export class SideMenu extends PureComponent<Props, State> {
   // icon?: string;
   // img?: string;
   // children?: any;
+  onSearchFocus = () => {
+    appEvents.emit('show-dash-search');
+  };
+
+  onSearchTextChange = value => {
+    console.log('value', value);
+    this.setState(state => {
+      return {
+        ...state,
+        searchText: value,
+      };
+    });
+  };
 
   render() {
-    const { isMenuOpen } = this.state;
+    const { isMenuOpen, searchText } = this.state;
     return [
       <div className="sidemenu__logo_small_breakpoint" onClick={this.toggleSideMenuSmallBreakpoint} key="hamburger">
         <i className="fa fa-bars" />
@@ -84,7 +117,21 @@ export class SideMenu extends PureComponent<Props, State> {
           </button>
         </div>
       </div>,
-
+      <div className="sidemenu__search" key="sidemenusearch">
+        <label className="gf-form gf-form--grow gf-form--has-input-icon">
+          <input
+            type="text"
+            className="gf-form-input gf-form-input--sidemenu gf-form-input--standalone gf-form--grow"
+            placeholder="Find dashboards by name"
+            value={searchText}
+            onChange={evt => {
+              this.onSearchTextChange(evt.target.value);
+            }}
+            onFocus={this.onSearchFocus}
+          />
+          <i className="gf-form-input-icon fa fa-search" />
+        </label>
+      </div>,
       // <TopSection key="topsection" />,
       <BrandingSection key="brandingsection" />,
       <BottomSection key="bottomsection" />,

@@ -237,6 +237,16 @@ $input-border: 1px solid $input-border-color;
   &--plaintext {
     white-space: unset;
   }
+
+  &.gf-form-input--sidemenu {
+    background-color: $gray-3;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  &.gf-form-input--standalone {
+    border-radius: $input-border-radius-standalone;
+  }
 }
 
 .gf-form-hint {

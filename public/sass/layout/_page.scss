@@ -13,6 +13,9 @@
 //   flex-grow: 1;
 //   background: $page-gradient;
 // }
+.main-view {
+  padding-top: 50px; // Top nav is fixed ~40px + 10px margin
+}
 
 .page-container {
   margin-left: auto;
@@ -30,6 +33,7 @@
   @include clearfix();
 }
 
+/*
 .scroll-canvas {
   position: absolute;
   width: 100%;
@@ -41,6 +45,7 @@
     height: calc(100% - 56px);
   }
 }
+*/
 
 // fix for phantomjs
 .body--phantomjs {

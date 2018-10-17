@@ -68,6 +68,20 @@ html {
   height: 100%;
 }
 
+// body {
+//   // Make the `body` use the `font-size-root`
+//   font-family: $font-family-base;
+//   font-size: $font-size-base;
+//   line-height: $line-height-base;
+//   // Go easy on the eyes and use something other than `#000` for text
+//   color: $body-color;
+//   // By default, `<body>` has no `background-color` so we set one as a best practice.
+//   background-color: $body-bg;
+//   height: 100%;
+//   width: 100%;
+//   position: absolute;
+// }
+
 body {
   // Make the `body` use the `font-size-root`
   font-family: $font-family-base;
@@ -77,9 +91,6 @@ body {
   color: $body-color;
   // By default, `<body>` has no `background-color` so we set one as a best practice.
   background-color: $body-bg;
-  height: 100%;
-  width: 100%;
-  position: absolute;
 }
 
 // Suppress the focus outline on elements that cannot be accessed via keyboard.
@@ -87,7 +98,7 @@ body {
 // might still respond to pointer events.
 //
 // Credit: https://github.com/suitcss/base
-[tabindex="-1"]:focus {
+[tabindex='-1']:focus {
   outline: none !important;
 }
 
@@ -214,7 +225,7 @@ img {
 // for traditionally non-focusable elements with role="button"
 // see https://developer.mozilla.org/en-US/docs/Web/Events/click#Safari_Mobile
 
-[role="button"] {
+[role='button'] {
   cursor: pointer;
 }
 
@@ -231,7 +242,7 @@ img {
 a,
 area,
 button,
-[role="button"],
+[role='button'],
 input,
 label,
 select,
@@ -320,7 +331,7 @@ legend {
   //  border: 0;
 }
 
-input[type="search"] {
+input[type='search'] {
   // This overrides the extra rounded corners on search inputs in iOS so that our
   // `.form-control` class can properly style them. Note that this cannot simply
   // be added to `.form-control` as it's not specific enough. For details, see
