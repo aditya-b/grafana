@@ -372,17 +372,33 @@ li.sidemenu-org-switcher {
 }
 
 .menu__item {
-  margin-bottom: 20px;
+  // margin-bottom: 20px;
 }
 
 .menu__item-link {
   display: flex;
   align-items: center;
-  margin: 0 0 5px;
+  margin: 0 0 0;
   // background-color: $side-menu-item-hover-bg;
   // padding: 6px;
   border-radius: 5px;
   font-size: $font-size-lg;
+  width: 100%;
+
+  &:hover {
+    .menu__item-expand-icon {
+      background-color: $dark-4;
+      border-radius: 5px;
+    }
+  }
+}
+.menu__item-icon {
+  width: 25px;
+}
+.menu__item-expand-icon {
+  justify-self: flex-end;
+  margin-left: auto;
+  padding: 3px 3px 2px;
 }
 
 .menu__item-label {
@@ -391,12 +407,17 @@ li.sidemenu-org-switcher {
 
 .menu__item-children {
   margin-left: 15px;
+  margin-bottom: 15px;
 }
 
 .menu__item-child {
   list-style-type: none;
   margin-bottom: 5px;
   font-size: $font-size-md;
+}
+
+.menu__item-child-icon {
+  width: 25px;
 }
 
 .menu__item-child-label {
