@@ -367,7 +367,6 @@ li.sidemenu-org-switcher {
   top: 35px;
   left: 0;
   border-radius: 0 3px 3px 0;
-  padding: 15px;
   overflow: auto;
 }
 
@@ -379,11 +378,15 @@ li.sidemenu-org-switcher {
   display: flex;
   align-items: center;
   margin: 0 0 0;
-  // background-color: $side-menu-item-hover-bg;
+  background-color: $side-menu-item-hover-bg;
   // padding: 6px;
-  border-radius: 5px;
   font-size: $font-size-lg;
   width: 100%;
+
+  // Override btn
+  border-radius: 0;
+  font-weight: normal;
+  font-size: 16px;
 
   &:hover {
     .menu__item-expand-icon {
@@ -406,13 +409,13 @@ li.sidemenu-org-switcher {
 }
 
 .menu__item-children {
+  margin-top: 10px;
   margin-left: 15px;
   margin-bottom: 15px;
 }
 
 .menu__item-child {
   list-style-type: none;
-  margin-bottom: 5px;
   font-size: $font-size-md;
 }
 
@@ -422,4 +425,15 @@ li.sidemenu-org-switcher {
 
 .menu__item-child-label {
   padding-left: 5px;
+}
+
+.menu__item-child-link {
+  display: block;
+  @include left-brand-border();
+  padding-top: 2px;
+  padding-bottom: 2px;
+
+  &:hover {
+    @include left-brand-border-gradient();
+  }
 }

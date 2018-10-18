@@ -33,6 +33,7 @@ export class SideMenu extends PureComponent<Props, State> {
           isMenuOpen: false,
         };
       });
+      appEvents.emit('hide-dash-search');
     });
   }
 
