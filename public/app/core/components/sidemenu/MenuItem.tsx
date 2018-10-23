@@ -1,4 +1,4 @@
-﻿import React, { Component } from 'react';
+import React, { Component } from 'react';
 // import React, { SFC } from 'react';
 // import SideMenuDropDown from './SideMenuDropDown';
 
@@ -43,7 +43,7 @@ export class MenuItem extends Component<Props> {
     return (
       <div className="menu__item">
         <button className="menu__item-link btn btn-transparent" onClick={onMenuItemClick}>
-          {/* <i className={`menu__item-icon ${link.icon}`} /> */}
+          <i className={`menu__item-icon ${link.icon}`} />
           <span className="menu__item-label">{link.text}</span>
           <i className={expandedCss} />
         </button>

@@ -102,28 +102,27 @@ func (hs *HTTPServer) setIndexViewData(c *m.ReqContext) (*dtos.IndexViewData, er
 		data.Theme = darkName
 	}
 
-	if hasEditPermissionInFoldersQuery.Result {
-		children := []*dtos.NavLink{
-			{Text: "Dashboard", Icon: "gicon gicon-dashboard-new", Url: setting.AppSubUrl + "/dashboard/new"},
-		}
-
-		if c.OrgRole == m.ROLE_ADMIN || c.OrgRole == m.ROLE_EDITOR {
-			children = append(children, &dtos.NavLink{Text: "Folder", SubTitle: "Create a new folder to organize your dashboards", Id: "folder", Icon: "gicon gicon-folder-new", Url: setting.AppSubUrl + "/dashboards/folder/new"})
-		}
-
-		children = append(children, &dtos.NavLink{Text: "Import", SubTitle: "Import dashboard from file or Grafana.com", Id: "import", Icon: "gicon gicon-dashboard-import", Url: setting.AppSubUrl + "/dashboard/import"})
-
-		data.NavTree = append(data.NavTree, &dtos.NavLink{
-			Text:     "Create",
-			Id:       "create",
-			Icon:     "fa fa-fw fa-plus",
-			Url:      setting.AppSubUrl + "/dashboard/new",
-			Children: children,
-		})
-	}
+	// if hasEditPermissionInFoldersQuery.Result {
+	// 	children := []*dtos.NavLink{
+	// 		{Text: "Dashboard", Icon: "gicon gicon-dashboard-new", Url: setting.AppSubUrl + "/dashboard/new"},
+	// 	}
+	//
+	// 	if c.OrgRole == m.ROLE_ADMIN || c.OrgRole == m.ROLE_EDITOR {
+	// 		children = append(children, &dtos.NavLink{Text: "Folder", SubTitle: "Create a new folder to organize your dashboards", Id: "folder", Icon: "gicon gicon-folder-new", Url: setting.AppSubUrl + "/dashboards/folder/new"})
+	// 	}
+	//
+	// 	children = append(children, &dtos.NavLink{Text: "Import", SubTitle: "Import dashboard from file or Grafana.com", Id: "import", Icon: "gicon gicon-dashboard-import", Url: setting.AppSubUrl + "/dashboard/import"})
+	//
+	// 	data.NavTree = append(data.NavTree, &dtos.NavLink{
+	// 		Text:     "Create",
+	// 		Id:       "create",
+	// 		Icon:     "fa fa-fw fa-plus",
+	// 		Url:      setting.AppSubUrl + "/dashboard/new",
+	// 		Children: children,
+	// 	})
+	// }
 
 	dashboardChildNavs := []*dtos.NavLink{
-		{Text: "Home", Id: "home", Url: setting.AppSubUrl + "/", Icon: "gicon gicon-home", HideFromTabs: true},
 		{Text: "Divider", Divider: true, Id: "divider", HideFromTabs: true},
 		{Text: "Manage", Id: "manage-dashboards", Url: setting.AppSubUrl + "/dashboards", Icon: "gicon gicon-manage"},
 		{Text: "Playlists", Id: "playlists", Url: setting.AppSubUrl + "/playlists", Icon: "gicon gicon-playlists"},
@@ -139,18 +138,18 @@ func (hs *HTTPServer) setIndexViewData(c *m.ReqContext) (*dtos.IndexViewData, er
 		Children: dashboardChildNavs,
 	})
 
-	if setting.ExploreEnabled && (c.OrgRole == m.ROLE_ADMIN || c.OrgRole == m.ROLE_EDITOR) {
-		data.NavTree = append(data.NavTree, &dtos.NavLink{
-			Text:     "Explore",
-			Id:       "explore",
-			SubTitle: "Explore your data",
-			Icon:     "fa fa-rocket",
-			Url:      setting.AppSubUrl + "/explore",
-			Children: []*dtos.NavLink{
-				{Text: "New tab", Icon: "gicon gicon-dashboard-new", Url: setting.AppSubUrl + "/explore"},
-			},
-		})
-	}
+	// if setting.ExploreEnabled && (c.OrgRole == m.ROLE_ADMIN || c.OrgRole == m.ROLE_EDITOR) {
+	// 	data.NavTree = append(data.NavTree, &dtos.NavLink{
+	// 		Text:     "Explore",
+	// 		Id:       "explore",
+	// 		SubTitle: "Explore your data",
+	// 		Icon:     "fa fa-rocket",
+	// 		Url:      setting.AppSubUrl + "/explore",
+	// 		Children: []*dtos.NavLink{
+	// 			{Text: "New tab", Icon: "gicon gicon-dashboard-new", Url: setting.AppSubUrl + "/explore"},
+	// 		},
+	// 	})
+	// }
 
 	if c.IsSignedIn {
 		// Only set login if it's different from the name
