@@ -90,7 +90,7 @@
 
 .sidemenu-link {
   color: $link-color;
-  line-height: 35px;
+  line-height: 33px;
   padding: 0px 5px 0px 5px;
   display: block;
   position: relative;
@@ -194,9 +194,9 @@ li.sidemenu-org-switcher {
   display: block;
   // padding: 0.4rem 1rem 0.4rem 0.65rem;
   margin-left: -0.65rem; // Sync with left padding, so the logo aligns with the content
-  min-height: $navbarHeight;
+  min-height: 25px;
   position: relative;
-  height: $navbarHeight - 1px;
+  height: 25px;
   display: flex;
 
   &:hover {
@@ -301,18 +301,19 @@ li.sidemenu-org-switcher {
 .sidemenu {
   display: flex;
   align-items: center;
-  padding: 2px 20px;
   margin: 0 auto;
-  // box-shadow: $search-shadow;
+  box-shadow: $search-shadow;
   background-color: $side-menu-bg;
   position: relative;
   position: fixed;
   width: 100%;
   z-index: 10000;
 }
+
 .sidemenu-link {
   padding: 0px 2px;
 }
+
 .sidemenu__branding {
   justify-self: center;
   margin: auto;
@@ -339,6 +340,7 @@ li.sidemenu-org-switcher {
 .sidemenu__bottom {
   justify-content: flex-end;
   margin-left: auto;
+  padding-right: 5px;
 }
 
 .sidemenu__search {

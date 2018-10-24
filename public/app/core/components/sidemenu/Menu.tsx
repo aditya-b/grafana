@@ -1,4 +1,4 @@
-﻿import React, { PureComponent } from 'react';
+import React, { PureComponent } from 'react';
 import config from '../../config';
 import MenuItem from './MenuItem';
 

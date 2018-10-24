@@ -96,25 +96,11 @@ export class SideMenu extends PureComponent<Props, State> {
       </div>,
       <div className="sidemenu__menu" key="main-menu">
         <div className="sidemenu-item">
-          <a className="sidemenu-link" href="/dashboard">
-            <span className="icon-circle sidemenu-icon">
-              <i className="fa fa-fw fa-home" />
-            </span>
-          </a>
-        </div>
-        <div className="sidemenu-item">
           <button className="sidemenu-link btn btn-transparent" onClick={this.toggleMenuOpen}>
             <span className="icon-circle sidemenu-icon">
               <i className="fa fa-fw fa-bars" />
             </span>
           </button>
-        </div>
-        <div className="sidemenu-item">
-          <a className="sidemenu-link" href="/explore">
-            <span className="icon-circle sidemenu-icon">
-              <i className="fa fa-fw fa-rocket" />
-            </span>
-          </a>
         </div>
       </div>,
       <div className="sidemenu__search" key="sidemenusearch">
@@ -122,7 +108,7 @@ export class SideMenu extends PureComponent<Props, State> {
           <input
             type="text"
             className="gf-form-input gf-form-input--sidemenu gf-form-input--standalone gf-form--grow"
-            placeholder="Find dashboards by name"
+            placeholder=""
             value={searchText}
             onChange={evt => {
               this.onSearchTextChange(evt.target.value);
