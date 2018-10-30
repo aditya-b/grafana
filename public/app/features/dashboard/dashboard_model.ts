@@ -187,7 +187,6 @@ export class DashboardModel {
 
     //  sort by keys
     copy = sortByKeys(copy);
-
     return copy;
   }
 

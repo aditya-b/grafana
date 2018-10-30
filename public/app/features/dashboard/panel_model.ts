@@ -1,4 +1,5 @@
 import { Emitter } from 'app/core/utils/emitter';
+import { removeModelDefaults } from 'app/core/utils/model_utils';
 import _ from 'lodash';
 
 export interface GridPos {
@@ -54,11 +55,10 @@ export class PanelModel {
     this.events = new Emitter();
     this.defaults = {};
 
-    // copy properties from persisted model
-    for (const property in model) {
-      this[property] = model[property];
-    }
+    // assign persisted props to this
+    Object.assign(this, model);
 
+    // add basic defaults
     this.applyDefaults(basicDefaults);
   }
 
@@ -70,20 +70,7 @@ export class PanelModel {
   }
 
   getSaveModel() {
-    const model: any = {};
-    for (const property in this as any) {
-      if (notPersistedProperties[property] || !this.hasOwnProperty(property)) {
-        continue;
-      }
-
-      if (_.isEqual(this[property], this.defaults[property])) {
-        continue;
-      }
-
-      model[property] = _.cloneDeep(this[property]);
-    }
-
-    return model;
+    return removeModelDefaults(this, this.defaults, notPersistedProperties);
   }
 
   setViewMode(fullscreen: boolean, isEditing: boolean) {
