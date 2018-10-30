@@ -14,9 +14,10 @@ const notPersistedProperties: { [str: string]: boolean } = {
   fullscreen: true,
   isEditing: true,
   hasRefreshed: true,
+  defaults: true,
 };
 
-const defaults: any = {
+const basicDefaults: any = {
   gridPos: { x: 0, y: 0, h: 3, w: 6 },
   datasource: null,
   targets: [{}],
@@ -47,27 +48,35 @@ export class PanelModel {
   isEditing: boolean;
   hasRefreshed: boolean;
   events: Emitter;
+  defaults: object;
 
   constructor(model) {
     this.events = new Emitter();
+    this.defaults = {};
 
     // copy properties from persisted model
     for (const property in model) {
       this[property] = model[property];
     }
 
-    // defaults
+    this.applyDefaults(basicDefaults);
+  }
+
+  applyDefaults(defaults: object) {
+    // apply defaults to this
     _.defaultsDeep(this, _.cloneDeep(defaults));
+    // assign defaults to defaults object
+    Object.assign(this.defaults, defaults);
   }
 
   getSaveModel() {
     const model: any = {};
-    for (const property in this) {
+    for (const property in this as any) {
       if (notPersistedProperties[property] || !this.hasOwnProperty(property)) {
         continue;
       }
 
-      if (_.isEqual(this[property], defaults[property])) {
+      if (_.isEqual(this[property], this.defaults[property])) {
         continue;
       }
 
