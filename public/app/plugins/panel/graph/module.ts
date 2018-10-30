@@ -26,102 +26,11 @@ class GraphCtrl extends MetricsPanelCtrl {
   subTabIndex: number;
   processor: DataProcessor;
 
-  panelDefaults = {
-    // datasource name, null = default datasource
-    datasource: null,
-    // sets client side (flot) or native graphite png renderer (png)
-    renderer: 'flot',
-    yaxes: [
-      {
-        label: null,
-        show: true,
-        logBase: 1,
-        min: null,
-        max: null,
-        format: 'short',
-      },
-      {
-        label: null,
-        show: true,
-        logBase: 1,
-        min: null,
-        max: null,
-        format: 'short',
-      },
-    ],
-    xaxis: {
-      show: true,
-      mode: 'time',
-      name: null,
-      values: [],
-      buckets: null,
-    },
-    yaxis: {
-      align: false,
-      alignLevel: null,
-    },
-    // show/hide lines
-    lines: true,
-    // fill factor
-    fill: 1,
-    // line width in pixels
-    linewidth: 1,
-    // show/hide dashed line
-    dashes: false,
-    // length of a dash
-    dashLength: 10,
-    // length of space between two dashes
-    spaceLength: 10,
-    // show hide points
-    points: false,
-    // point radius in pixels
-    pointradius: 5,
-    // show hide bars
-    bars: false,
-    // enable/disable stacking
-    stack: false,
-    // stack percentage mode
-    percentage: false,
-    // legend options
-    legend: {
-      show: true, // disable/enable legend
-      values: false, // disable/enable legend values
-      min: false,
-      max: false,
-      current: false,
-      total: false,
-      avg: false,
-    },
-    // how null points should be handled
-    nullPointMode: 'null',
-    // staircase line mode
-    steppedLine: false,
-    // tooltip options
-    tooltip: {
-      value_type: 'individual',
-      shared: true,
-      sort: 0,
-    },
-    // time overrides
-    timeFrom: null,
-    timeShift: null,
-    // metric queries
-    targets: [{}],
-    // series color overrides
-    aliasColors: {},
-    // other style overrides
-    seriesOverrides: [],
-    thresholds: [],
-  };
-
   /** @ngInject */
   constructor($scope, $injector, private annotationsSrv) {
     super($scope, $injector);
 
-    _.defaults(this.panel, this.panelDefaults);
-    _.defaults(this.panel.tooltip, this.panelDefaults.tooltip);
-    _.defaults(this.panel.legend, this.panelDefaults.legend);
-    _.defaults(this.panel.xaxis, this.panelDefaults.xaxis);
+    this.panel.applyDefaults(panelDefaults);
 
     this.processor = new DataProcessor(this.panel);
 
@@ -336,5 +245,93 @@ class GraphCtrl extends MetricsPanelCtrl {
     });
   }
 }
+
+const panelDefaults = {
+  // datasource name, null = default datasource
+  datasource: null,
+  // sets client side (flot) or native graphite png renderer (png)
+  renderer: 'flot',
+  yaxes: [
+    {
+      label: null,
+      show: true,
+      logBase: 1,
+      min: null,
+      max: null,
+      format: 'short',
+    },
+    {
+      label: null,
+      show: true,
+      logBase: 1,
+      min: null,
+      max: null,
+      format: 'short',
+    },
+  ],
+  xaxis: {
+    show: true,
+    mode: 'time',
+    name: null,
+    values: [],
+    buckets: null,
+  },
+  yaxis: {
+    align: false,
+    alignLevel: null,
+  },
+  // show/hide lines
+  lines: true,
+  // fill factor
+  fill: 1,
+  // line width in pixels
+  linewidth: 1,
+  // show/hide dashed line
+  dashes: false,
+  // length of a dash
+  dashLength: 10,
+  // length of space between two dashes
+  spaceLength: 10,
+  // show hide points
+  points: false,
+  // point radius in pixels
+  pointradius: 5,
+  // show hide bars
+  bars: false,
+  // enable/disable stacking
+  stack: false,
+  // stack percentage mode
+  percentage: false,
+  // legend options
+  legend: {
+    show: true, // disable/enable legend
+    values: false, // disable/enable legend values
+    min: false,
+    max: false,
+    current: false,
+    total: false,
+    avg: false,
+  },
+  // how null points should be handled
+  nullPointMode: 'null',
+  // staircase line mode
+  steppedLine: false,
+  // tooltip options
+  tooltip: {
+    value_type: 'individual',
+    shared: true,
+    sort: 0,
+  },
+  // time overrides
+  timeFrom: null,
+  timeShift: null,
+  // metric queries
+  targets: [{}],
+  // series color overrides
+  aliasColors: {},
+  // other style overrides
+  seriesOverrides: [],
+  thresholds: [],
+};
 
 export { GraphCtrl, GraphCtrl as PanelCtrl };
