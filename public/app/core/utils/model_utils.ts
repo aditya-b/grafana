@@ -15,6 +15,10 @@ type BoolMap = { [str: string]: boolean };
 export function removeModelDefaults(source: object, defaults: object, ignore?: BoolMap): object {
   const model = {};
 
+  if (defaults === undefined) {
+    return _.cloneDeep(source);
+  }
+
   for (const property in source) {
     if (!source.hasOwnProperty(property) || (ignore && ignore[property])) {
       continue;
@@ -27,14 +31,21 @@ export function removeModelDefaults(source: object, defaults: object, ignore?: B
       continue;
     }
 
-    if (Array.isArray(sourceValue)) {
-      model[property] = _.cloneDeep(source[property]);
-    } else if (_.isPlainObject(sourceValue)) {
+    let newValue: any;
+
+    if (Array.isArray(sourceValue) && Array.isArray(defaultValue)) {
+      newValue = [];
+      for (let i = 0; i < sourceValue.length; i++) {
+        newValue.push(removeModelDefaults(sourceValue[i], defaultValue[i]));
+      }
+    } else if (_.isPlainObject(sourceValue) && defaultValue) {
       // for nested objects we need only include properties that diff from defaults
-      model[property] = removeModelDefaults(sourceValue, defaultValue);
+      newValue = removeModelDefaults(sourceValue, defaultValue);
     } else {
-      model[property] = _.cloneDeep(source[property]);
+      newValue = _.cloneDeep(sourceValue);
     }
+
+    model[property] = newValue;
   }
 
   return model;
