@@ -12,11 +12,17 @@ export function assignModelProperties(target, source, defaults) {
 
 type BoolMap = { [str: string]: boolean };
 
-export function removeModelDefaults(source: object, defaults: object, ignore?: BoolMap): object {
+export function removeModelDefaults(source: any, defaults: object, ignore?: BoolMap): object {
   const model = {};
 
   if (defaults === undefined) {
     return _.cloneDeep(source);
+  }
+
+  // for non object sources just return them
+  // numbers, strings, boolens, arrays
+  if (Object.prototype.toString.call(source) !== '[object Object]') {
+    return source;
   }
 
   for (const property in source) {

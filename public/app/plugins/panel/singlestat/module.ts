@@ -35,51 +35,11 @@ class SingleStatCtrl extends MetricsPanelCtrl {
   ];
   tableColumnOptions: any;
 
-  // Set and populate defaults
-  panelDefaults = {
-    links: [],
-    datasource: null,
-    maxDataPoints: 100,
-    interval: null,
-    targets: [{}],
-    cacheTimeout: null,
-    format: 'none',
-    prefix: '',
-    postfix: '',
-    nullText: null,
-    valueMaps: [{ value: 'null', op: '=', text: 'N/A' }],
-    mappingTypes: [{ name: 'value to text', value: 1 }, { name: 'range to text', value: 2 }],
-    rangeMaps: [{ from: 'null', to: 'null', text: 'N/A' }],
-    mappingType: 1,
-    nullPointMode: 'connected',
-    valueName: 'avg',
-    prefixFontSize: '50%',
-    valueFontSize: '80%',
-    postfixFontSize: '50%',
-    thresholds: '',
-    colorBackground: false,
-    colorValue: false,
-    colors: ['#299c46', 'rgba(237, 129, 40, 0.89)', '#d44a3a'],
-    sparkline: {
-      show: false,
-      full: false,
-      lineColor: 'rgb(31, 120, 193)',
-      fillColor: 'rgba(31, 118, 189, 0.18)',
-    },
-    gauge: {
-      show: false,
-      minValue: 0,
-      maxValue: 100,
-      thresholdMarkers: true,
-      thresholdLabels: false,
-    },
-    tableColumn: '',
-  };
-
   /** @ngInject */
   constructor($scope, $injector, private linkSrv) {
     super($scope, $injector);
-    _.defaults(this.panel, this.panelDefaults);
+
+    this.panel.applyDefaults(panelDefaults);
 
     this.events.on('data-received', this.onDataReceived.bind(this));
     this.events.on('data-error', this.onDataError.bind(this));
@@ -728,5 +688,46 @@ function getColorForValue(data, value) {
 
   return _.first(data.colorMap);
 }
+
+// Set and populate defaults
+const panelDefaults = {
+  links: [],
+  datasource: null,
+  maxDataPoints: 100,
+  interval: null,
+  targets: [{}],
+  cacheTimeout: null,
+  format: 'none',
+  prefix: '',
+  postfix: '',
+  nullText: null,
+  valueMaps: [{ value: 'null', op: '=', text: 'N/A' }],
+  mappingTypes: [{ name: 'value to text', value: 1 }, { name: 'range to text', value: 2 }],
+  rangeMaps: [{ from: 'null', to: 'null', text: 'N/A' }],
+  mappingType: 1,
+  nullPointMode: 'connected',
+  valueName: 'avg',
+  prefixFontSize: '50%',
+  valueFontSize: '80%',
+  postfixFontSize: '50%',
+  thresholds: '',
+  colorBackground: false,
+  colorValue: false,
+  colors: ['#299c46', 'rgba(237, 129, 40, 0.89)', '#d44a3a'],
+  sparkline: {
+    show: false,
+    full: false,
+    lineColor: 'rgb(31, 120, 193)',
+    fillColor: 'rgba(31, 118, 189, 0.18)',
+  },
+  gauge: {
+    show: false,
+    minValue: 0,
+    maxValue: 100,
+    thresholdMarkers: true,
+    thresholdLabels: false,
+  },
+  tableColumn: '',
+};
 
 export { SingleStatCtrl, SingleStatCtrl as PanelCtrl, getColorForValue };
