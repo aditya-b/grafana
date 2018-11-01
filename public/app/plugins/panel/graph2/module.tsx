@@ -49,3 +49,4 @@ export class TextOptions extends PureComponent<any> {
 }
 
 export { Graph2 as PanelComponent, TextOptions as PanelOptions };
+export { withMenuOptions } from './withMenuOptions';
