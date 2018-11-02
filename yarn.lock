@@ -10954,7 +10954,7 @@ promzard@^0.3.0:
   dependencies:
     read "1"
 
-prop-types@15.x, prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2:
+prop-types@15.x, prop-types@^15.5.10, prop-types@^15.5.4, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2:
   version "15.6.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.2.tgz#05d5ca77b4453e985d60fc7ff8c859094a497102"
   integrity sha512-3pboPvLiWD7dkI3qf3KbUe6hKFKa52w+AE0VCqECtf+QHAKgOL37tTaNCnuX1nAAQ4ZhyP+kYVKf8rLmJ/feDQ==
@@ -11215,7 +11215,29 @@ rc-cascader@^0.14.0:
     shallow-equal "^1.0.0"
     warning "^4.0.1"
 
-rc-trigger@^2.2.0:
+rc-slider@^8.6.3:
+  version "8.6.3"
+  resolved "https://registry.yarnpkg.com/rc-slider/-/rc-slider-8.6.3.tgz#1ca0e0bd2863252741de75e7bf8c9f2cfcffccb7"
+  integrity sha512-kQaq3SJdb5EifYZxvMDotgClOJKIuAiidFr67hxNEeBv0GwUcwAToYmSWrP0B2ZCb5IYlr2csyiH0+xNomLDoA==
+  dependencies:
+    babel-runtime "6.x"
+    classnames "^2.2.5"
+    prop-types "^15.5.4"
+    rc-tooltip "^3.7.0"
+    rc-util "^4.0.4"
+    shallowequal "^1.0.1"
+    warning "^3.0.0"
+
+rc-tooltip@^3.7.0:
+  version "3.7.3"
+  resolved "https://registry.yarnpkg.com/rc-tooltip/-/rc-tooltip-3.7.3.tgz#280aec6afcaa44e8dff0480fbaff9e87fc00aecc"
+  integrity sha512-dE2ibukxxkrde7wH9W8ozHKUO4aQnPZ6qBHtrTH9LoO836PjDdiaWO73fgPB05VfJs9FbZdmGPVEbXCeOP99Ww==
+  dependencies:
+    babel-runtime "6.x"
+    prop-types "^15.5.8"
+    rc-trigger "^2.2.2"
+
+rc-trigger@^2.2.0, rc-trigger@^2.2.2:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/rc-trigger/-/rc-trigger-2.6.2.tgz#a9c09ba5fad63af3b2ec46349c7db6cb46657001"
   integrity sha512-op4xCu95/gdHVaysyxxiYxbY+Z+UcIBSUY9nQfLqm1FlitdtnAN+owD5iMPfnnsRXntgcQ5+RdYKNUFQT5DjzA==
@@ -12420,7 +12442,7 @@ shallowequal@^0.2.2:
   dependencies:
     lodash.keys "^3.1.2"
 
-shallowequal@^1.0.2:
+shallowequal@^1.0.1, shallowequal@^1.0.2:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/shallowequal/-/shallowequal-1.1.0.tgz#188d521de95b9087404fd4dcb68b13df0ae4e7f8"
   integrity sha512-y0m1JoUZSlPAjXVtPPW70aZWfIL/dSP7AFkRnniLCrK/8MDKog3TySTBmckD+RObVxH0v4Tox67+F14PdED2oQ==
@@ -14093,6 +14115,13 @@ walker@~1.0.5:
   integrity sha1-L3+bj9ENZ3JisYqITijRlhjgKPs=
   dependencies:
     makeerror "1.0.x"
+
+warning@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/warning/-/warning-3.0.0.tgz#32e5377cb572de4ab04753bdf8821c01ed605b7c"
+  integrity sha1-MuU3fLVy3kqwR1O9+IIcAe1gW3w=
+  dependencies:
+    loose-envify "^1.0.0"
 
 warning@^4.0.1:
   version "4.0.2"
