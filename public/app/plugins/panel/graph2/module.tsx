@@ -20,6 +20,12 @@ interface Props extends PanelProps {
   options: Options;
 }
 
+interface State {
+  fill: number;
+  lineWidth: number;
+  pointRadius: number;
+}
+
 export class Graph2 extends PureComponent<Props> {
   constructor(props) {
     super(props);
@@ -37,8 +43,44 @@ export class Graph2 extends PureComponent<Props> {
   }
 }
 
-export class TextOptions extends PureComponent<any> {
+export class TextOptions extends PureComponent<any, State> {
+  state = {
+    fill: 1,
+    lineWidth: 1,
+    pointRadius: 1,
+  };
+
+  onFillChange = value => this.setState({ fill: value });
+  onLineWidthChange = value => this.setState({ lineWidth: value });
+  onPointRadiusChange = value => this.setState({ pointRadius: value });
+
   onChange = () => {};
+
+  renderSlider(min, max, step, value, onChange) {
+    return (
+      <Slider
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={onChange}
+        dots={true}
+        className="width-15"
+        activeDotStyle={{
+          backgroundColor: '#ecbb13',
+        }}
+        dotStyle={{
+          border: 'none',
+        }}
+        trackStyle={{ backgroundColor: '#ecbb13' }}
+        handleStyle={{
+          border: 'none',
+          backgroundColor: '#eb7b18',
+        }}
+        railStyle={{ backgroundColor: 'white', width: '100%' }}
+      />
+    );
+  }
 
   render() {
     return (
@@ -49,25 +91,32 @@ export class TextOptions extends PureComponent<any> {
         </div>
         <div className="section gf-form-group">
           <h5 className="section-heading">Mode options</h5>
-          <div className="gf-form">
-            <Label width={5}>Fill</Label>
-            <Slider
-              min={1}
-              max={10}
-              step={1}
-              dots={true}
-              dotStyle={{
-                border: 'none',
-              }}
-              trackStyle={{ backgroundColor: 'orange', height: 2 }}
-              handleStyle={{
-                border: '1px solid red',
-                height: 15,
-                width: 15,
-                backgroundColor: 'white',
-              }}
-              railStyle={{ backgroundColor: 'white', height: 2 }}
-            />
+          <div style={{ marginBottom: '20px' }}>
+            <div className="gf-form" style={{ marginBottom: '10px' }}>
+              <Label width={11}>Fill</Label>
+              <input type="text" className="gf-form-input width-5" readOnly={true} value={this.state.fill} />
+            </div>
+            <div className="gf-form" style={{ display: 'flex', justifyContent: 'center' }}>
+              {this.renderSlider(1, 10, 1, this.state.fill, this.onFillChange)}
+            </div>
+          </div>
+          <div style={{ marginBottom: '20px' }}>
+            <div className="gf-form" style={{ marginBottom: '10px' }}>
+              <Label width={11}>Line Width</Label>
+              <input type="text" className="gf-form-input width-5" readOnly={true} value={this.state.lineWidth} />
+            </div>
+            <div className="gf-form" style={{ display: 'flex', justifyContent: 'center' }}>
+              {this.renderSlider(1, 10, 1, this.state.lineWidth, this.onLineWidthChange)}
+            </div>
+          </div>
+          <div style={{ marginBottom: '20px' }}>
+            <div className="gf-form" style={{ marginBottom: '10px' }}>
+              <Label width={11}>Point Radius</Label>
+              <input type="text" className="gf-form-input width-5" readOnly={true} value={this.state.pointRadius} />
+            </div>
+            <div className="gf-form" style={{ display: 'flex', justifyContent: 'center' }}>
+              {this.renderSlider(1, 10, 1, this.state.pointRadius, this.onPointRadiusChange)}
+            </div>
           </div>
         </div>
       </div>
