@@ -14,6 +14,9 @@ interface GraphProps {
   showLines?: boolean;
   showPoints?: boolean;
   showBars?: boolean;
+  fill?: number;
+  lineWidth?: number;
+  pointRadius?: number;
   size?: { width: number; height: number };
 }
 
@@ -22,6 +25,9 @@ export class Graph extends PureComponent<GraphProps> {
     showLines: true,
     showPoints: false,
     showBars: false,
+    fill: 0,
+    lineWidth: 1,
+    pointRadius: 2,
   };
 
   element: any;
@@ -41,7 +47,7 @@ export class Graph extends PureComponent<GraphProps> {
   }
 
   draw() {
-    const { size, timeSeries, timeRange, showLines, showBars, showPoints } = this.props;
+    const { fill, lineWidth, pointRadius, size, timeSeries, timeRange, showLines, showBars, showPoints } = this.props;
 
     if (!size) {
       return;
@@ -58,14 +64,15 @@ export class Graph extends PureComponent<GraphProps> {
       series: {
         lines: {
           show: showLines,
-          linewidth: 1,
+          lineWidth: lineWidth,
           zero: false,
+          fill: fill / 10,
         },
         points: {
           show: showPoints,
           fill: 1,
           fillColor: false,
-          radius: 2,
+          radius: pointRadius,
         },
         bars: {
           show: showBars,

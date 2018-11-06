@@ -33,7 +33,7 @@ export class Graph2 extends PureComponent<Props> {
 
   render() {
     const { timeSeries, timeRange } = this.props;
-    const { showLines, showBars, showPoints } = this.props.options;
+    const { fill, lineWidth, pointRadius, showLines, showBars, showPoints } = this.props.options;
 
     const vmSeries = getTimeSeriesVMs({
       timeSeries: timeSeries,
@@ -42,6 +42,9 @@ export class Graph2 extends PureComponent<Props> {
 
     return (
       <Graph
+        fill={fill}
+        lineWidth={lineWidth}
+        pointRadius={pointRadius}
         timeSeries={vmSeries}
         timeRange={timeRange}
         showLines={showLines}
