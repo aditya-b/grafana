@@ -1,7 +1,7 @@
 // Libraries
 import _ from 'lodash';
 import React, { PureComponent } from 'react';
-import Slider from 'rc-slider';
+import Slider, { createSliderWithTooltip } from 'rc-slider';
 
 // Components
 import Graph from 'app/viz/Graph';
@@ -11,6 +11,8 @@ import { Switch } from 'app/core/components/Switch/Switch';
 // Types
 import { PanelProps, NullValueMode } from 'app/types';
 import { Label } from '../../../core/components/Label/Label';
+
+const SliderWithTooltip = createSliderWithTooltip(Slider);
 
 interface Options {
   showBars: boolean;
@@ -56,29 +58,42 @@ export class TextOptions extends PureComponent<any, State> {
 
   onChange = () => {};
 
-  renderSlider(min, max, step, value, onChange) {
+  renderSlider(value, onChange) {
     return (
-      <Slider
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={onChange}
-        dots={true}
-        className="width-15"
-        activeDotStyle={{
-          backgroundColor: '#ecbb13',
+      <div
+        className="width-10"
+        style={{
+          padding: '0 10px',
+          height: '36px',
+          display: 'flex',
+          alignItems: 'center',
+          border: '1px solid #262626',
         }}
-        dotStyle={{
-          border: 'none',
-        }}
-        trackStyle={{ backgroundColor: '#ecbb13' }}
-        handleStyle={{
-          border: 'none',
-          backgroundColor: '#eb7b18',
-        }}
-        railStyle={{ backgroundColor: 'white', width: '100%' }}
-      />
+      >
+        <SliderWithTooltip
+          min={0}
+          max={10}
+          step={1}
+          value={value}
+          onChange={onChange}
+          activeDotStyle={{
+            backgroundColor: '#ecbb13',
+          }}
+          dotStyle={{
+            border: 'none',
+          }}
+          trackStyle={{ backgroundColor: '#ecbb13' }}
+          handleStyle={{
+            border: 'none',
+            backgroundColor: '#eb7b18',
+            width: '20px',
+            height: '20px',
+            marginTop: '-8px',
+          }}
+          railStyle={{ backgroundColor: 'white', width: '100%' }}
+          tipFormatter={v => v}
+        />
+      </div>
     );
   }
 
@@ -93,29 +108,20 @@ export class TextOptions extends PureComponent<any, State> {
           <h5 className="section-heading">Mode options</h5>
           <div style={{ marginBottom: '20px' }}>
             <div className="gf-form" style={{ marginBottom: '10px' }}>
-              <Label width={11}>Fill</Label>
-              <input type="text" className="gf-form-input width-5" readOnly={true} value={this.state.fill} />
-            </div>
-            <div className="gf-form" style={{ display: 'flex', justifyContent: 'center' }}>
-              {this.renderSlider(1, 10, 1, this.state.fill, this.onFillChange)}
+              <Label width={7}>Fill</Label>
+              {this.renderSlider(this.state.fill, this.onFillChange)}
             </div>
           </div>
           <div style={{ marginBottom: '20px' }}>
             <div className="gf-form" style={{ marginBottom: '10px' }}>
-              <Label width={11}>Line Width</Label>
-              <input type="text" className="gf-form-input width-5" readOnly={true} value={this.state.lineWidth} />
-            </div>
-            <div className="gf-form" style={{ display: 'flex', justifyContent: 'center' }}>
-              {this.renderSlider(1, 10, 1, this.state.lineWidth, this.onLineWidthChange)}
+              <Label width={7}>Line Width</Label>
+              {this.renderSlider(this.state.lineWidth, this.onLineWidthChange)}
             </div>
           </div>
           <div style={{ marginBottom: '20px' }}>
             <div className="gf-form" style={{ marginBottom: '10px' }}>
-              <Label width={11}>Point Radius</Label>
-              <input type="text" className="gf-form-input width-5" readOnly={true} value={this.state.pointRadius} />
-            </div>
-            <div className="gf-form" style={{ display: 'flex', justifyContent: 'center' }}>
-              {this.renderSlider(1, 10, 1, this.state.pointRadius, this.onPointRadiusChange)}
+              <Label width={7}>Point Radius</Label>
+              {this.renderSlider(this.state.pointRadius, this.onPointRadiusChange)}
             </div>
           </div>
         </div>
