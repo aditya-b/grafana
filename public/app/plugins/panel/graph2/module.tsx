@@ -1,32 +1,30 @@
-// Libraries
 import _ from 'lodash';
 import React, { PureComponent } from 'react';
 import Slider, { createSliderWithTooltip } from 'rc-slider';
 
-// Components
 import Graph from 'app/viz/Graph';
-import { getTimeSeriesVMs } from 'app/viz/state/timeSeries';
 import { Switch } from 'app/core/components/Switch/Switch';
 
 // Types
-import { PanelProps, NullValueMode } from 'app/types';
 import { Label } from '../../../core/components/Label/Label';
+
+import { getTimeSeriesVMs } from 'app/viz/state/timeSeries';
+import { PanelProps, PanelOptionsProps, NullValueMode } from 'app/types';
 
 const SliderWithTooltip = createSliderWithTooltip(Slider);
 
 interface Options {
   showBars: boolean;
-}
-
-interface Props extends PanelProps {
-  options: Options;
-}
-
-interface State {
+  showLines: boolean;
+  showPoints: boolean;
   fill: number;
   lineWidth: number;
   pointRadius: number;
+
+  onChange: (options: Options) => void;
 }
+
+interface Props extends PanelProps<Options> {}
 
 export class Graph2 extends PureComponent<Props> {
   constructor(props) {
@@ -35,28 +33,49 @@ export class Graph2 extends PureComponent<Props> {
 
   render() {
     const { timeSeries, timeRange } = this.props;
+    const { showLines, showBars, showPoints } = this.props.options;
 
     const vmSeries = getTimeSeriesVMs({
       timeSeries: timeSeries,
       nullValueMode: NullValueMode.Ignore,
     });
 
-    return <Graph timeSeries={vmSeries} timeRange={timeRange} />;
+    return (
+      <Graph
+        timeSeries={vmSeries}
+        timeRange={timeRange}
+        showLines={showLines}
+        showPoints={showPoints}
+        showBars={showBars}
+      />
+    );
   }
 }
 
-export class TextOptions extends PureComponent<any, State> {
-  state = {
-    fill: 1,
-    lineWidth: 1,
-    pointRadius: 1,
+export class GraphOptions extends PureComponent<PanelOptionsProps<Options>> {
+  onToggleLines = () => {
+    this.props.onChange({ ...this.props.options, showLines: !this.props.options.showLines });
   };
 
-  onFillChange = value => this.setState({ fill: value });
-  onLineWidthChange = value => this.setState({ lineWidth: value });
-  onPointRadiusChange = value => this.setState({ pointRadius: value });
+  onToggleBars = () => {
+    this.props.onChange({ ...this.props.options, showBars: !this.props.options.showBars });
+  };
 
-  onChange = () => {};
+  onTogglePoints = () => {
+    this.props.onChange({ ...this.props.options, showPoints: !this.props.options.showPoints });
+  };
+
+  onFillChange = value => {
+    this.props.onChange({ ...this.props.options, fill: value });
+  };
+
+  onLineWidthChange = value => {
+    this.props.onChange({ ...this.props.options, lineWidth: value });
+  };
+
+  onPointRadiusChange = value => {
+    this.props.onChange({ ...this.props.options, pointRadius: value });
+  };
 
   renderSlider(value, onChange) {
     return (
@@ -98,30 +117,34 @@ export class TextOptions extends PureComponent<any, State> {
   }
 
   render() {
+    const { fill, lineWidth, pointRadius, showBars, showPoints, showLines } = this.props.options;
+
     return (
       <div>
         <div className="section gf-form-group">
           <h5 className="section-heading">Draw Modes</h5>
-          <Switch label="Lines" checked={true} onChange={this.onChange} />
+          <Switch label="Lines" labelClass="width-5" checked={showLines} onChange={this.onToggleLines} />
+          <Switch label="Bars" labelClass="width-5" checked={showBars} onChange={this.onToggleBars} />
+          <Switch label="Points" labelClass="width-5" checked={showPoints} onChange={this.onTogglePoints} />
         </div>
         <div className="section gf-form-group">
           <h5 className="section-heading">Mode options</h5>
           <div style={{ marginBottom: '20px' }}>
             <div className="gf-form" style={{ marginBottom: '10px' }}>
               <Label width={7}>Fill</Label>
-              {this.renderSlider(this.state.fill, this.onFillChange)}
+              {this.renderSlider(fill, this.onFillChange)}
             </div>
           </div>
           <div style={{ marginBottom: '20px' }}>
             <div className="gf-form" style={{ marginBottom: '10px' }}>
               <Label width={7}>Line Width</Label>
-              {this.renderSlider(this.state.lineWidth, this.onLineWidthChange)}
+              {this.renderSlider(lineWidth, this.onLineWidthChange)}
             </div>
           </div>
           <div style={{ marginBottom: '20px' }}>
             <div className="gf-form" style={{ marginBottom: '10px' }}>
               <Label width={7}>Point Radius</Label>
-              {this.renderSlider(this.state.pointRadius, this.onPointRadiusChange)}
+              {this.renderSlider(pointRadius, this.onPointRadiusChange)}
             </div>
           </div>
         </div>
@@ -130,4 +153,4 @@ export class TextOptions extends PureComponent<any, State> {
   }
 }
 
-export { Graph2 as PanelComponent, TextOptions as PanelOptions };
+export { Graph2 as PanelComponent, GraphOptions as PanelOptionsComponent };
