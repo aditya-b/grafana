@@ -10,8 +10,6 @@ import { Switch } from 'app/core/components/Switch/Switch';
 // Types
 import { PanelProps, NullValueMode } from 'app/types';
 
-// import { moduleMenu } from './moduleMenu';
-
 interface Options {
   showBars: boolean;
 }
@@ -51,4 +49,4 @@ export class TextOptions extends PureComponent<any> {
 }
 
 export { Graph2 as PanelComponent, TextOptions as PanelOptions };
-export { moduleMenu } from './moduleMenu';
+export { getMenuAdditional } from './moduleMenu';

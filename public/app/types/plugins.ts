@@ -1,3 +1,5 @@
+import { PanelHeaderGetMenuAdditional } from 'app/types/panel';
+
 export interface PluginExports {
   PanelCtrl?;
   PanelComponent?: any;
@@ -8,7 +10,7 @@ export interface PluginExports {
   PanelOptions?: any;
   ExploreQueryField?: any;
   ExploreStartPage?: any;
-  moduleMenu?: any;
+  getMenuAdditional?: PanelHeaderGetMenuAdditional;
 }
 
 export interface PanelPlugin {
