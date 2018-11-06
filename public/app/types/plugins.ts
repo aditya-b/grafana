@@ -8,7 +8,6 @@ export interface PluginExports {
   PanelOptions?: any;
   ExploreQueryField?: any;
   ExploreStartPage?: any;
-  withMenuOptions?: any;
   moduleMenu?: any;
 }
 
