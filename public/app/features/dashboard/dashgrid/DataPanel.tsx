@@ -2,23 +2,30 @@
 import React, { Component } from 'react';
 
 // Services
-import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
+import DatasourceSrv, { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
+import { getTimeSrv, TimeSrv } from '../time_srv';
 
 // Types
 import { TimeRange, LoadingState, DataQueryOptions, DataQueryResponse, TimeSeries } from 'app/types';
+import { PanelModel } from '../panel_model';
+import { DataSourceApi } from 'app/types/series';
+
+// Utils
+import { applyPanelTimeOverrides, getResolution, calculateInterval } from 'app/features/dashboard/utils/panel';
 
 interface RenderProps {
   loading: LoadingState;
   timeSeries: TimeSeries[];
+  timeRange: TimeRange;
 }
 
 export interface Props {
   datasource: string | null;
   queries: any[];
   panelId?: number;
+  panel: PanelModel;
   dashboardId?: number;
   isVisible?: boolean;
-  timeRange?: TimeRange;
   refreshCounter: number;
   children: (r: RenderProps) => JSX.Element;
 }
@@ -27,9 +34,20 @@ export interface State {
   isFirstLoad: boolean;
   loading: LoadingState;
   response: DataQueryResponse;
+  dataSourceApi: DataSourceApi;
+  resolution?: number;
+  timeInfo?: string;
+  timeRange?: TimeRange;
+  interval?: {
+    interval: string;
+    intervalMs: number;
+  };
 }
 
 export class DataPanel extends Component<Props, State> {
+  timeSrv: TimeSrv = getTimeSrv();
+  dataSourceSrv: DatasourceSrv = getDatasourceSrv();
+
   static defaultProps = {
     isVisible: true,
     panelId: 1,
@@ -45,11 +63,18 @@ export class DataPanel extends Component<Props, State> {
         data: [],
       },
       isFirstLoad: true,
+      dataSourceApi: undefined,
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     console.log('DataPanel mount');
+    this.props.panel.events.on('refresh', this.onRefresh);
+    const dataSourceApi = await this.getDataSourceApi();
+    this.setState(prevState => ({
+      ...prevState,
+      dataSourceApi,
+    }));
   }
 
   async componentDidUpdate(prevProps: Props) {
@@ -60,14 +85,45 @@ export class DataPanel extends Component<Props, State> {
     this.issueQueries();
   }
 
+  componentWillUnmount() {
+    this.props.panel.events.off('refresh', this.onRefresh);
+  }
+
+  async getDataSourceApi() {
+    const { datasource } = this.props;
+    return await this.dataSourceSrv.get(datasource);
+  }
+
+  onRefresh = () => {
+    console.log('onRefresh');
+    const { isVisible, panel } = this.props;
+    const { dataSourceApi } = this.state;
+    if (!isVisible) {
+      return;
+    }
+
+    const timeRange = this.timeSrv.timeRange();
+    const timeData = applyPanelTimeOverrides(panel, timeRange);
+    const resolution = getResolution(panel);
+    const interval = calculateInterval(panel, dataSourceApi, timeData.timeRange, resolution);
+
+    this.setState(prevState => ({
+      ...prevState,
+      interval,
+      resolution,
+      ...timeData,
+    }));
+  };
+
   hasPropsChanged(prevProps: Props) {
     return this.props.refreshCounter !== prevProps.refreshCounter || this.props.isVisible !== prevProps.isVisible;
   }
 
   issueQueries = async () => {
-    const { isVisible, queries, datasource, panelId, dashboardId, timeRange } = this.props;
+    const { isVisible, queries, panelId, dashboardId } = this.props;
+    const { dataSourceApi, timeRange, interval, resolution } = this.state;
 
-    if (!isVisible) {
+    if (!isVisible || !dataSourceApi) {
       return;
     }
 
@@ -77,26 +133,22 @@ export class DataPanel extends Component<Props, State> {
     }
 
     this.setState({ loading: LoadingState.Loading });
-
     try {
-      const dataSourceSrv = getDatasourceSrv();
-      const ds = await dataSourceSrv.get(datasource);
       const queryOptions: DataQueryOptions = {
         timezone: 'browser',
         panelId: panelId,
         dashboardId: dashboardId,
         range: timeRange,
         rangeRaw: timeRange.raw,
-        interval: '1s',
-        intervalMs: 60000,
+        interval: interval.interval,
+        intervalMs: interval.intervalMs,
         targets: queries,
-        maxDataPoints: 500,
+        maxDataPoints: resolution,
         scopedVars: {},
         cacheTimeout: null,
       };
-
       console.log('Issuing DataPanel query', queryOptions);
-      const resp = await ds.query(queryOptions);
+      const resp = await dataSourceApi.query(queryOptions);
       console.log('Issuing DataPanel query Resp', resp);
 
       this.setState({
@@ -111,7 +163,7 @@ export class DataPanel extends Component<Props, State> {
   };
 
   render() {
-    const { response, loading, isFirstLoad } = this.state;
+    const { response, loading, isFirstLoad, timeRange } = this.state;
     console.log('data panel render');
     const timeSeries = response.data;
 
@@ -129,6 +181,7 @@ export class DataPanel extends Component<Props, State> {
         {this.props.children({
           timeSeries,
           loading,
+          timeRange,
         })}
       </>
     );

@@ -9,12 +9,12 @@ import { PanelHeader } from './PanelHeader/PanelHeader';
 import { DataPanel } from './DataPanel';
 
 // Utils
-import { applyPanelTimeOverrides, getResolution, calculateInterval } from 'app/features/dashboard/utils/panel';
+// import { applyPanelTimeOverrides, getResolution, calculateInterval } from 'app/features/dashboard/utils/panel';
 
 // Types
 import { PanelModel } from '../panel_model';
 import { DashboardModel } from '../dashboard_model';
-import { TimeRange, PanelProps } from 'app/types';
+import { PanelProps } from 'app/types';
 
 export interface Props {
   panel: PanelModel;
@@ -26,11 +26,11 @@ export interface State {
   refreshCounter: number;
   renderCounter: number;
   timeInfo: string;
-  timeRange: TimeRange;
-  interval: {
-    interval: string;
-    intervalMs: number;
-  };
+  // timeRange: TimeRange;
+  // interval: {
+  //   interval: string;
+  //   intervalMs: number;
+  // };
 }
 
 export class PanelChrome extends PureComponent<Props, State> {
@@ -43,43 +43,43 @@ export class PanelChrome extends PureComponent<Props, State> {
       refreshCounter: 0,
       renderCounter: 0,
       timeInfo: '',
-      timeRange: this.timeSrv.timeRange(),
-      interval: {
-        interval: undefined,
-        intervalMs: undefined,
-      },
+      // timeRange: this.timeSrv.timeRange(),
+      // interval: {
+      //   interval: undefined,
+      //   intervalMs: undefined,
+      // },
     };
   }
 
   componentDidMount() {
-    this.props.panel.events.on('refresh', this.onRefresh);
+    // this.props.panel.events.on('refresh', this.onRefresh);
     this.props.panel.events.on('render', this.onRender);
     this.props.dashboard.panelInitialized(this.props.panel);
   }
 
   componentWillUnmount() {
-    this.props.panel.events.off('refresh', this.onRefresh);
+    // this.props.panel.events.off('refresh', this.onRefresh);
   }
 
-  onRefresh = () => {
-    console.log('onRefresh');
-    if (!this.isVisible) {
-      return;
-    }
+  // onRefresh = () => {
+  //   console.log('onRefresh');
+  //   if (!this.isVisible) {
+  //     return;
+  //   }
 
-    const { panel } = this.props;
-    const timeRange = this.timeSrv.timeRange();
-    const timeData = applyPanelTimeOverrides(panel, timeRange);
-    const resolution = getResolution(panel);
-    const interval = calculateInterval(panel, panel.datasource, timeData.timeRange, resolution);
+  //   const { panel } = this.props;
+  //   const timeRange = this.timeSrv.timeRange();
+  //   const timeData = applyPanelTimeOverrides(panel, timeRange);
+  //   const resolution = getResolution(panel);
+  //   const interval = calculateInterval(panel, panel.datasource, timeData.timeRange, resolution); // We need the datasource from DataPanel somehow
 
-    this.setState(prevState => ({
-      ...prevState,
-      refreshCounter: this.state.refreshCounter + 1,
-      interval,
-      ...timeData,
-    }));
-  };
+  //   this.setState(prevState => ({
+  //     ...prevState,
+  //     refreshCounter: this.state.refreshCounter + 1,
+  //     interval,
+  //     ...timeData,
+  //   }));
+  // };
 
   onRender = () => {
     console.log('onRender');
@@ -95,8 +95,7 @@ export class PanelChrome extends PureComponent<Props, State> {
 
   render() {
     const { panel, dashboard } = this.props;
-    const { refreshCounter, timeRange, timeInfo, renderCounter } = this.state;
-
+    const { refreshCounter, timeInfo, renderCounter } = this.state;
     const { datasource, targets } = panel;
     const PanelComponent = this.props.component;
 
@@ -108,11 +107,11 @@ export class PanelChrome extends PureComponent<Props, State> {
           <DataPanel
             datasource={datasource}
             queries={targets}
-            timeRange={timeRange}
             isVisible={this.isVisible}
             refreshCounter={refreshCounter}
+            panel={panel}
           >
-            {({ loading, timeSeries }) => {
+            {({ loading, timeSeries, timeRange }) => {
               console.log('panelcrome inner render');
               return (
                 <PanelComponent
