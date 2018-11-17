@@ -12,10 +12,11 @@ export default class Panel extends PureComponent<Props> {
 
   render() {
     const { isOpen, loading } = this.props;
+    const rootClass = isOpen ? 'explore-panel explore-panel--open panel-container' : 'explore-panel panel-container';
     const iconClass = isOpen ? 'fa fa-caret-up' : 'fa fa-caret-down';
     const loaderClass = loading ? 'explore-panel__loader explore-panel__loader--active' : 'explore-panel__loader';
     return (
-      <div className="explore-panel panel-container">
+      <div className={rootClass}>
         <div className="explore-panel__header" onClick={this.onClickToggle}>
           <div className="explore-panel__header-buttons">
             <span className={iconClass} />

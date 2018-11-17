@@ -20,6 +20,24 @@
 
   .explore-panel {
     margin-top: $panel-margin;
+    position: relative;
+    transition: all 0.1s ease-out;
+    // Needed for absolutely positioned panel header label
+    min-height: 30px;
+  }
+
+  .explore-panel--open {
+    margin-top: 3 * $panel-margin;
+    // Needed for animation, needs to be lower than any of the Explore panel heights
+    min-height: 150px;
+
+    .explore-panel__header {
+      transform: translateY(-27px);
+    }
+    .explore-panel__header-label,
+    .explore-panel__header-buttons {
+      transform: scale(0.8);
+    }
   }
 
   .explore-panel__body {
@@ -27,28 +45,30 @@
   }
 
   .explore-panel__header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 30px;
+    width: 100%;
+    transform: translateY(0);
     padding: $panel-padding;
     padding-top: 5px;
     padding-bottom: 0;
     display: flex;
     cursor: pointer;
     margin-bottom: 5px;
-    transition: all 0.1s linear;
-  }
-
-  .explore-panel__header:hover {
-    transform: translateY(-1px);
+    transition: transform 0.1s linear, top 0.1s ease-out;
   }
 
   .explore-panel__header-label {
     font-weight: 500;
-    margin-right: $panel-margin;
     font-size: $font-size-h6;
     box-shadow: $text-shadow-faint;
+    text-transform: uppercase;
   }
 
   .explore-panel__header-buttons {
-    margin-right: $panel-margin;
+    margin-right: 0.5em;
     font-size: $font-size-lg;
     line-height: $font-size-h6;
   }
