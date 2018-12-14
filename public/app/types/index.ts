@@ -19,10 +19,11 @@ import {
   DataQuery,
   DataQueryResponse,
   DataQueryOptions,
+  IntervalValues,
 } from './series';
 import { PanelProps, PanelOptionsProps } from './panel';
 import { PluginDashboard, PluginMeta, Plugin, PluginsState } from './plugins';
-import { Organization, OrganizationPreferences, OrganizationState } from './organization';
+import { Organization, OrganizationState } from './organization';
 import {
   AppNotification,
   AppNotificationSeverity,
@@ -81,13 +82,13 @@ export {
   PluginDashboard,
   Organization,
   OrganizationState,
-  OrganizationPreferences,
   AppNotification,
   AppNotificationsState,
   AppNotificationSeverity,
   AppNotificationTimeout,
   DashboardSearchHit,
   UserState,
+  IntervalValues,
 };
 
 export interface StoreState {

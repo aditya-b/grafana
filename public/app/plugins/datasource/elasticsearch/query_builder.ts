@@ -72,6 +72,10 @@ export class ElasticQueryBuilder {
     esAgg.extended_bounds = { min: '$timeFrom', max: '$timeTo' };
     esAgg.format = 'epoch_millis';
 
+    if (settings.offset !== '') {
+      esAgg.offset = settings.offset;
+    }
+
     if (esAgg.interval === 'auto') {
       esAgg.interval = '$__interval';
     }
@@ -181,8 +185,8 @@ export class ElasticQueryBuilder {
 
   build(target, adhocFilters?, queryString?) {
     // make sure query has defaults;
-    target.metrics = target.metrics || [{ type: 'count', id: '1' }];
-    target.bucketAggs = target.bucketAggs || [{ type: 'date_histogram', id: '2', settings: { interval: 'auto' } }];
+    target.metrics = target.metrics || [queryDef.defaultMetricAgg()];
+    target.bucketAggs = target.bucketAggs || [queryDef.defaultBucketAgg()];
     target.timeField = this.timeField;
 
     let i, nestedAggs, metric;
@@ -266,7 +270,14 @@ export class ElasticQueryBuilder {
 
       if (queryDef.isPipelineAgg(metric.type)) {
         if (metric.pipelineAgg && /^\d*$/.test(metric.pipelineAgg)) {
-          metricAgg = { buckets_path: metric.pipelineAgg };
+          const appliedAgg = queryDef.findMetricById(target.metrics, metric.pipelineAgg);
+          if (appliedAgg) {
+            if (appliedAgg.type === 'count') {
+              metricAgg = { buckets_path: '_count' };
+            } else {
+              metricAgg = { buckets_path: metric.pipelineAgg };
+            }
+          }
         } else {
           continue;
         }

@@ -1,4 +1,5 @@
 import { Moment } from 'moment';
+import { PluginMeta } from './plugins';
 
 export enum LoadingState {
   NotStarted = 'NotStarted',
@@ -16,6 +17,11 @@ export interface TimeRange {
   from: Moment;
   to: Moment;
   raw: RawTimeRange;
+}
+
+export interface IntervalValues {
+  interval: string; // 10s,5m
+  intervalMs: number;
 }
 
 export type TimeSeriesValue = string | number | null;
@@ -70,6 +76,7 @@ export interface DataQueryResponse {
 
 export interface DataQuery {
   refId: string;
+  [key: string]: any;
 }
 
 export interface DataQueryOptions {
@@ -87,5 +94,27 @@ export interface DataQueryOptions {
 }
 
 export interface DataSourceApi {
+  /**
+   *  min interval range
+   */
+  interval?: string;
+
+  /**
+   * Imports queries from a different datasource
+   */
+  importQueries?(queries: DataQuery[], originMeta: PluginMeta): Promise<DataQuery[]>;
+  /**
+   * Initializes a datasource after instantiation
+   */
+  init?: () => void;
+
+  /**
+   *  Main data query method
+   */
   query(options: DataQueryOptions): Promise<DataQueryResponse>;
+
+  /**
+   *  test data source
+   */
+  testDatasource?: () => Promise<any>;
 }
