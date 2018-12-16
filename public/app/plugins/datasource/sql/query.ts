@@ -1,3 +1,4 @@
+import _ from 'lodash';
 export default abstract class SqlQuery {
   target: any;
   templateSrv: any;
@@ -26,10 +27,10 @@ export default abstract class SqlQuery {
         target.rawQuery = false;
       }
     }
-
-    // give interpolateQueryStr access to this
-    this.interpolateQueryStr = this.interpolateQueryStr.bind(this);
   }
+
+  abstract hasUnixEpochTimecolumn(): boolean;
+  abstract buildValueColumn(column): string;
 
   // remove identifier quoting from identifier to use in metadata queries
   unquoteIdentifier(value) {
@@ -60,7 +61,7 @@ export default abstract class SqlQuery {
     return this.target.metricColumn !== 'none';
   }
 
-  interpolateQueryStr(value, variable, defaultFormatFn) {
+  interpolateQueryStr = (value, variable, defaultFormatFn) => {
     // if no multi or include all do not regexEscape
     if (!variable.multi && !variable.includeAll) {
       return this.escapeLiteral(value);
@@ -72,7 +73,7 @@ export default abstract class SqlQuery {
 
     const escapedValues = _.map(value, this.quoteLiteral);
     return escapedValues.join(',');
-  }
+  };
 
   render(interpolate?) {
     const target = this.target;
@@ -92,8 +93,6 @@ export default abstract class SqlQuery {
       return target.rawSql;
     }
   }
-
-  abstract hasUnixEpochTimecolumn(): boolean;
 
   buildTimeColumn(alias = true) {
     const timeGroup = this.hasTimeGroup();
@@ -140,8 +139,6 @@ export default abstract class SqlQuery {
 
     return query;
   }
-
-  abstract buildValueColumn(column): string;
 
   buildWhereClause() {
     let query = '';

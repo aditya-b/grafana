@@ -1,41 +1,25 @@
+import _ from 'lodash';
 import SqlQuery from './query';
 import ResponseParser from './response_parser';
 
-export abstract class SqlDatasource {
+export default abstract class SqlDatasource {
   id: any;
   name: any;
-  interval: string;
-  queryModel: SqlQuery;
+  jsonData: any;
   responseParser: ResponseParser;
+  queryModel: SqlQuery;
+  interval: string;
 
-  constructor(instanceSettings, private backendSrv, private $q, private templateSrv, private timeSrv) {
+  constructor(instanceSettings, protected backendSrv, protected $q, protected templateSrv, protected timeSrv) {
     this.name = instanceSettings.name;
     this.id = instanceSettings.id;
+    this.jsonData = instanceSettings.jsonData;
     this.responseParser = new ResponseParser(this.$q);
     this.interval = (instanceSettings.jsonData || {}).timeInterval;
     this.queryModel = this.createQueryModel({});
   }
 
   abstract createQueryModel(target, templateSrv?, scopedVars?): SqlQuery;
-
-  interpolateVariable = (value, variable) => {
-    if (typeof value === 'string') {
-      if (variable.multi || variable.includeAll) {
-        return this.queryModel.quoteLiteral(value);
-      } else {
-        return value;
-      }
-    }
-
-    if (typeof value === 'number') {
-      return value;
-    }
-
-    const quotedValues = _.map(value, v => {
-      return this.queryModel.quoteLiteral(v);
-    });
-    return quotedValues.join(',');
-  };
 
   query(options) {
     const queries = _.filter(options.targets, target => {
@@ -140,4 +124,23 @@ export abstract class SqlDatasource {
         }
       });
   }
+
+  interpolateVariable = (value, variable) => {
+    if (typeof value === 'string') {
+      if (variable.multi || variable.includeAll) {
+        return this.queryModel.quoteLiteral(value);
+      } else {
+        return value;
+      }
+    }
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    const quotedValues = _.map(value, v => {
+      return this.queryModel.quoteLiteral(v);
+    });
+    return quotedValues.join(',');
+  };
 }
