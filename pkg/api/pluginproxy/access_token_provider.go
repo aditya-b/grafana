@@ -46,7 +46,7 @@ type accessTokenProvider struct {
 type jwtToken struct {
 	ExpiresOn       time.Time `json:"-"`
 	ExpiresOnString string    `json:"expires_on"`
-	ExpiresInString string    `json:"expires_in"`
+	ExpiresIn       int64     `json:"expires_in"`
 	AccessToken     string    `json:"access_token"`
 }
 
@@ -102,8 +102,7 @@ func (provider *accessTokenProvider) getAccessToken(data templateData) (string, 
 		expiresOnEpoch, _ := strconv.ParseInt(token.ExpiresOnString, 10, 64)
 		token.ExpiresOn = time.Unix(expiresOnEpoch, 0)
 	} else {
-		expiresIn, _ := strconv.ParseInt(token.ExpiresInString, 10, 64)
-		token.ExpiresOn = time.Now().Add(time.Second * time.Duration(expiresIn))
+		token.ExpiresOn = time.Now().Add(time.Second * time.Duration(token.ExpiresIn))
 	}
 
 	tokenCache.cache[provider.getAccessTokenCacheKey()] = &token
