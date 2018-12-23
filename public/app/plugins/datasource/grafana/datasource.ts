@@ -4,7 +4,7 @@ import { candle } from './candle';
 
 class GrafanaDatasource {
   /** @ngInject */
-  constructor(private backendSrv, private $q) {}
+  constructor(private backendSrv, private $q, private templateSrv) {}
 
   query(options) {
     if (options.targets[0].name === 'candle') {
@@ -23,6 +23,7 @@ class GrafanaDatasource {
       to: options.range.to.valueOf(),
       limit: options.annotation.limit,
       tags: options.annotation.tags,
+      matchAny: options.annotation.matchAny,
     };
 
     if (options.annotation.type === 'dashboard') {
@@ -39,6 +40,14 @@ class GrafanaDatasource {
       if (!_.isArray(options.annotation.tags) || options.annotation.tags.length === 0) {
         return this.$q.when([]);
       }
+      const tags = [];
+      for (const t of params.tags) {
+        const renderedValues = this.templateSrv.replace(t, {}, 'pipe');
+        for (const tt of renderedValues.split('|')) {
+          tags.push(tt);
+        }
+      }
+      params.tags = tags;
     }
 
     return this.backendSrv.get('/api/annotations', params);

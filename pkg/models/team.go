@@ -7,8 +7,9 @@ import (
 
 // Typed errors
 var (
-	ErrTeamNotFound  = errors.New("Team not found")
-	ErrTeamNameTaken = errors.New("Team name is taken")
+	ErrTeamNotFound       = errors.New("Team not found")
+	ErrTeamNameTaken      = errors.New("Team name is taken")
+	ErrTeamMemberNotFound = errors.New("Team member not found")
 )
 
 // Team model
@@ -37,20 +38,24 @@ type UpdateTeamCommand struct {
 	Id    int64
 	Name  string
 	Email string
+	OrgId int64 `json:"-"`
 }
 
 type DeleteTeamCommand struct {
-	Id int64
+	OrgId int64
+	Id    int64
 }
 
 type GetTeamByIdQuery struct {
+	OrgId  int64
 	Id     int64
-	Result *Team
+	Result *TeamDTO
 }
 
 type GetTeamsByUserQuery struct {
-	UserId int64   `json:"userId"`
-	Result []*Team `json:"teams"`
+	OrgId  int64
+	UserId int64      `json:"userId"`
+	Result []*TeamDTO `json:"teams"`
 }
 
 type SearchTeamsQuery struct {
@@ -63,7 +68,7 @@ type SearchTeamsQuery struct {
 	Result SearchTeamQueryResult
 }
 
-type SearchTeamDto struct {
+type TeamDTO struct {
 	Id          int64  `json:"id"`
 	OrgId       int64  `json:"orgId"`
 	Name        string `json:"name"`
@@ -73,8 +78,8 @@ type SearchTeamDto struct {
 }
 
 type SearchTeamQueryResult struct {
-	TotalCount int64            `json:"totalCount"`
-	Teams      []*SearchTeamDto `json:"teams"`
-	Page       int              `json:"page"`
-	PerPage    int              `json:"perPage"`
+	TotalCount int64      `json:"totalCount"`
+	Teams      []*TeamDTO `json:"teams"`
+	Page       int        `json:"page"`
+	PerPage    int        `json:"perPage"`
 }

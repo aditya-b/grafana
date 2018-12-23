@@ -1,16 +1,28 @@
 import $ from 'jquery';
 import _ from 'lodash';
 
+import config from 'app/core/config';
 import coreModule from 'app/core/core_module';
 import appEvents from 'app/core/app_events';
+import { getExploreUrl } from 'app/core/utils/explore';
 
 import Mousetrap from 'mousetrap';
+import 'mousetrap-global-bind';
 
 export class KeybindingSrv {
   helpModal: boolean;
+  modalOpen = false;
+  timepickerOpen = false;
 
   /** @ngInject */
-  constructor(private $rootScope, private $location) {
+  constructor(
+    private $rootScope,
+    private $location,
+    private $timeout,
+    private datasourceSrv,
+    private timeSrv,
+    private contextSrv
+  ) {
     // clear out all shortcuts on route change
     $rootScope.$on('$routeChangeSuccess', () => {
       Mousetrap.reset();
@@ -19,6 +31,9 @@ export class KeybindingSrv {
     });
 
     this.setupGlobal();
+    appEvents.on('show-modal', () => (this.modalOpen = true));
+    appEvents.on('timepickerOpen', () => (this.timepickerOpen = true));
+    appEvents.on('timepickerClosed', () => (this.timepickerOpen = false));
   }
 
   setupGlobal() {
@@ -30,6 +45,7 @@ export class KeybindingSrv {
     this.bind('s o', this.openSearch);
     this.bind('s t', this.openSearchTags);
     this.bind('f', this.openSearch);
+    this.bindGlobal('esc', this.exit);
   }
 
   openSearchStarred() {
@@ -60,6 +76,43 @@ export class KeybindingSrv {
     appEvents.emit('show-modal', { templateHtml: '<help-modal></help-modal>' });
   }
 
+  exit() {
+    const popups = $('.popover.in');
+    if (popups.length > 0) {
+      return;
+    }
+
+    appEvents.emit('hide-modal');
+
+    if (this.modalOpen) {
+      this.modalOpen = false;
+      return;
+    }
+
+    if (this.timepickerOpen) {
+      this.$rootScope.appEvent('closeTimepicker');
+      this.timepickerOpen = false;
+      return;
+    }
+
+    // close settings view
+    const search = this.$location.search();
+    if (search.editview) {
+      delete search.editview;
+      this.$location.search(search);
+      return;
+    }
+
+    if (search.fullscreen) {
+      this.$rootScope.appEvent('panel-change-view', { fullscreen: false, edit: false });
+      return;
+    }
+
+    if (search.kiosk) {
+      this.$rootScope.appEvent('toggle-kiosk-mode', { exit: true });
+    }
+  }
+
   bind(keyArg, fn) {
     Mousetrap.bind(
       keyArg,
@@ -73,8 +126,21 @@ export class KeybindingSrv {
     );
   }
 
+  bindGlobal(keyArg, fn) {
+    Mousetrap.bindGlobal(
+      keyArg,
+      evt => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        evt.returnValue = false;
+        return this.$rootScope.$apply(fn.bind(this));
+      },
+      'keydown'
+    );
+  }
+
   showDashEditView() {
-    var search = _.extend(this.$location.search(), { editview: 'settings' });
+    const search = _.extend(this.$location.search(), { editview: 'settings' });
     this.$location.search(search);
   }
 
@@ -82,7 +148,7 @@ export class KeybindingSrv {
     this.bind('mod+o', () => {
       dashboard.graphTooltip = (dashboard.graphTooltip + 1) % 3;
       appEvents.emit('graph-hover-clear');
-      this.$rootScope.$broadcast('refresh');
+      dashboard.startRefresh();
     });
 
     this.bind('mod+s', e => {
@@ -129,20 +195,43 @@ export class KeybindingSrv {
       }
     });
 
+    // jump to explore if permissions allow
+    if (this.contextSrv.isEditor && config.exploreEnabled) {
+      this.bind('x', async () => {
+        if (dashboard.meta.focusPanelId) {
+          const panel = dashboard.getPanelById(dashboard.meta.focusPanelId);
+          const datasource = await this.datasourceSrv.get(panel.datasource);
+          const url = await getExploreUrl(panel, panel.targets, datasource, this.datasourceSrv, this.timeSrv);
+          if (url) {
+            this.$timeout(() => this.$location.url(url));
+          }
+        }
+      });
+    }
+
     // delete panel
     this.bind('p r', () => {
       if (dashboard.meta.focusPanelId && dashboard.meta.canEdit) {
-        var panelInfo = dashboard.getPanelInfoById(dashboard.meta.focusPanelId);
-        panelInfo.row.removePanel(panelInfo.panel);
+        this.$rootScope.appEvent('panel-remove', {
+          panelId: dashboard.meta.focusPanelId,
+        });
         dashboard.meta.focusPanelId = 0;
+      }
+    });
+
+    // duplicate panel
+    this.bind('p d', () => {
+      if (dashboard.meta.focusPanelId && dashboard.meta.canEdit) {
+        const panelIndex = dashboard.getPanelInfoById(dashboard.meta.focusPanelId).index;
+        dashboard.duplicatePanel(dashboard.panels[panelIndex]);
       }
     });
 
     // share panel
     this.bind('p s', () => {
       if (dashboard.meta.focusPanelId) {
-        var shareScope = scope.$new();
-        var panelInfo = dashboard.getPanelInfoById(dashboard.meta.focusPanelId);
+        const shareScope = scope.$new();
+        const panelInfo = dashboard.getPanelInfoById(dashboard.meta.focusPanelId);
         shareScope.panel = panelInfo.panel;
         shareScope.dashboard = dashboard;
 
@@ -153,36 +242,26 @@ export class KeybindingSrv {
       }
     });
 
-    // delete row
-    this.bind('r r', () => {
-      if (dashboard.meta.focusPanelId && dashboard.meta.canEdit) {
-        var panelInfo = dashboard.getPanelInfoById(dashboard.meta.focusPanelId);
-        dashboard.removeRow(panelInfo.row);
-        dashboard.meta.focusPanelId = 0;
-      }
-    });
-
-    // collapse row
-    this.bind('r c', () => {
+    // toggle panel legend
+    this.bind('p l', () => {
       if (dashboard.meta.focusPanelId) {
-        var panelInfo = dashboard.getPanelInfoById(dashboard.meta.focusPanelId);
-        panelInfo.row.toggleCollapse();
-        dashboard.meta.focusPanelId = 0;
+        const panelInfo = dashboard.getPanelInfoById(dashboard.meta.focusPanelId);
+        if (panelInfo.panel.legend) {
+          const panelRef = dashboard.getPanelById(dashboard.meta.focusPanelId);
+          panelRef.legend.show = !panelRef.legend.show;
+          panelRef.refresh();
+        }
       }
     });
 
     // collapse all rows
     this.bind('d shift+c', () => {
-      for (let row of dashboard.rows) {
-        row.collapse = true;
-      }
+      dashboard.collapseRows();
     });
 
     // expand all rows
     this.bind('d shift+e', () => {
-      for (let row of dashboard.rows) {
-        row.collapse = false;
-      }
+      dashboard.expandRows();
     });
 
     this.bind('d n', e => {
@@ -190,7 +269,7 @@ export class KeybindingSrv {
     });
 
     this.bind('d r', () => {
-      this.$rootScope.$broadcast('refresh');
+      dashboard.startRefresh();
     });
 
     this.bind('d s', () => {
@@ -205,21 +284,10 @@ export class KeybindingSrv {
       appEvents.emit('toggle-view-mode');
     });
 
-    this.bind('esc', () => {
-      var popups = $('.popover.in');
-      if (popups.length > 0) {
-        return;
-      }
-
-      scope.appEvent('hide-modal');
-      scope.appEvent('panel-change-view', { fullscreen: false, edit: false });
-
-      // close settings view
-      var search = this.$location.search();
-      if (search.editview) {
-        delete search.editview;
-        this.$location.search(search);
-      }
+    //Autofit panels
+    this.bind('d a', () => {
+      // this has to be a full page reload
+      window.location.href = window.location.href + '&autofitpanels';
     });
   }
 }

@@ -97,15 +97,6 @@ type CacheServer struct {
 	cache    *gocache.Cache
 }
 
-func (this *CacheServer) mustInt(r *http.Request, defaultValue int, keys ...string) (v int) {
-	for _, k := range keys {
-		if _, err := fmt.Sscanf(r.FormValue(k), "%d", &v); err == nil {
-			defaultValue = v
-		}
-	}
-	return defaultValue
-}
-
 func (this *CacheServer) Handler(ctx *macaron.Context) {
 	urlPath := ctx.Req.URL.Path
 	hash := urlPath[strings.LastIndex(urlPath, "/")+1:]
@@ -157,11 +148,11 @@ func NewCacheServer() *CacheServer {
 func newNotFound() *Avatar {
 	avatar := &Avatar{notFound: true}
 
-	// load transparent png into buffer
-	path := filepath.Join(setting.StaticRootPath, "img", "transparent.png")
+	// load user_profile png into buffer
+	path := filepath.Join(setting.StaticRootPath, "img", "user_profile.png")
 
 	if data, err := ioutil.ReadFile(path); err != nil {
-		log.Error(3, "Failed to read transparent.png, %v", path)
+		log.Error(3, "Failed to read user_profile.png, %v", path)
 	} else {
 		avatar.data = bytes.NewBuffer(data)
 	}
@@ -226,7 +217,7 @@ func (this *thunderTask) Fetch() {
 	this.Done()
 }
 
-var client *http.Client = &http.Client{
+var client = &http.Client{
 	Timeout:   time.Second * 2,
 	Transport: &http.Transport{Proxy: http.ProxyFromEnvironment},
 }
@@ -258,9 +249,6 @@ func (this *thunderTask) fetch() error {
 	this.Avatar.data = &bytes.Buffer{}
 	writer := bufio.NewWriter(this.Avatar.data)
 
-	if _, err = io.Copy(writer, resp.Body); err != nil {
-		return err
-	}
-
-	return nil
+	_, err = io.Copy(writer, resp.Body)
+	return err
 }

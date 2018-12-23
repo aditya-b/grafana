@@ -106,16 +106,12 @@ func NewThreemaNotifier(model *m.AlertNotification) (alerting.Notifier, error) {
 	}
 
 	return &ThreemaNotifier{
-		NotifierBase: NewNotifierBase(model.Id, model.IsDefault, model.Name, model.Type, model.Settings),
+		NotifierBase: NewNotifierBase(model),
 		GatewayID:    gatewayID,
 		RecipientID:  recipientID,
 		APISecret:    apiSecret,
 		log:          log.New("alerting.notifier.threema"),
 	}, nil
-}
-
-func (this *ThreemaNotifier) ShouldNotify(context *alerting.EvalContext) bool {
-	return defaultShouldNotify(context)
 }
 
 func (notifier *ThreemaNotifier) Notify(evalContext *alerting.EvalContext) error {

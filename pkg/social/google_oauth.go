@@ -11,7 +11,7 @@ import (
 )
 
 type SocialGoogle struct {
-	*oauth2.Config
+	*SocialBase
 	allowedDomains []string
 	hostedDomain   string
 	apiUrl         string
@@ -30,8 +30,9 @@ func (s *SocialGoogle) IsSignupAllowed() bool {
 	return s.allowSignup
 }
 
-func (s *SocialGoogle) UserInfo(client *http.Client) (*BasicUserInfo, error) {
+func (s *SocialGoogle) UserInfo(client *http.Client, token *oauth2.Token) (*BasicUserInfo, error) {
 	var data struct {
+		Id    string `json:"id"`
 		Name  string `json:"name"`
 		Email string `json:"email"`
 	}
@@ -47,6 +48,7 @@ func (s *SocialGoogle) UserInfo(client *http.Client) (*BasicUserInfo, error) {
 	}
 
 	return &BasicUserInfo{
+		Id:    data.Id,
 		Name:  data.Name,
 		Email: data.Email,
 		Login: data.Email,

@@ -99,7 +99,7 @@ func NewPushoverNotifier(model *m.AlertNotification) (alerting.Notifier, error) 
 		return nil, alerting.ValidationError{Reason: "API token not given"}
 	}
 	return &PushoverNotifier{
-		NotifierBase: NewNotifierBase(model.Id, model.IsDefault, model.Name, model.Type, model.Settings),
+		NotifierBase: NewNotifierBase(model),
 		UserKey:      userKey,
 		ApiToken:     apiToken,
 		Priority:     priority,
@@ -121,10 +121,6 @@ type PushoverNotifier struct {
 	Device   string
 	Sound    string
 	log      log.Logger
-}
-
-func (this *PushoverNotifier) ShouldNotify(context *alerting.EvalContext) bool {
-	return defaultShouldNotify(context)
 }
 
 func (this *PushoverNotifier) Notify(evalContext *alerting.EvalContext) error {

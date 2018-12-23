@@ -10,13 +10,14 @@ export class InvitedCtrl {
     $scope.navModel = {
       main: {
         icon: 'gicon gicon-branding',
+        text: 'Invite',
         subTitle: 'Register your Grafana account',
-        breadcrumbs: [{ title: 'Login', url: '/login' }, { title: 'Invite' }],
+        breadcrumbs: [{ title: 'Login', url: 'login' }],
       },
     };
 
-    $scope.init = function() {
-      backendSrv.get('/api/user/invite/' + $routeParams.code).then(function(invite) {
+    $scope.init = () => {
+      backendSrv.get('/api/user/invite/' + $routeParams.code).then(invite => {
         $scope.formModel.name = invite.name;
         $scope.formModel.email = invite.email;
         $scope.formModel.username = invite.email;
@@ -27,12 +28,12 @@ export class InvitedCtrl {
       });
     };
 
-    $scope.submit = function() {
+    $scope.submit = () => {
       if (!$scope.inviteForm.$valid) {
         return;
       }
 
-      backendSrv.post('/api/user/invite/complete', $scope.formModel).then(function() {
+      backendSrv.post('/api/user/invite/complete', $scope.formModel).then(() => {
         window.location.href = config.appSubUrl + '/';
       });
     };

@@ -1,5 +1,6 @@
 import kbn from 'app/core/utils/kbn';
 import _ from 'lodash';
+import { variableRegex } from 'app/features/templating/variable';
 
 function luceneEscape(value) {
   return value.replace(/([\!\*\+\-\=<>\s\&\|\(\)\[\]\{\}\^\~\?\:\\/"])/g, '\\$1');
@@ -8,7 +9,7 @@ function luceneEscape(value) {
 export class TemplateSrv {
   variables: any[];
 
-  private regex = /\$(\w+)|\[\[([\s\S]+?)\]\]/g;
+  private regex = variableRegex;
   private index = {};
   private grafanaVariables = {};
   private builtIns = {};
@@ -16,6 +17,7 @@ export class TemplateSrv {
   constructor() {
     this.builtIns['__interval'] = { text: '1s', value: '1s' };
     this.builtIns['__interval_ms'] = { text: '100', value: '100' };
+    this.variables = [];
   }
 
   init(variables) {
@@ -24,17 +26,14 @@ export class TemplateSrv {
   }
 
   updateTemplateData() {
-    this.index = {};
+    const existsOrEmpty = value => value || value === '';
 
-    for (var i = 0; i < this.variables.length; i++) {
-      var variable = this.variables[i];
-
-      if (!variable.current || (!variable.current.isNone && !variable.current.value)) {
-        continue;
+    this.index = this.variables.reduce((acc, currentValue) => {
+      if (currentValue.current && (currentValue.current.isNone || existsOrEmpty(currentValue.current.value))) {
+        acc[currentValue.name] = currentValue;
       }
-
-      this.index[variable.name] = variable;
-    }
+      return acc;
+    }, {});
   }
 
   variableInitialized(variable) {
@@ -42,21 +41,22 @@ export class TemplateSrv {
   }
 
   getAdhocFilters(datasourceName) {
-    var filters = [];
+    let filters = [];
 
-    for (var i = 0; i < this.variables.length; i++) {
-      var variable = this.variables[i];
-      if (variable.type !== 'adhoc') {
-        continue;
-      }
+    if (this.variables) {
+      for (let i = 0; i < this.variables.length; i++) {
+        const variable = this.variables[i];
+        if (variable.type !== 'adhoc') {
+          continue;
+        }
 
-      if (variable.datasource === datasourceName) {
-        filters = filters.concat(variable.filters);
-      }
-
-      if (variable.datasource.indexOf('$') === 0) {
-        if (this.replace(variable.datasource) === datasourceName) {
+        // null is the "default" datasource
+        if (variable.datasource === null || variable.datasource === datasourceName) {
           filters = filters.concat(variable.filters);
+        } else if (variable.datasource.indexOf('$') === 0) {
+          if (this.replace(variable.datasource) === datasourceName) {
+            filters = filters.concat(variable.filters);
+          }
         }
       }
     }
@@ -68,7 +68,10 @@ export class TemplateSrv {
     if (typeof value === 'string') {
       return luceneEscape(value);
     }
-    var quotedValues = _.map(value, function(val) {
+    if (value instanceof Array && value.length === 0) {
+      return '__empty__';
+    }
+    const quotedValues = _.map(value, val => {
       return '"' + luceneEscape(val) + '"';
     });
     return '(' + quotedValues.join(' OR ') + ')';
@@ -88,7 +91,10 @@ export class TemplateSrv {
           return kbn.regexEscape(value);
         }
 
-        var escapedValues = _.map(value, kbn.regexEscape);
+        const escapedValues = _.map(value, kbn.regexEscape);
+        if (escapedValues.length === 1) {
+          return escapedValues[0];
+        }
         return '(' + escapedValues.join('|') + ')';
       }
       case 'lucene': {
@@ -106,6 +112,12 @@ export class TemplateSrv {
         }
         return this.distributeVariable(value, variable.name);
       }
+      case 'csv': {
+        if (_.isArray(value)) {
+          return value.join(',');
+        }
+        return value;
+      }
       default: {
         if (_.isArray(value)) {
           return '{' + value.join(',') + '}';
@@ -121,15 +133,16 @@ export class TemplateSrv {
 
   getVariableName(expression) {
     this.regex.lastIndex = 0;
-    var match = this.regex.exec(expression);
+    const match = this.regex.exec(expression);
     if (!match) {
       return null;
     }
-    return match[1] || match[2];
+    const variableName = match.slice(1).find(match => match !== undefined);
+    return variableName;
   }
 
   variableExists(expression) {
-    var name = this.getVariableName(expression);
+    const name = this.getVariableName(expression);
     return name && this.index[name] !== void 0;
   }
 
@@ -140,8 +153,8 @@ export class TemplateSrv {
 
     str = _.escape(str);
     this.regex.lastIndex = 0;
-    return str.replace(this.regex, (match, g1, g2) => {
-      if (this.index[g1 || g2] || this.builtIns[g1 || g2]) {
+    return str.replace(this.regex, (match, var1, var2, fmt2, var3) => {
+      if (this.index[var1 || var2 || var3] || this.builtIns[var1 || var2 || var3]) {
         return '<span class="template-variable">' + match + '</span>';
       }
       return match;
@@ -152,8 +165,8 @@ export class TemplateSrv {
     if (variable.allValue) {
       return variable.allValue;
     }
-    var values = [];
-    for (var i = 1; i < variable.options.length; i++) {
+    const values = [];
+    for (let i = 1; i < variable.options.length; i++) {
       values.push(variable.options[i].value);
     }
     return values;
@@ -164,16 +177,16 @@ export class TemplateSrv {
       return target;
     }
 
-    var variable, systemValue, value;
+    let variable, systemValue, value, fmt;
     this.regex.lastIndex = 0;
 
-    return target.replace(this.regex, (match, g1, g2) => {
-      variable = this.index[g1 || g2];
-
+    return target.replace(this.regex, (match, var1, var2, fmt2, var3, fmt3) => {
+      variable = this.index[var1 || var2 || var3];
+      fmt = fmt2 || fmt3 || format;
       if (scopedVars) {
-        value = scopedVars[g1 || g2];
+        value = scopedVars[var1 || var2 || var3];
         if (value) {
-          return this.formatValue(value.value, format, variable);
+          return this.formatValue(value.value, fmt, variable);
         }
       }
 
@@ -183,19 +196,19 @@ export class TemplateSrv {
 
       systemValue = this.grafanaVariables[variable.current.value];
       if (systemValue) {
-        return this.formatValue(systemValue, format, variable);
+        return this.formatValue(systemValue, fmt, variable);
       }
 
       value = variable.current.value;
       if (this.isAllValue(value)) {
         value = this.getAllValue(variable);
-        // skip formating of custom all values
+        // skip formatting of custom all values
         if (variable.allValue) {
-          return value;
+          return this.replace(value);
         }
       }
 
-      var res = this.formatValue(value, format, variable);
+      const res = this.formatValue(value, fmt, variable);
       return res;
     });
   }
@@ -209,18 +222,18 @@ export class TemplateSrv {
       return target;
     }
 
-    var variable;
+    let variable;
     this.regex.lastIndex = 0;
 
-    return target.replace(this.regex, (match, g1, g2) => {
+    return target.replace(this.regex, (match, var1, var2, fmt2, var3) => {
       if (scopedVars) {
-        var option = scopedVars[g1 || g2];
+        const option = scopedVars[var1 || var2 || var3];
         if (option) {
           return option.text;
         }
       }
 
-      variable = this.index[g1 || g2];
+      variable = this.index[var1 || var2 || var3];
       if (!variable) {
         return match;
       }
@@ -230,17 +243,23 @@ export class TemplateSrv {
   }
 
   fillVariableValuesForUrl(params, scopedVars) {
-    _.each(this.variables, function(variable) {
+    _.each(this.variables, variable => {
       if (scopedVars && scopedVars[variable.name] !== void 0) {
+        if (scopedVars[variable.name].skipUrlSync) {
+          return;
+        }
         params['var-' + variable.name] = scopedVars[variable.name].value;
       } else {
+        if (variable.skipUrlSync) {
+          return;
+        }
         params['var-' + variable.name] = variable.getValueForUrl();
       }
     });
   }
 
   distributeVariable(value, variable) {
-    value = _.map(value, function(val, index) {
+    value = _.map(value, (val, index) => {
       if (index !== 0) {
         return variable + '=' + val;
       } else {

@@ -1,7 +1,15 @@
-///<reference path="../../../headers/common.d.ts" />
-
 import _ from 'lodash';
 import { PanelCtrl } from 'app/plugins/sdk';
+import Remarkable from 'remarkable';
+
+const defaultContent = `
+# Title
+
+For markdown syntax help: [commonmark.org/help](https://commonmark.org/help/)
+
+
+
+`;
 
 export class TextPanelCtrl extends PanelCtrl {
   static templateUrl = `public/app/plugins/panel/text/module.html`;
@@ -12,10 +20,10 @@ export class TextPanelCtrl extends PanelCtrl {
   // Set and populate defaults
   panelDefaults = {
     mode: 'markdown', // 'html', 'markdown', 'text'
-    content: '# title',
+    content: defaultContent,
   };
 
-  /** @ngInject **/
+  /** @ngInject */
   constructor($scope, $injector, private templateSrv, private $sce) {
     super($scope, $injector);
 
@@ -35,7 +43,6 @@ export class TextPanelCtrl extends PanelCtrl {
 
   onInitEditMode() {
     this.addEditorTab('Options', 'public/app/plugins/panel/text/editor.html');
-    this.editorTabIndex = 1;
 
     if (this.panel.mode === 'text') {
       this.panel.mode = 'markdown';
@@ -66,12 +73,7 @@ export class TextPanelCtrl extends PanelCtrl {
 
   renderMarkdown(content) {
     if (!this.remarkable) {
-      return System.import('remarkable').then(Remarkable => {
-        this.remarkable = new Remarkable();
-        this.$scope.$apply(() => {
-          this.updateContent(this.remarkable.render(content));
-        });
-      });
+      this.remarkable = new Remarkable();
     }
 
     this.$scope.$applyAsync(() => {

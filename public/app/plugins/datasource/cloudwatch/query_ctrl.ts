@@ -1,5 +1,3 @@
-///<reference path="../../../headers/common.d.ts" />
-
 import './query_parameter_ctrl';
 import { QueryCtrl } from 'app/plugins/sdk';
 
@@ -8,7 +6,7 @@ export class CloudWatchQueryCtrl extends QueryCtrl {
 
   aliasSyntax: string;
 
-  /** @ngInject **/
+  /** @ngInject */
   constructor($scope, $injector) {
     super($scope, $injector);
     this.aliasSyntax = '{{metric}} {{stat}} {{namespace}} {{region}} {{<dimension name>}}';

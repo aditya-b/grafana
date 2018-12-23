@@ -1,5 +1,3 @@
-///<reference path="../../../headers/common.d.ts" />
-
 import { MysqlDatasource } from './datasource';
 import { MysqlQueryCtrl } from './query_ctrl';
 
@@ -22,7 +20,7 @@ class MysqlAnnotationsQueryCtrl {
 
   annotation: any;
 
-  /** @ngInject **/
+  /** @ngInject */
   constructor() {
     this.annotation.rawQuery = this.annotation.rawQuery || defaultQuery;
   }

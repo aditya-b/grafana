@@ -4,6 +4,7 @@ import _ from 'lodash';
 import angular from 'angular';
 import moment from 'moment';
 
+import locationUtil from 'app/core/utils/location_util';
 import { DashboardModel } from '../dashboard_model';
 import { HistoryListOpts, RevisionsModel, CalculateDiffOptions, HistorySrv } from './history_srv';
 
@@ -66,7 +67,7 @@ export class HistoryListCtrl {
   }
 
   revisionSelectionChanged() {
-    let selected = _.filter(this.revisions, { checked: true }).length;
+    const selected = _.filter(this.revisions, { checked: true }).length;
     this.canCompare = selected === 2;
   }
 
@@ -132,8 +133,8 @@ export class HistoryListCtrl {
     return this.historySrv
       .getHistoryList(this.dashboard, options)
       .then(revisions => {
-        // set formated dates & default values
-        for (let rev of revisions) {
+        // set formatted dates & default values
+        for (const rev of revisions) {
           rev.createdDateString = this.formatDate(rev.created);
           rev.ageString = this.formatBasicDate(rev.created);
           rev.checked = false;
@@ -185,7 +186,7 @@ export class HistoryListCtrl {
     return this.historySrv
       .restoreDashboard(this.dashboard, version)
       .then(response => {
-        this.$location.path('dashboard/db/' + response.slug);
+        this.$location.url(locationUtil.stripBaseFromUrl(response.url)).replace();
         this.$route.reload();
         this.$rootScope.appEvent('alert-success', ['Dashboard restored', 'Restored from version ' + version]);
       })

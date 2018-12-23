@@ -6,19 +6,24 @@ import (
 
 	"github.com/grafana/grafana/pkg/api/dtos"
 	"github.com/grafana/grafana/pkg/bus"
-	"github.com/grafana/grafana/pkg/middleware"
 	m "github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/plugins"
 	"github.com/grafana/grafana/pkg/setting"
 )
 
-func setIndexViewData(c *middleware.Context) (*dtos.IndexViewData, error) {
-	settings, err := getFrontendSettingsMap(c)
+const (
+	// Themes
+	lightName = "light"
+	darkName  = "dark"
+)
+
+func (hs *HTTPServer) setIndexViewData(c *m.ReqContext) (*dtos.IndexViewData, error) {
+	settings, err := hs.getFrontendSettingsMap(c)
 	if err != nil {
 		return nil, err
 	}
 
-	prefsQuery := m.GetPreferencesWithDefaultsQuery{OrgId: c.OrgId, UserId: c.UserId}
+	prefsQuery := m.GetPreferencesWithDefaultsQuery{User: c.SignedInUser}
 	if err := bus.Dispatch(&prefsQuery); err != nil {
 		return nil, err
 	}
@@ -33,77 +38,94 @@ func setIndexViewData(c *middleware.Context) (*dtos.IndexViewData, error) {
 		locale = parts[0]
 	}
 
-	appUrl := setting.AppUrl
-	appSubUrl := setting.AppSubUrl
+	appURL := setting.AppUrl
+	appSubURL := setting.AppSubUrl
 
 	// special case when doing localhost call from phantomjs
 	if c.IsRenderCall {
-		appUrl = fmt.Sprintf("%s://localhost:%s", setting.Protocol, setting.HttpPort)
-		appSubUrl = ""
+		appURL = fmt.Sprintf("%s://localhost:%s", setting.Protocol, setting.HttpPort)
+		appSubURL = ""
 		settings["appSubUrl"] = ""
+	}
+
+	hasEditPermissionInFoldersQuery := m.HasEditPermissionInFoldersQuery{SignedInUser: c.SignedInUser}
+	if err := bus.Dispatch(&hasEditPermissionInFoldersQuery); err != nil {
+		return nil, err
 	}
 
 	var data = dtos.IndexViewData{
 		User: &dtos.CurrentUser{
-			Id:             c.UserId,
-			IsSignedIn:     c.IsSignedIn,
-			Login:          c.Login,
-			Email:          c.Email,
-			Name:           c.Name,
-			OrgCount:       c.OrgCount,
-			OrgId:          c.OrgId,
-			OrgName:        c.OrgName,
-			OrgRole:        c.OrgRole,
-			GravatarUrl:    dtos.GetGravatarUrl(c.Email),
-			IsGrafanaAdmin: c.IsGrafanaAdmin,
-			LightTheme:     prefs.Theme == "light",
-			Timezone:       prefs.Timezone,
-			Locale:         locale,
-			HelpFlags1:     c.HelpFlags1,
+			Id:                         c.UserId,
+			IsSignedIn:                 c.IsSignedIn,
+			Login:                      c.Login,
+			Email:                      c.Email,
+			Name:                       c.Name,
+			OrgCount:                   c.OrgCount,
+			OrgId:                      c.OrgId,
+			OrgName:                    c.OrgName,
+			OrgRole:                    c.OrgRole,
+			GravatarUrl:                dtos.GetGravatarUrl(c.Email),
+			IsGrafanaAdmin:             c.IsGrafanaAdmin,
+			LightTheme:                 prefs.Theme == lightName,
+			Timezone:                   prefs.Timezone,
+			Locale:                     locale,
+			HelpFlags1:                 c.HelpFlags1,
+			HasEditPermissionInFolders: hasEditPermissionInFoldersQuery.Result,
 		},
 		Settings:                settings,
 		Theme:                   prefs.Theme,
-		AppUrl:                  appUrl,
-		AppSubUrl:               appSubUrl,
+		AppUrl:                  appURL,
+		AppSubUrl:               appSubURL,
 		GoogleAnalyticsId:       setting.GoogleAnalyticsId,
 		GoogleTagManagerId:      setting.GoogleTagManagerId,
 		BuildVersion:            setting.BuildVersion,
 		BuildCommit:             setting.BuildCommit,
 		NewGrafanaVersion:       plugins.GrafanaLatestVersion,
 		NewGrafanaVersionExists: plugins.GrafanaHasUpdate,
+		AppName:                 setting.ApplicationName,
+		AppNameBodyClass:        getAppNameBodyClass(setting.ApplicationName),
 	}
 
 	if setting.DisableGravatar {
-		data.User.GravatarUrl = setting.AppSubUrl + "/public/img/transparent.png"
+		data.User.GravatarUrl = setting.AppSubUrl + "/public/img/user_profile.png"
 	}
 
 	if len(data.User.Name) == 0 {
 		data.User.Name = data.User.Login
 	}
 
-	themeUrlParam := c.Query("theme")
-	if themeUrlParam == "light" {
+	themeURLParam := c.Query("theme")
+	if themeURLParam == lightName {
 		data.User.LightTheme = true
-		data.Theme = "light"
+		data.Theme = lightName
+	} else if themeURLParam == darkName {
+		data.User.LightTheme = false
+		data.Theme = darkName
 	}
 
-	if c.OrgRole == m.ROLE_ADMIN || c.OrgRole == m.ROLE_EDITOR {
+	if hasEditPermissionInFoldersQuery.Result {
+		children := []*dtos.NavLink{
+			{Text: "Dashboard", Icon: "gicon gicon-dashboard-new", Url: setting.AppSubUrl + "/dashboard/new"},
+		}
+
+		if c.OrgRole == m.ROLE_ADMIN || c.OrgRole == m.ROLE_EDITOR {
+			children = append(children, &dtos.NavLink{Text: "Folder", SubTitle: "Create a new folder to organize your dashboards", Id: "folder", Icon: "gicon gicon-folder-new", Url: setting.AppSubUrl + "/dashboards/folder/new"})
+		}
+
+		children = append(children, &dtos.NavLink{Text: "Import", SubTitle: "Import dashboard from file or Grafana.com", Id: "import", Icon: "gicon gicon-dashboard-import", Url: setting.AppSubUrl + "/dashboard/import"})
+
 		data.NavTree = append(data.NavTree, &dtos.NavLink{
-			Text: "Create",
-			Id:   "create",
-			Icon: "fa fa-fw fa-plus",
-			Url:  setting.AppSubUrl + "/dashboard/new",
-			Children: []*dtos.NavLink{
-				{Text: "Dashboard", Icon: "gicon gicon-dashboard-new", Url: setting.AppSubUrl + "/dashboard/new"},
-				{Text: "Folder", SubTitle: "Create a new folder to organize your dashboards", Id: "folder", Icon: "gicon gicon-folder-new", Url: setting.AppSubUrl + "/dashboards/folder/new"},
-				{Text: "Import", SubTitle: "Import dashboard from file or Grafana.com", Id: "import", Icon: "gicon gicon-dashboard-import", Url: setting.AppSubUrl + "/dashboard/import"},
-			},
+			Text:     "Create",
+			Id:       "create",
+			Icon:     "fa fa-fw fa-plus",
+			Url:      setting.AppSubUrl + "/dashboard/new",
+			Children: children,
 		})
 	}
 
 	dashboardChildNavs := []*dtos.NavLink{
-		{Text: "Home", Url: setting.AppSubUrl + "/", Icon: "gicon gicon-home", HideFromTabs: true},
-		{Divider: true, HideFromTabs: true},
+		{Text: "Home", Id: "home", Url: setting.AppSubUrl + "/", Icon: "gicon gicon-home", HideFromTabs: true},
+		{Text: "Divider", Divider: true, Id: "divider", HideFromTabs: true},
 		{Text: "Manage", Id: "manage-dashboards", Url: setting.AppSubUrl + "/dashboards", Icon: "gicon gicon-manage"},
 		{Text: "Playlists", Id: "playlists", Url: setting.AppSubUrl + "/playlists", Icon: "gicon gicon-playlists"},
 		{Text: "Snapshots", Id: "snapshots", Url: setting.AppSubUrl + "/dashboard/snapshots", Icon: "gicon gicon-snapshots"},
@@ -118,10 +140,25 @@ func setIndexViewData(c *middleware.Context) (*dtos.IndexViewData, error) {
 		Children: dashboardChildNavs,
 	})
 
+	if setting.ExploreEnabled && (c.OrgRole == m.ROLE_ADMIN || c.OrgRole == m.ROLE_EDITOR) {
+		data.NavTree = append(data.NavTree, &dtos.NavLink{
+			Text:     "Explore",
+			Id:       "explore",
+			SubTitle: "Explore your data",
+			Icon:     "fa fa-rocket",
+			Url:      setting.AppSubUrl + "/explore",
+		})
+	}
+
 	if c.IsSignedIn {
+		// Only set login if it's different from the name
+		var login string
+		if c.SignedInUser.Login != c.SignedInUser.NameOrFallback() {
+			login = c.SignedInUser.Login
+		}
 		profileNode := &dtos.NavLink{
 			Text:         c.SignedInUser.NameOrFallback(),
-			SubTitle:     c.SignedInUser.Login,
+			SubTitle:     login,
 			Id:           "profile",
 			Img:          data.User.GravatarUrl,
 			Url:          setting.AppSubUrl + "/profile",
@@ -205,7 +242,7 @@ func setIndexViewData(c *middleware.Context) (*dtos.IndexViewData, error) {
 		}
 	}
 
-	if c.OrgRole == m.ROLE_ADMIN {
+	if c.IsGrafanaAdmin || c.OrgRole == m.ROLE_ADMIN {
 		cfgNode := &dtos.NavLink{
 			Id:       "cfg",
 			Text:     "Configuration",
@@ -259,10 +296,24 @@ func setIndexViewData(c *middleware.Context) (*dtos.IndexViewData, error) {
 			},
 		}
 
-		if c.IsGrafanaAdmin {
+		if c.OrgRole != m.ROLE_ADMIN {
+			cfgNode = &dtos.NavLink{
+				Id:       "cfg",
+				Text:     "Configuration",
+				SubTitle: "Organization: " + c.OrgName,
+				Icon:     "gicon gicon-cog",
+				Url:      setting.AppSubUrl + "/admin/users",
+				Children: make([]*dtos.NavLink, 0),
+			}
+		}
+
+		if c.OrgRole == m.ROLE_ADMIN && c.IsGrafanaAdmin {
 			cfgNode.Children = append(cfgNode.Children, &dtos.NavLink{
-				Divider: true, HideFromTabs: true,
+				Divider: true, HideFromTabs: true, Id: "admin-divider", Text: "Text",
 			})
+		}
+
+		if c.IsGrafanaAdmin {
 			cfgNode.Children = append(cfgNode.Children, &dtos.NavLink{
 				Text:         "Server Admin",
 				HideFromTabs: true,
@@ -285,6 +336,7 @@ func setIndexViewData(c *middleware.Context) (*dtos.IndexViewData, error) {
 
 	data.NavTree = append(data.NavTree, &dtos.NavLink{
 		Text:         "Help",
+		SubTitle:     fmt.Sprintf(`%s v%s (%s)`, setting.ApplicationName, setting.BuildVersion, setting.BuildCommit),
 		Id:           "help",
 		Url:          "#",
 		Icon:         "gicon gicon-question",
@@ -296,28 +348,41 @@ func setIndexViewData(c *middleware.Context) (*dtos.IndexViewData, error) {
 		},
 	})
 
+	hs.HooksService.RunIndexDataHooks(&data)
 	return &data, nil
 }
 
-func Index(c *middleware.Context) {
-	if data, err := setIndexViewData(c); err != nil {
+func (hs *HTTPServer) Index(c *m.ReqContext) {
+	data, err := hs.setIndexViewData(c)
+	if err != nil {
 		c.Handle(500, "Failed to get settings", err)
 		return
-	} else {
-		c.HTML(200, "index", data)
 	}
+	c.HTML(200, "index", data)
 }
 
-func NotFoundHandler(c *middleware.Context) {
+func (hs *HTTPServer) NotFoundHandler(c *m.ReqContext) {
 	if c.IsApiRequest() {
 		c.JsonApiErr(404, "Not found", nil)
 		return
 	}
 
-	if data, err := setIndexViewData(c); err != nil {
+	data, err := hs.setIndexViewData(c)
+	if err != nil {
 		c.Handle(500, "Failed to get settings", err)
 		return
-	} else {
-		c.HTML(404, "index", data)
+	}
+
+	c.HTML(404, "index", data)
+}
+
+func getAppNameBodyClass(name string) string {
+	switch name {
+	case setting.APP_NAME:
+		return "app-grafana"
+	case setting.APP_NAME_ENTERPRISE:
+		return "app-enterprise"
+	default:
+		return ""
 	}
 }

@@ -1,5 +1,3 @@
-///<reference path="../../../headers/common.d.ts" />
-
 import kbn from 'app/core/utils/kbn';
 
 export class AxesEditorCtrl {
@@ -11,7 +9,7 @@ export class AxesEditorCtrl {
   xAxisStatOptions: any;
   xNameSegment: any;
 
-  /** @ngInject **/
+  /** @ngInject */
   constructor(private $scope, private $q) {
     this.panelCtrl = $scope.ctrl;
     this.panel = this.panelCtrl.panel;
@@ -69,8 +67,8 @@ export class AxesEditorCtrl {
   }
 
   getDataFieldNames(onlyNumbers) {
-    var props = this.panelCtrl.processor.getDataFieldNames(this.panelCtrl.dataList, onlyNumbers);
-    var items = props.map(prop => {
+    const props = this.panelCtrl.processor.getDataFieldNames(this.panelCtrl.dataList, onlyNumbers);
+    const items = props.map(prop => {
       return { text: prop, value: prop };
     });
 
@@ -78,7 +76,7 @@ export class AxesEditorCtrl {
   }
 }
 
-/** @ngInject **/
+/** @ngInject */
 export function axesEditorComponent() {
   'use strict';
   return {

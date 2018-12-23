@@ -1,8 +1,6 @@
-///<reference path="../../headers/common.d.ts" />
-
 import angular from 'angular';
 
-var module = angular.module('grafana.directives');
+const module = angular.module('grafana.directives');
 
 export class QueryRowCtrl {
   collapsedText: string;
@@ -13,14 +11,16 @@ export class QueryRowCtrl {
   panelCtrl: any;
   panel: any;
   collapsed: any;
+  hideEditorRowActions: boolean;
 
   constructor() {
     this.panelCtrl = this.queryCtrl.panelCtrl;
     this.target = this.queryCtrl.target;
     this.panel = this.panelCtrl.panel;
+    this.hideEditorRowActions = this.panelCtrl.hideEditorRowActions;
 
     if (!this.target.refId) {
-      this.target.refId = this.panelCtrl.dashboard.getNextQueryLetter(this.panel);
+      this.target.refId = this.panel.getNextQueryLetter();
     }
 
     this.toggleCollapse(true);
@@ -58,7 +58,7 @@ export class QueryRowCtrl {
     try {
       this.collapsedText = this.queryCtrl.getCollapsedText();
     } catch (e) {
-      var err = e.message || e.toString();
+      const err = e.message || e.toString();
       this.collapsedText = 'Error: ' + err;
     }
   }
@@ -80,7 +80,7 @@ export class QueryRowCtrl {
   }
 
   duplicateQuery() {
-    var clone = angular.copy(this.target);
+    const clone = angular.copy(this.target);
     this.panelCtrl.addQuery(clone);
   }
 
@@ -89,7 +89,7 @@ export class QueryRowCtrl {
   }
 }
 
-/** @ngInject **/
+/** @ngInject */
 function queryEditorRowDirective() {
   return {
     restrict: 'E',

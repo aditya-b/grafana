@@ -31,7 +31,7 @@ export class SearchSrv {
   }
 
   private queryForRecentDashboards() {
-    var dashIds = _.take(impressionSrv.getDashboardOpened(), 5);
+    const dashIds = _.take(impressionSrv.getDashboardOpened(), 30);
     if (dashIds.length === 0) {
       return Promise.resolve([]);
     }
@@ -41,10 +41,7 @@ export class SearchSrv {
         .map(orderId => {
           return _.find(result, { id: orderId });
         })
-        .filter(hit => hit && !hit.isStarred)
-        .map(hit => {
-          return this.transformToViewModel(hit);
-        });
+        .filter(hit => hit && !hit.isStarred);
     });
   }
 
@@ -73,7 +70,7 @@ export class SearchSrv {
       return Promise.resolve();
     }
 
-    return this.backendSrv.search({ starred: true, limit: 5 }).then(result => {
+    return this.backendSrv.search({ starred: true, limit: 30 }).then(result => {
       if (result.length > 0) {
         sections['starred'] = {
           title: 'Starred',
@@ -81,22 +78,17 @@ export class SearchSrv {
           score: -2,
           expanded: this.starredIsOpen,
           toggle: this.toggleStarred.bind(this),
-          items: result.map(this.transformToViewModel),
+          items: result,
         };
       }
     });
   }
 
-  private transformToViewModel(hit) {
-    hit.url = 'dashboard/db/' + hit.slug;
-    return hit;
-  }
-
   search(options) {
-    let sections: any = {};
-    let promises = [];
-    let query = _.clone(options);
-    let hasFilters =
+    const sections: any = {};
+    const promises = [];
+    const query = _.clone(options);
+    const hasFilters =
       options.query ||
       (options.tag && options.tag.length > 0) ||
       options.starred ||
@@ -132,23 +124,23 @@ export class SearchSrv {
     }
 
     // create folder index
-    for (let hit of results) {
+    for (const hit of results) {
       if (hit.type === 'dash-folder') {
         sections[hit.id] = {
           id: hit.id,
+          uid: hit.uid,
           title: hit.title,
           expanded: false,
           items: [],
           toggle: this.toggleFolder.bind(this),
-          url: `dashboards/folder/${hit.id}/${hit.slug}`,
-          slug: hit.slug,
+          url: hit.url,
           icon: 'fa fa-folder',
           score: _.keys(sections).length,
         };
       }
     }
 
-    for (let hit of results) {
+    for (const hit of results) {
       if (hit.type === 'dash-folder') {
         continue;
       }
@@ -158,9 +150,9 @@ export class SearchSrv {
         if (hit.folderId) {
           section = {
             id: hit.folderId,
+            uid: hit.folderUid,
             title: hit.folderTitle,
-            url: `dashboards/folder/${hit.folderId}/${hit.folderSlug}`,
-            slug: hit.slug,
+            url: hit.folderUrl,
             items: [],
             icon: 'fa fa-folder-open',
             toggle: this.toggleFolder.bind(this),
@@ -169,7 +161,7 @@ export class SearchSrv {
         } else {
           section = {
             id: 0,
-            title: 'Root',
+            title: 'General',
             items: [],
             icon: 'fa fa-folder-open',
             toggle: this.toggleFolder.bind(this),
@@ -181,7 +173,7 @@ export class SearchSrv {
       }
 
       section.expanded = true;
-      section.items.push(this.transformToViewModel(hit));
+      section.items.push(hit);
     }
   }
 
@@ -193,12 +185,12 @@ export class SearchSrv {
       return Promise.resolve(section);
     }
 
-    let query = {
+    const query = {
       folderIds: [section.id],
     };
 
     return this.backendSrv.search(query).then(results => {
-      section.items = _.map(results, this.transformToViewModel);
+      section.items = results;
       return Promise.resolve(section);
     });
   }

@@ -1,20 +1,23 @@
 import _ from 'lodash';
-
 import config from 'app/core/config';
 import { coreModule, appEvents } from 'app/core/core';
+import { store } from 'app/store/store';
+import { getNavModel } from 'app/core/selectors/navModel';
+import { buildNavModel } from './state/navModel';
 
-var datasourceTypes = [];
+let datasourceTypes = [];
 
-var defaults = {
+const defaults = {
   name: '',
   type: 'graphite',
   url: '',
   access: 'proxy',
   jsonData: {},
   secureJsonFields: {},
+  secureJsonData: {},
 };
 
-var datasourceCreated = false;
+let datasourceCreated = false;
 
 export class DataSourceEditCtrl {
   isNew: boolean;
@@ -23,24 +26,15 @@ export class DataSourceEditCtrl {
   types: any;
   testing: any;
   datasourceMeta: any;
-  tabIndex: number;
-  hasDashboards: boolean;
   editForm: any;
   gettingStarted: boolean;
   navModel: any;
 
   /** @ngInject */
-  constructor(
-    private $q,
-    private backendSrv,
-    private $routeParams,
-    private $location,
-    private datasourceSrv,
-    navModelSrv
-  ) {
-    this.navModel = navModelSrv.getNav('cfg', 'datasources', 0);
+  constructor(private $q, private backendSrv, private $routeParams, private $location, private datasourceSrv) {
+    const state = store.getState();
+    this.navModel = getNavModel(state.navIndex, 'datasources');
     this.datasources = [];
-    this.tabIndex = 0;
 
     this.loadDatasourceTypes().then(() => {
       if (this.$routeParams.id) {
@@ -54,8 +48,6 @@ export class DataSourceEditCtrl {
   initNewDatasourceModel() {
     this.isNew = true;
     this.current = _.cloneDeep(defaults);
-
-    this.navModel.breadcrumbs.push({ text: 'New' });
 
     // We are coming from getting started
     if (this.$location.search().gettingstarted) {
@@ -82,12 +74,6 @@ export class DataSourceEditCtrl {
     this.backendSrv.get('/api/datasources/' + id).then(ds => {
       this.isNew = false;
       this.current = ds;
-      this.navModel.node = {
-        text: ds.name,
-        icon: 'icon-gf icon-gf-fw icon-gf-datasources',
-        id: 'ds-new',
-      };
-      this.navModel.breadcrumbs.push(this.navModel.node);
 
       if (datasourceCreated) {
         datasourceCreated = false;
@@ -112,11 +98,14 @@ export class DataSourceEditCtrl {
     this.typeChanged();
   }
 
+  updateNav() {
+    this.navModel = buildNavModel(this.current, this.datasourceMeta, 'datasource-settings');
+  }
+
   typeChanged() {
-    this.hasDashboards = false;
     return this.backendSrv.get('/api/plugins/' + this.current.type + '/settings').then(pluginInfo => {
       this.datasourceMeta = pluginInfo;
-      this.hasDashboards = _.find(pluginInfo.includes, { type: 'dashboard' }) !== undefined;
+      this.updateNav();
     });
   }
 
@@ -129,7 +118,7 @@ export class DataSourceEditCtrl {
   }
 
   testDatasource() {
-    this.datasourceSrv.get(this.current.name).then(datasource => {
+    return this.datasourceSrv.get(this.current.name).then(datasource => {
       if (!datasource.testDatasource) {
         return;
       }
@@ -137,7 +126,7 @@ export class DataSourceEditCtrl {
       this.testing = { done: false, status: 'error' };
 
       // make test call in no backend cache context
-      this.backendSrv
+      return this.backendSrv
         .withNoBackendCache(() => {
           return datasource
             .testDatasource()
@@ -171,8 +160,9 @@ export class DataSourceEditCtrl {
     if (this.current.id) {
       return this.backendSrv.put('/api/datasources/' + this.current.id, this.current).then(result => {
         this.current = result.datasource;
-        this.updateFrontendSettings().then(() => {
-          this.testDatasource();
+        this.updateNav();
+        return this.updateFrontendSettings().then(() => {
+          return this.testDatasource();
         });
       });
     } else {
@@ -207,16 +197,24 @@ export class DataSourceEditCtrl {
 
 coreModule.controller('DataSourceEditCtrl', DataSourceEditCtrl);
 
-coreModule.directive('datasourceHttpSettings', function() {
+coreModule.directive('datasourceHttpSettings', () => {
   return {
     scope: {
       current: '=',
       suggestUrl: '@',
+      noDirectAccess: '@',
     },
     templateUrl: 'public/app/features/plugins/partials/ds_http_settings.html',
     link: {
-      pre: function($scope, elem, attrs) {
-        $scope.getSuggestUrls = function() {
+      pre: ($scope, elem, attrs) => {
+        // do not show access option if direct access is disabled
+        $scope.showAccessOption = $scope.noDirectAccess !== 'true';
+        $scope.showAccessHelp = false;
+        $scope.toggleAccessHelp = () => {
+          $scope.showAccessHelp = !$scope.showAccessHelp;
+        };
+
+        $scope.getSuggestUrls = () => {
           return [$scope.suggestUrl];
         };
       },

@@ -1,10 +1,16 @@
+// Utils
 import config from 'app/core/config';
-
+import appEvents from 'app/core/app_events';
 import coreModule from 'app/core/core_module';
-import { PanelContainer } from './dashgrid/PanelContainer';
+import { removePanel } from 'app/features/dashboard/utils/panel';
+
+// Services
+import { AnnotationsSrv } from '../annotations/annotations_srv';
+
+// Types
 import { DashboardModel } from './dashboard_model';
 
-export class DashboardCtrl implements PanelContainer {
+export class DashboardCtrl {
   dashboard: DashboardModel;
   dashboardViewState: any;
   loadedFallbackDashboard: boolean;
@@ -13,7 +19,6 @@ export class DashboardCtrl implements PanelContainer {
   /** @ngInject */
   constructor(
     private $scope,
-    private $rootScope,
     private keybindingSrv,
     private timeSrv,
     private variableSrv,
@@ -21,8 +26,8 @@ export class DashboardCtrl implements PanelContainer {
     private dashboardSrv,
     private unsavedChangesSrv,
     private dashboardViewStateSrv,
-    public playlistSrv,
-    private panelLoader
+    private annotationsSrv: AnnotationsSrv,
+    public playlistSrv
   ) {
     // temp hack due to way dashboards are loaded
     // can't use controllerAs on route yet
@@ -50,6 +55,7 @@ export class DashboardCtrl implements PanelContainer {
     // init services
     this.timeSrv.init(dashboard);
     this.alertingSrv.init(dashboard, data.alerts);
+    this.annotationsSrv.init(dashboard);
 
     // template values service needs to initialize completely before
     // the rest of the dashboard can load
@@ -61,6 +67,8 @@ export class DashboardCtrl implements PanelContainer {
       .finally(() => {
         this.dashboard = dashboard;
         this.dashboard.processRepeats();
+        this.dashboard.updateSubmenuVisibility();
+        this.dashboard.autoFitPanels(window.innerHeight);
 
         this.unsavedChangesSrv.init(dashboard, this.$scope);
 
@@ -69,11 +77,9 @@ export class DashboardCtrl implements PanelContainer {
         this.dashboardViewState = this.dashboardViewStateSrv.create(this.$scope);
 
         this.keybindingSrv.setupDashboardBindings(this.$scope, dashboard);
-
-        this.dashboard.updateSubmenuVisibility();
         this.setWindowTitleAndTheme();
 
-        this.$scope.appEvent('dashboard-initialized', dashboard);
+        appEvents.emit('dashboard-initialized', dashboard);
       })
       .catch(this.onInitFailed.bind(this, 'Dashboard init failed', true));
   }
@@ -101,16 +107,18 @@ export class DashboardCtrl implements PanelContainer {
   }
 
   setWindowTitleAndTheme() {
-    window.document.title = config.window_title_prefix + this.dashboard.title;
+    window.document.title = config.windowTitlePrefix + this.dashboard.title;
   }
 
   showJsonEditor(evt, options) {
-    var editScope = this.$rootScope.$new();
-    editScope.object = options.object;
-    editScope.updateHandler = options.updateHandler;
+    const model = {
+      object: options.object,
+      updateHandler: options.updateHandler,
+    };
+
     this.$scope.appEvent('show-dash-editor', {
       src: 'public/app/partials/edit_json.html',
-      scope: editScope,
+      model: model,
     });
   }
 
@@ -118,21 +126,31 @@ export class DashboardCtrl implements PanelContainer {
     return this.dashboard;
   }
 
-  getPanelLoader() {
-    return this.panelLoader;
-  }
-
-  timezoneChanged() {
-    this.$rootScope.$broadcast('refresh');
-  }
-
   getPanelContainer() {
     return this;
+  }
+
+  onRemovingPanel(evt, options) {
+    options = options || {};
+    if (!options.panelId) {
+      return;
+    }
+
+    const panelInfo = this.dashboard.getPanelInfoById(options.panelId);
+    removePanel(this.dashboard, panelInfo.panel, true);
+  }
+
+  onDestroy() {
+    if (this.dashboard) {
+      this.dashboard.destroy();
+    }
   }
 
   init(dashboard) {
     this.$scope.onAppEvent('show-json-editor', this.showJsonEditor.bind(this));
     this.$scope.onAppEvent('template-variable-value-updated', this.templateVariableUpdated.bind(this));
+    this.$scope.onAppEvent('panel-remove', this.onRemovingPanel.bind(this));
+    this.$scope.$on('$destroy', this.onDestroy.bind(this));
     this.setupDashboard(dashboard);
   }
 }

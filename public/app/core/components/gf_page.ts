@@ -1,5 +1,3 @@
-///<reference path="../../headers/common.d.ts" />
-
 import coreModule from 'app/core/core_module';
 
 const template = `
@@ -33,7 +31,7 @@ export function gfPageDirective() {
       header: '?gfPageHeader',
       body: 'gfPageBody',
     },
-    link: function(scope, elem, attrs) {
+    link: (scope, elem, attrs) => {
       console.log(scope);
     },
   };

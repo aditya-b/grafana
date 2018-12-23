@@ -1,90 +1,157 @@
 import React from 'react';
 import _ from 'lodash';
-
 import config from 'app/core/config';
-import {PanelModel} from '../panel_model';
-import {PanelContainer} from './PanelContainer';
-import ScrollBar from 'app/core/components/ScrollBar/ScrollBar';
+import { PanelModel } from '../panel_model';
+import { DashboardModel } from '../dashboard_model';
+import store from 'app/core/store';
+import { LS_PANEL_COPY_KEY } from 'app/core/constants';
+import { updateLocation } from 'app/core/actions';
+import { store as reduxStore } from 'app/store/store';
 
 export interface AddPanelPanelProps {
   panel: PanelModel;
-  getPanelContainer: () => PanelContainer;
+  dashboard: DashboardModel;
 }
 
 export interface AddPanelPanelState {
-  filter: string;
-  panelPlugins: any[];
+  copiedPanelPlugins: any[];
 }
 
 export class AddPanelPanel extends React.Component<AddPanelPanelProps, AddPanelPanelState> {
   constructor(props) {
     super(props);
+    this.handleCloseAddPanel = this.handleCloseAddPanel.bind(this);
 
     this.state = {
-      panelPlugins: this.getPanelPlugins(),
-      filter: '',
+      copiedPanelPlugins: this.getCopiedPanelPlugins(),
     };
-
-    this.onPanelSelected = this.onPanelSelected.bind(this);
   }
 
-  getPanelPlugins() {
-    let panels = _.chain(config.panels)
-      .filter({hideFromList: false})
+  getCopiedPanelPlugins() {
+    const panels = _.chain(config.panels)
+      .filter({ hideFromList: false })
       .map(item => item)
       .value();
+    const copiedPanels = [];
 
-    // add special row type
-    panels.push({id: 'row', name: 'Row', sort: 8, info: {logos: {small: 'public/img/icn-row.svg'}}});
-
-    // add sort by sort property
-    return _.sortBy(panels, 'sort');
+    const copiedPanelJson = store.get(LS_PANEL_COPY_KEY);
+    if (copiedPanelJson) {
+      const copiedPanel = JSON.parse(copiedPanelJson);
+      const pluginInfo = _.find(panels, { id: copiedPanel.type });
+      if (pluginInfo) {
+        const pluginCopy = _.cloneDeep(pluginInfo);
+        pluginCopy.name = copiedPanel.title;
+        pluginCopy.sort = -1;
+        pluginCopy.defaults = copiedPanel;
+        copiedPanels.push(pluginCopy);
+      }
+    }
+    return _.sortBy(copiedPanels, 'sort');
   }
 
-  onPanelSelected(panelPluginInfo) {
-    const panelContainer = this.props.getPanelContainer();
-    const dashboard = panelContainer.getDashboard();
-    const {gridPos} = this.props.panel;
+  handleCloseAddPanel(evt) {
+    evt.preventDefault();
+    this.props.dashboard.removePanel(this.props.dashboard.panels[0]);
+  }
 
-    var newPanel: any = {
-      type: panelPluginInfo.id,
+  copyButton(panel) {
+    return (
+      <button className="btn-inverse btn" onClick={() => this.onPasteCopiedPanel(panel)} title={panel.name}>
+        Paste copied Panel
+      </button>
+    );
+  }
+
+  moveToEdit(panel) {
+    reduxStore.dispatch(
+      updateLocation({
+        query: {
+          panelId: panel.id,
+          edit: true,
+          fullscreen: true,
+        },
+        partial: true,
+      })
+    );
+  }
+
+  onCreateNewPanel = () => {
+    const dashboard = this.props.dashboard;
+    const { gridPos } = this.props.panel;
+
+    const newPanel: any = {
+      type: 'graph',
       title: 'Panel Title',
-      gridPos: {x: gridPos.x, y: gridPos.y, w: gridPos.w, h: gridPos.h}
+      gridPos: { x: gridPos.x, y: gridPos.y, w: gridPos.w, h: gridPos.h },
     };
 
-    if (panelPluginInfo.id === 'row') {
-      newPanel.title = 'Row title';
-      newPanel.gridPos = {x: 0, y: 0};
+    dashboard.addPanel(newPanel);
+    dashboard.removePanel(this.props.panel);
+
+    this.moveToEdit(newPanel);
+  };
+
+  onPasteCopiedPanel = panelPluginInfo => {
+    const dashboard = this.props.dashboard;
+    const { gridPos } = this.props.panel;
+
+    const newPanel: any = {
+      type: panelPluginInfo.id,
+      title: 'Panel Title',
+      gridPos: { x: gridPos.x, y: gridPos.y, w: gridPos.w, h: gridPos.h },
+    };
+
+    // apply panel template / defaults
+    if (panelPluginInfo.defaults) {
+      _.defaults(newPanel, panelPluginInfo.defaults);
+      newPanel.title = panelPluginInfo.defaults.title;
+      store.delete(LS_PANEL_COPY_KEY);
     }
 
     dashboard.addPanel(newPanel);
     dashboard.removePanel(this.props.panel);
-  }
+  };
 
-  renderPanelItem(panel) {
-    return (
-      <div key={panel.id} className="add-panel__item" onClick={() => this.onPanelSelected(panel)} title={panel.name}>
-        <img className="add-panel__item-img" src={panel.info.logos.small} />
-        <div className="add-panel__item-name">{panel.name}</div>
-      </div>
-    );
-  }
+  onCreateNewRow = () => {
+    const dashboard = this.props.dashboard;
+
+    const newRow: any = {
+      type: 'row',
+      title: 'Row title',
+      gridPos: { x: 0, y: 0 },
+    };
+
+    dashboard.addPanel(newRow);
+    dashboard.removePanel(this.props.panel);
+  };
 
   render() {
+    let addCopyButton;
+
+    if (this.state.copiedPanelPlugins.length === 1) {
+      addCopyButton = this.copyButton(this.state.copiedPanelPlugins[0]);
+    }
+
     return (
-      <div className="panel-container">
+      <div className="panel-container add-panel-container">
         <div className="add-panel">
-          <div className="add-panel__header">
-            <i className="gicon gicon-add-panel"></i>
-            <span className="add-panel__title">New Panel</span>
-            <span className="add-panel__sub-title">Select a visualization</span>
+          <div className="add-panel__header grid-drag-handle">
+            <i className="gicon gicon-add-panel" />
+            <button className="add-panel__close" onClick={this.handleCloseAddPanel}>
+              <i className="fa fa-close" />
+            </button>
           </div>
-          <ScrollBar className="add-panel__items">
-            {this.state.panelPlugins.map(this.renderPanelItem.bind(this))}
-          </ScrollBar>
+          <div className="add-panel-btn-container">
+            <button className="btn-success btn btn-large" onClick={this.onCreateNewPanel}>
+              Edit Panel
+            </button>
+            {addCopyButton}
+            <button className="btn-inverse btn" onClick={this.onCreateNewRow}>
+              Add Row
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 }
-

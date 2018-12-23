@@ -1,5 +1,3 @@
-///<reference path="../../../headers/common.d.ts" />
-
 import _ from 'lodash';
 import kbn from 'app/core/utils/kbn';
 import { QueryCtrl } from 'app/plugins/sdk';
@@ -21,7 +19,7 @@ export class OpenTsQueryCtrl extends QueryCtrl {
   addTagMode: boolean;
   addFilterMode: boolean;
 
-  /** @ngInject **/
+  /** @ngInject */
   constructor($scope, $injector) {
     super($scope, $injector);
 
@@ -90,7 +88,7 @@ export class OpenTsQueryCtrl extends QueryCtrl {
   }
 
   getTextValues(metricFindResult) {
-    return _.map(metricFindResult, function(value) {
+    return _.map(metricFindResult, value => {
       return value.text;
     });
   }
@@ -163,7 +161,7 @@ export class OpenTsQueryCtrl extends QueryCtrl {
     this.errors = this.validateTarget();
 
     if (!this.errors.filters) {
-      var currentFilter = {
+      const currentFilter = {
         type: this.target.currentFilterType,
         tagk: this.target.currentFilterKey,
         filter: this.target.currentFilterValue,
@@ -200,7 +198,7 @@ export class OpenTsQueryCtrl extends QueryCtrl {
   }
 
   validateTarget() {
-    var errs: any = {};
+    const errs: any = {};
 
     if (this.target.shouldDownsample) {
       try {

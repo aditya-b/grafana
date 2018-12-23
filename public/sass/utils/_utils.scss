@@ -74,3 +74,22 @@ button.close {
 .affix {
   position: fixed;
 }
+
+.d-inline-block {
+  display: inline-block;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+.center-vh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-items: center;
+}

@@ -1,13 +1,16 @@
 import _ from 'lodash';
 import coreModule from 'app/core/core_module';
 import { variableTypes } from './variable';
+import appEvents from 'app/core/app_events';
 
 export class VariableEditorCtrl {
-  /** @ngInject **/
+  /** @ngInject */
   constructor($scope, datasourceSrv, variableSrv, templateSrv) {
     $scope.variableTypes = variableTypes;
     $scope.ctrl = {};
     $scope.namePattern = /^(?!__).*$/;
+    $scope._ = _;
+    $scope.optionsLimit = 20;
 
     $scope.refreshOptions = [
       { value: 0, text: 'Never' },
@@ -21,58 +24,58 @@ export class VariableEditorCtrl {
       { value: 2, text: 'Alphabetical (desc)' },
       { value: 3, text: 'Numerical (asc)' },
       { value: 4, text: 'Numerical (desc)' },
+      { value: 5, text: 'Alphabetical (case-insensitive, asc)' },
+      { value: 6, text: 'Alphabetical (case-insensitive, desc)' },
     ];
 
     $scope.hideOptions = [{ value: 0, text: '' }, { value: 1, text: 'Label' }, { value: 2, text: 'Variable' }];
 
-    $scope.init = function() {
+    $scope.init = () => {
       $scope.mode = 'list';
 
       $scope.variables = variableSrv.variables;
       $scope.reset();
 
-      $scope.$watch('mode', function(val) {
+      $scope.$watch('mode', val => {
         if (val === 'new') {
           $scope.reset();
         }
       });
     };
 
-    $scope.setMode = function(mode) {
+    $scope.setMode = mode => {
       $scope.mode = mode;
     };
 
-    $scope.add = function() {
+    $scope.add = () => {
       if ($scope.isValid()) {
         variableSrv.addVariable($scope.current);
         $scope.update();
       }
     };
 
-    $scope.isValid = function() {
+    $scope.isValid = () => {
       if (!$scope.ctrl.form.$valid) {
         return false;
       }
 
       if (!$scope.current.name.match(/^\w+$/)) {
-        $scope.appEvent('alert-warning', [
-          'Validation',
-          'Only word and digit characters are allowed in variable names',
-        ]);
+        appEvents.emit('alert-warning', ['Validation', 'Only word and digit characters are allowed in variable names']);
         return false;
       }
 
-      var sameName = _.find($scope.variables, { name: $scope.current.name });
+      const sameName = _.find($scope.variables, { name: $scope.current.name });
       if (sameName && sameName !== $scope.current) {
-        $scope.appEvent('alert-warning', ['Validation', 'Variable with the same name already exists']);
+        appEvents.emit('alert-warning', ['Validation', 'Variable with the same name already exists']);
         return false;
       }
 
       if (
         $scope.current.type === 'query' &&
+        _.isString($scope.current.query) &&
         $scope.current.query.match(new RegExp('\\$' + $scope.current.name + '(/| |$)'))
       ) {
-        $scope.appEvent('alert-warning', [
+        appEvents.emit('alert-warning', [
           'Validation',
           'Query cannot contain a reference to itself. Variable: $' + $scope.current.name,
         ]);
@@ -82,7 +85,7 @@ export class VariableEditorCtrl {
       return true;
     };
 
-    $scope.validate = function() {
+    $scope.validate = () => {
       $scope.infoText = '';
       if ($scope.current.type === 'adhoc' && $scope.current.datasource !== null) {
         $scope.infoText = 'Adhoc filters are applied automatically to all queries that target this datasource';
@@ -94,32 +97,42 @@ export class VariableEditorCtrl {
       }
     };
 
-    $scope.runQuery = function() {
-      return variableSrv.updateOptions($scope.current).then(null, function(err) {
+    $scope.runQuery = () => {
+      $scope.optionsLimit = 20;
+      return variableSrv.updateOptions($scope.current).catch(err => {
         if (err.data && err.data.message) {
           err.message = err.data.message;
         }
-        $scope.appEvent('alert-error', ['Templating', 'Template variables could not be initialized: ' + err.message]);
+        appEvents.emit('alert-error', ['Templating', 'Template variables could not be initialized: ' + err.message]);
       });
     };
 
-    $scope.edit = function(variable) {
+    $scope.onQueryChange = (query, definition) => {
+      $scope.current.query = query;
+      $scope.current.definition = definition;
+      $scope.runQuery();
+    };
+
+    $scope.edit = variable => {
       $scope.current = variable;
       $scope.currentIsNew = false;
       $scope.mode = 'edit';
       $scope.validate();
+      datasourceSrv.get($scope.current.datasource).then(ds => {
+        $scope.currentDatasource = ds;
+      });
     };
 
-    $scope.duplicate = function(variable) {
-      var clone = _.cloneDeep(variable.getSaveModel());
+    $scope.duplicate = variable => {
+      const clone = _.cloneDeep(variable.getSaveModel());
       $scope.current = variableSrv.createVariableFromModel(clone);
       $scope.current.name = 'copy_of_' + variable.name;
       variableSrv.addVariable($scope.current);
     };
 
-    $scope.update = function() {
+    $scope.update = () => {
       if ($scope.isValid()) {
-        $scope.runQuery().then(function() {
+        $scope.runQuery().then(() => {
           $scope.reset();
           $scope.mode = 'list';
           templateSrv.updateTemplateData();
@@ -127,25 +140,25 @@ export class VariableEditorCtrl {
       }
     };
 
-    $scope.reset = function() {
+    $scope.reset = () => {
       $scope.currentIsNew = true;
       $scope.current = variableSrv.createVariableFromModel({ type: 'query' });
 
       // this is done here in case a new data source type variable was added
-      $scope.datasources = _.filter(datasourceSrv.getMetricSources(), function(ds) {
+      $scope.datasources = _.filter(datasourceSrv.getMetricSources(), ds => {
         return !ds.meta.mixed && ds.value !== null;
       });
 
       $scope.datasourceTypes = _($scope.datasources)
         .uniqBy('meta.id')
-        .map(function(ds) {
+        .map(ds => {
           return { text: ds.meta.name, value: ds.meta.id };
         })
         .value();
     };
 
     $scope.typeChanged = function() {
-      var old = $scope.current;
+      const old = $scope.current;
       $scope.current = variableSrv.createVariableFromModel({
         type: $scope.current.type,
       });
@@ -153,7 +166,7 @@ export class VariableEditorCtrl {
       $scope.current.hide = old.hide;
       $scope.current.label = old.label;
 
-      var oldIndex = _.indexOf(this.variables, old);
+      const oldIndex = _.indexOf(this.variables, old);
       if (oldIndex !== -1) {
         this.variables[oldIndex] = $scope.current;
       }
@@ -161,8 +174,19 @@ export class VariableEditorCtrl {
       $scope.validate();
     };
 
-    $scope.removeVariable = function(variable) {
+    $scope.removeVariable = variable => {
       variableSrv.removeVariable(variable);
+    };
+
+    $scope.showMoreOptions = () => {
+      $scope.optionsLimit += 20;
+    };
+
+    $scope.datasourceChanged = async () => {
+      datasourceSrv.get($scope.current.datasource).then(ds => {
+        $scope.current.query = '';
+        $scope.currentDatasource = ds;
+      });
     };
   }
 }

@@ -9,9 +9,6 @@ Graphite, Elasticsearch, OpenTSDB, Prometheus and InfluxDB.
 
 ![](http://docs.grafana.org/assets/img/features/dashboard_ex1.png)
 
-## Grafana v5 Alpha Preview
-Grafana master is now v5.0 alpha. This is going to be the biggest and most foundational release Grafana has ever had, coming with a ton of UX improvements, a new dashboard grid engine, dashboard folders, user teams and permissions. Checkout out this [video preview](https://www.youtube.com/watch?v=BC_YRNpqj5k) of Grafana v5.
-
 ## Installation
 Head to [docs.grafana.org](http://docs.grafana.org/installation/) and [download](https://grafana.com/get)
 the latest release.
@@ -27,41 +24,39 @@ the latest master builds [here](https://grafana.com/grafana/download)
 
 ### Dependencies
 
-- Go 1.9
-- NodeJS LTS
+- Go (Latest Stable)
+- Node.js LTS
 
 ### Building the backend
 ```bash
 go get github.com/grafana/grafana
-cd ~/go/src/github.com/grafana/grafana
+cd $GOPATH/src/github.com/grafana/grafana
 go run build.go setup
 go run build.go build
 ```
 
 ### Building frontend assets
 
-For this you need nodejs (v.6+).
+For this you need Node.js (LTS version).
 
+To build the assets, rebuild on file change, and serve them by Grafana's webserver (http://localhost:3000):
 ```bash
 npm install -g yarn
 yarn install --pure-lockfile
-npm run build
+yarn watch
 ```
 
-To rebuild frontend assets (typescript, sass etc) as you change them start the watcher via.
-
+Build the assets, rebuild on file change with Hot Module Replacement (HMR), and serve them by webpack-dev-server (http://localhost:3333):
 ```bash
-npm run watch
+yarn start
+# OR set a theme
+env GRAFANA_THEME=light yarn start
 ```
+Note: HMR for Angular is not supported. If you edit files in the Angular part of the app, the whole page will reload.
 
 Run tests
 ```bash
-npm run test
-```
-
-Run tests in watch mode
-```bash
-npm run watch-test
+yarn jest
 ```
 
 ### Recompile backend on source change
@@ -73,6 +68,29 @@ bra run
 ```
 
 Open grafana in your browser (default: `http://localhost:3000`) and login with admin user (default: `user/pass = admin/admin`).
+
+### Building a Docker image
+
+There are two different ways to build a Grafana docker image. If you're machine is setup for Grafana development and you run linux/amd64 you can build just the image. Otherwise, there is the option to build Grafana completely within Docker.
+
+Run the image you have built using: `docker run --rm -p 3000:3000 grafana/grafana:dev`
+
+#### Building on linux/amd64 (fast)
+
+1. Build the frontend `go run build.go build-frontend`
+2. Build the docker image `make build-docker-dev`
+
+The resulting image will be tagged as `grafana/grafana:dev`
+
+#### Building anywhere (slower)
+
+Choose this option to build on platforms other than linux/amd64 and/or not have to setup the Grafana development environment.
+
+1. `make build-docker-full` or `docker build -t grafana/grafana:dev .`
+
+The resulting image will be tagged as `grafana/grafana:dev`
+
+Notice: If you are using Docker for MacOS, be sure to let limit of Memory bigger than 2 GiB (at docker -> Preferences -> Advanced), otherwize you may faild at `grunt build`
 
 ### Dev config
 
@@ -86,17 +104,28 @@ In your custom.ini uncomment (remove the leading `;`) sign. And set `app_mode = 
 
 ### Running tests
 
-- You can run backend Golang tests using "go test ./pkg/...".
-- Execute all frontend tests with "npm run test"
+#### Frontend
+Execute all frontend tests
+```bash
+yarn test
+```
 
-Writing & watching frontend tests (we have two test runners)
+Writing & watching frontend tests
 
-- jest for all new tests that do not require browser context (React+more)
-   - Start watcher: `npm run jest`
-   - Jest will run all test files that end with the name ".jest.ts"
-- karma + mocha is used for testing angularjs components. We do want to migrate these test to jest over time (if possible).
-  - Start watcher: `npm run karma`
-  - Karma+Mocha runs all files that end with the name "_specs.ts".
+- Start watcher: `yarn jest`
+- Jest will run all test files that end with the name ".test.ts"
+
+#### Backend
+```bash
+# Run Golang tests using sqlite3 as database (default)
+go test ./pkg/...
+
+# Run Golang tests using mysql as database - convenient to use /docker/blocks/mysql_tests
+GRAFANA_TEST_DB=mysql go test ./pkg/...
+
+# Run Golang tests using postgres as database - convenient to use /docker/blocks/postgres_tests
+GRAFANA_TEST_DB=postgres go test ./pkg/...
+```
 
 ## Contribute
 
@@ -111,5 +140,5 @@ plugin development.
 
 ## License
 
-Grafana is distributed under Apache 2.0 License.
+Grafana is distributed under [Apache 2.0 License](https://github.com/grafana/grafana/blob/master/LICENSE.md).
 

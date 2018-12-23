@@ -51,7 +51,7 @@ func NewSensuNotifier(model *m.AlertNotification) (alerting.Notifier, error) {
 	}
 
 	return &SensuNotifier{
-		NotifierBase: NewNotifierBase(model.Id, model.IsDefault, model.Name, model.Type, model.Settings),
+		NotifierBase: NewNotifierBase(model),
 		Url:          url,
 		User:         model.Settings.Get("username").MustString(),
 		Source:       model.Settings.Get("source").MustString(),
@@ -69,10 +69,6 @@ type SensuNotifier struct {
 	Password string
 	Handler  string
 	log      log.Logger
-}
-
-func (this *SensuNotifier) ShouldNotify(context *alerting.EvalContext) bool {
-	return defaultShouldNotify(context)
 }
 
 func (this *SensuNotifier) Notify(evalContext *alerting.EvalContext) error {

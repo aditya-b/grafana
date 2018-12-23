@@ -47,7 +47,7 @@ func NewWebHookNotifier(model *m.AlertNotification) (alerting.Notifier, error) {
 	}
 
 	return &WebhookNotifier{
-		NotifierBase: NewNotifierBase(model.Id, model.IsDefault, model.Name, model.Type, model.Settings),
+		NotifierBase: NewNotifierBase(model),
 		Url:          url,
 		User:         model.Settings.Get("username").MustString(),
 		Password:     model.Settings.Get("password").MustString(),
@@ -63,10 +63,6 @@ type WebhookNotifier struct {
 	Password   string
 	HttpMethod string
 	log        log.Logger
-}
-
-func (this *WebhookNotifier) ShouldNotify(context *alerting.EvalContext) bool {
-	return defaultShouldNotify(context)
 }
 
 func (this *WebhookNotifier) Notify(evalContext *alerting.EvalContext) error {

@@ -13,7 +13,7 @@ export class DashNavCtrl {
     appEvents.on('save-dashboard', this.saveDashboard.bind(this), $scope);
 
     if (this.dashboard.meta.isSnapshot) {
-      var meta = this.dashboard.meta;
+      const meta = this.dashboard.meta;
       this.titleTooltip = 'Created: &nbsp;' + moment(meta.created).calendar();
       if (meta.expires) {
         this.titleTooltip += '<br>Expires: &nbsp;' + moment(meta.expires).fromNow() + '<br>';
@@ -22,7 +22,7 @@ export class DashNavCtrl {
   }
 
   toggleSettings() {
-    let search = this.$location.search();
+    const search = this.$location.search();
     if (search.editview) {
       delete search.editview;
     } else {
@@ -31,14 +31,19 @@ export class DashNavCtrl {
     this.$location.search(search);
   }
 
+  toggleViewMode() {
+    appEvents.emit('toggle-kiosk-mode');
+  }
+
   close() {
-    let search = this.$location.search();
+    const search = this.$location.search();
     if (search.editview) {
       delete search.editview;
-    }
-    if (search.fullscreen) {
+    } else if (search.fullscreen) {
       delete search.fullscreen;
       delete search.edit;
+      delete search.tab;
+      delete search.panelId;
     }
     this.$location.search(search);
   }
@@ -50,7 +55,7 @@ export class DashNavCtrl {
   }
 
   shareDashboard(tabIndex) {
-    var modalScope = this.$scope.$new();
+    const modalScope = this.$scope.$new();
     modalScope.tabIndex = tabIndex;
     modalScope.dashboard = this.dashboard;
 
@@ -69,18 +74,24 @@ export class DashNavCtrl {
   }
 
   showSearch() {
+    if (this.dashboard.meta.fullscreen) {
+      this.close();
+      return;
+    }
+
     appEvents.emit('show-dash-search');
   }
 
   addPanel() {
+    appEvents.emit('dash-scroll', { animate: true, evt: 0 });
+
     if (this.dashboard.panels.length > 0 && this.dashboard.panels[0].type === 'add-panel') {
-      this.dashboard.removePanel(this.dashboard.panels[0]);
-      return;
+      return; // Return if the "Add panel" exists already
     }
 
     this.dashboard.addPanel({
       type: 'add-panel',
-      gridPos: { x: 0, y: 0, w: 12, h: 9 },
+      gridPos: { x: 0, y: 0, w: 12, h: 8 },
       title: 'Panel Title',
     });
   }

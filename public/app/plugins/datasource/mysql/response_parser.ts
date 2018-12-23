@@ -1,22 +1,20 @@
-///<reference path="../../../headers/common.d.ts" />
-
 import _ from 'lodash';
 
 export default class ResponseParser {
   constructor(private $q) {}
 
   processQueryResult(res) {
-    var data = [];
+    const data = [];
 
     if (!res.data.results) {
       return { data: data };
     }
 
-    for (let key in res.data.results) {
-      let queryRes = res.data.results[key];
+    for (const key in res.data.results) {
+      const queryRes = res.data.results[key];
 
       if (queryRes.series) {
-        for (let series of queryRes.series) {
+        for (const series of queryRes.series) {
           data.push({
             target: series.name,
             datapoints: series.points,
@@ -27,7 +25,7 @@ export default class ResponseParser {
       }
 
       if (queryRes.tables) {
-        for (let table of queryRes.tables) {
+        for (const table of queryRes.tables) {
           table.type = 'table';
           table.refId = queryRes.refId;
           table.meta = queryRes.meta;
@@ -115,7 +113,7 @@ export default class ResponseParser {
     let tagsColumnIndex = -1;
 
     for (let i = 0; i < table.columns.length; i++) {
-      if (table.columns[i].text === 'time_sec') {
+      if (table.columns[i].text === 'time_sec' || table.columns[i].text === 'time') {
         timeColumnIndex = i;
       } else if (table.columns[i].text === 'title') {
         return this.$q.reject({
@@ -139,8 +137,8 @@ export default class ResponseParser {
       const row = table.rows[i];
       list.push({
         annotation: options.annotation,
-        time: Math.floor(row[timeColumnIndex]) * 1000,
-        text: row[textColumnIndex],
+        time: Math.floor(row[timeColumnIndex]),
+        text: row[textColumnIndex] ? row[textColumnIndex].toString() : '',
         tags: row[tagsColumnIndex] ? row[tagsColumnIndex].trim().split(/\s*,\s*/) : [],
       });
     }

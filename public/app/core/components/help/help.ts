@@ -1,5 +1,3 @@
-///<reference path="../../../headers/common.d.ts" />
-
 import coreModule from '../../core_module';
 import appEvents from 'app/core/app_events';
 
@@ -21,24 +19,22 @@ export class HelpCtrl {
       ],
       Dashboard: [
         { keys: ['mod+s'], description: 'Save dashboard' },
-        { keys: ['mod+h'], description: 'Hide row controls' },
         { keys: ['d', 'r'], description: 'Refresh all panels' },
         { keys: ['d', 's'], description: 'Dashboard settings' },
         { keys: ['d', 'v'], description: 'Toggle in-active / view mode' },
         { keys: ['d', 'k'], description: 'Toggle kiosk mode (hides top nav)' },
         { keys: ['d', 'E'], description: 'Expand all rows' },
         { keys: ['d', 'C'], description: 'Collapse all rows' },
+        { keys: ['d', 'a'], description: 'Toggle auto fit panels (experimental feature)' },
         { keys: ['mod+o'], description: 'Toggle shared graph crosshair' },
       ],
       'Focused Panel': [
         { keys: ['e'], description: 'Toggle panel edit view' },
         { keys: ['v'], description: 'Toggle panel fullscreen view' },
         { keys: ['p', 's'], description: 'Open Panel Share Modal' },
+        { keys: ['p', 'd'], description: 'Duplicate Panel' },
         { keys: ['p', 'r'], description: 'Remove Panel' },
-      ],
-      'Focused Row': [
-        { keys: ['r', 'c'], description: 'Collapse Row' },
-        { keys: ['r', 'r'], description: 'Remove Row' },
+        { keys: ['p', 'l'], description: 'Toggle panel legend' },
       ],
       'Time Range': [
         { keys: ['t', 'z'], description: 'Zoom out time range' },

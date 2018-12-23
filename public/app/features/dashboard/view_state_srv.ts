@@ -1,6 +1,8 @@
 import angular from 'angular';
 import _ from 'lodash';
 import config from 'app/core/config';
+import appEvents from 'app/core/app_events';
+import { DashboardModel } from './dashboard_model';
 
 // represents the transient view state
 // like fullscreen panel & edit
@@ -8,36 +10,31 @@ export class DashboardViewState {
   state: any;
   panelScopes: any;
   $scope: any;
-  dashboard: any;
-  editStateChanged: any;
+  dashboard: DashboardModel;
   fullscreenPanel: any;
   oldTimeRange: any;
 
   /** @ngInject */
-  constructor($scope, private $location, private $timeout, private $rootScope) {
-    var self = this;
+  constructor($scope, private $location, private $timeout) {
+    const self = this;
     self.state = {};
     self.panelScopes = [];
     self.$scope = $scope;
     self.dashboard = $scope.dashboard;
 
-    $scope.onAppEvent('$routeUpdate', function() {
-      var urlState = self.getQueryStringState();
+    $scope.onAppEvent('$routeUpdate', () => {
+      const urlState = self.getQueryStringState();
       if (self.needsSync(urlState)) {
         self.update(urlState, true);
       }
     });
 
-    $scope.onAppEvent('panel-change-view', function(evt, payload) {
+    $scope.onAppEvent('panel-change-view', (evt, payload) => {
       self.update(payload);
     });
 
-    $scope.onAppEvent('panel-initialized', function(evt, payload) {
-      self.registerPanel(payload.scope);
-    });
-
     // this marks changes to location during this digest cycle as not to add history item
-    // dont want url changes like adding orgId to add browser history
+    // don't want url changes like adding orgId to add browser history
     $location.replace();
     this.update(this.getQueryStringState());
   }
@@ -47,8 +44,8 @@ export class DashboardViewState {
   }
 
   getQueryStringState() {
-    var state = this.$location.search();
-    state.panelId = parseInt(state.panelId) || null;
+    const state = this.$location.search();
+    state.panelId = parseInt(state.panelId, 10) || null;
     state.fullscreen = state.fullscreen ? true : null;
     state.edit = state.edit === 'true' || state.edit === true || null;
     state.editview = state.editview || null;
@@ -57,7 +54,7 @@ export class DashboardViewState {
   }
 
   serializeToUrl() {
-    var urlState = _.clone(this.state);
+    const urlState = _.clone(this.state);
     urlState.fullscreen = this.state.fullscreen ? true : null;
     urlState.edit = this.state.edit ? true : null;
     return urlState;
@@ -74,9 +71,6 @@ export class DashboardViewState {
       }
     }
 
-    // remember if editStateChanged
-    this.editStateChanged = (state.edit || false) !== (this.state.edit || false);
-
     _.extend(this.state, state);
     this.dashboard.meta.fullscreen = this.state.fullscreen;
 
@@ -87,6 +81,12 @@ export class DashboardViewState {
       if (!this.dashboard.meta.soloMode) {
         this.state.panelId = null;
       }
+    }
+
+    if ((this.state.fullscreen || this.dashboard.meta.soloMode) && this.state.panelId) {
+      // Trying to render panel in fullscreen when it's in the collapsed row causes an issue.
+      // So in this case expand collapsed row first.
+      this.toggleCollapsedPanelRow(this.state.panelId);
     }
 
     // if no edit state cleanup tab parm
@@ -103,108 +103,72 @@ export class DashboardViewState {
     this.syncState();
   }
 
-  syncState() {
-    if (this.panelScopes.length === 0) {
-      return;
+  toggleCollapsedPanelRow(panelId) {
+    for (const panel of this.dashboard.panels) {
+      if (panel.collapsed) {
+        for (const rowPanel of panel.panels) {
+          if (rowPanel.id === panelId) {
+            this.dashboard.toggleRow(panel);
+            return;
+          }
+        }
+      }
     }
+  }
 
+  syncState() {
     if (this.dashboard.meta.fullscreen) {
-      var panelScope = this.getPanelScope(this.state.panelId);
-      if (!panelScope) {
+      const panel = this.dashboard.getPanelById(this.state.panelId);
+
+      if (!panel) {
         return;
       }
 
-      if (this.fullscreenPanel) {
-        // if already fullscreen
-        if (this.fullscreenPanel === panelScope && this.editStateChanged === false) {
-          return;
-        } else {
-          this.leaveFullscreen(false);
-        }
-      }
-
-      if (!panelScope.ctrl.editModeInitiated) {
-        panelScope.ctrl.initEditMode();
-      }
-
-      if (!panelScope.ctrl.fullscreen) {
-        this.enterFullscreen(panelScope);
+      if (!panel.fullscreen) {
+        this.enterFullscreen(panel);
+      } else if (this.dashboard.meta.isEditing !== this.state.edit) {
+        this.dashboard.setViewMode(panel, this.state.fullscreen, this.state.edit);
       }
     } else if (this.fullscreenPanel) {
-      this.leaveFullscreen(true);
+      this.leaveFullscreen();
     }
   }
 
-  getPanelScope(id) {
-    return _.find(this.panelScopes, function(panelScope) {
-      return panelScope.ctrl.panel.id === id;
-    });
-  }
+  leaveFullscreen() {
+    const panel = this.fullscreenPanel;
 
-  leaveFullscreen(render) {
-    var self = this;
-    var ctrl = self.fullscreenPanel.ctrl;
+    this.dashboard.setViewMode(panel, false, false);
 
-    ctrl.editMode = false;
-    ctrl.fullscreen = false;
+    delete this.fullscreenPanel;
 
-    this.dashboard.setViewMode(ctrl.panel, false, false);
-    this.$scope.appEvent('panel-fullscreen-exit', { panelId: ctrl.panel.id });
+    this.$timeout(() => {
+      appEvents.emit('dash-scroll', { restore: true });
 
-    if (!render) {
-      return false;
-    }
-
-    this.$timeout(function() {
-      if (self.oldTimeRange !== ctrl.range) {
-        self.$rootScope.$broadcast('refresh');
+      if (this.oldTimeRange !== this.dashboard.time) {
+        this.dashboard.startRefresh();
       } else {
-        self.$rootScope.$broadcast('render');
+        this.dashboard.render();
       }
-      delete self.fullscreenPanel;
     });
-    return true;
   }
 
-  enterFullscreen(panelScope) {
-    var ctrl = panelScope.ctrl;
+  enterFullscreen(panel) {
+    const isEditing = this.state.edit && this.dashboard.meta.canEdit;
 
-    ctrl.editMode = this.state.edit && this.dashboard.meta.canEdit;
-    ctrl.fullscreen = true;
+    this.oldTimeRange = this.dashboard.time;
+    this.fullscreenPanel = panel;
 
-    this.oldTimeRange = ctrl.range;
-    this.fullscreenPanel = panelScope;
-
-    this.dashboard.setViewMode(ctrl.panel, true, ctrl.editMode);
-    this.$scope.appEvent('panel-fullscreen-enter', { panelId: ctrl.panel.id });
-  }
-
-  registerPanel(panelScope) {
-    var self = this;
-    self.panelScopes.push(panelScope);
-
-    if (!self.dashboard.meta.soloMode) {
-      if (self.state.panelId === panelScope.ctrl.panel.id) {
-        if (self.state.edit) {
-          panelScope.ctrl.editPanel();
-        } else {
-          panelScope.ctrl.viewPanel();
-        }
-      }
-    }
-
-    var unbind = panelScope.$on('$destroy', function() {
-      self.panelScopes = _.without(self.panelScopes, panelScope);
-      unbind();
-    });
+    // Firefox doesn't return scrollTop position properly if 'dash-scroll' is emitted after setViewMode()
+    this.$scope.appEvent('dash-scroll', { animate: false, pos: 0 });
+    this.dashboard.setViewMode(panel, true, isEditing);
   }
 }
 
 /** @ngInject */
-export function dashboardViewStateSrv($location, $timeout, $rootScope) {
+export function dashboardViewStateSrv($location, $timeout) {
   return {
-    create: function($scope) {
-      return new DashboardViewState($scope, $location, $timeout, $rootScope);
+    create: $scope => {
+      return new DashboardViewState($scope, $location, $timeout);
     },
   };
 }

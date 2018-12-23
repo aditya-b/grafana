@@ -1,5 +1,3 @@
-///<reference path="../../headers/common.d.ts" />
-
 import _ from 'lodash';
 import coreModule from '../core_module';
 
@@ -9,7 +7,7 @@ export function arrayJoin() {
   return {
     restrict: 'A',
     require: 'ngModel',
-    link: function(scope, element, attr, ngModel) {
+    link: (scope, element, attr, ngModel) => {
       function split_array(text) {
         return (text || '').split(',');
       }

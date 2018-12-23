@@ -48,9 +48,9 @@ func (r *RoleType) UnmarshalJSON(data []byte) error {
 
 	*r = RoleType(str)
 
-	if (*r).IsValid() == false {
+	if !(*r).IsValid() {
 		if (*r) != "" {
-			return errors.New(fmt.Sprintf("JSON validation error: invalid role value: %s", *r))
+			return fmt.Errorf("JSON validation error: invalid role value: %s", *r)
 		}
 
 		*r = ROLE_VIEWER
@@ -72,8 +72,10 @@ type OrgUser struct {
 // COMMANDS
 
 type RemoveOrgUserCommand struct {
-	UserId int64
-	OrgId  int64
+	UserId                   int64
+	OrgId                    int64
+	ShouldDeleteOrphanedUser bool
+	UserWasDeleted           bool
 }
 
 type AddOrgUserCommand struct {
@@ -95,7 +97,10 @@ type UpdateOrgUserCommand struct {
 // QUERIES
 
 type GetOrgUsersQuery struct {
-	OrgId  int64
+	OrgId int64
+	Query string
+	Limit int
+
 	Result []*OrgUserDTO
 }
 
