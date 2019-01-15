@@ -91,6 +91,7 @@ export class QueryEditorRow extends PureComponent<Props, State> {
   }
 
   render() {
+    const { query } = this.props;
     const { datasource } = this.state;
 
     if (!datasource) {
@@ -98,7 +99,22 @@ export class QueryEditorRow extends PureComponent<Props, State> {
     }
 
     if (datasource.pluginExports.QueryCtrl) {
-      return <div ref={element => (this.element = element)} />;
+      return (
+        <div className="query-editor-box">
+          <div className="query-editor-box__header">
+            <div className="query-editor-box__ref-id">{query.refId}</div>
+            <div className="query-editor-box__actions">
+              <button className="query-editor-box__action"><i className="fa fa-fw fa-arrow-down" /></button>
+              <button className="query-editor-box__action"><i className="fa fa-fw fa-arrow-up" /></button>
+              <button className="query-editor-box__action"><i className="fa fa-fw fa-duplicate" /></button>
+              <button className="query-editor-box__action"><i className="fa fa-fw fa-remove" /></button>
+            </div>
+          </div>
+          <div className="query-editor-box__body">
+            <div ref={element => (this.element = element)} />
+          </div>
+        </div>
+      );
     } else if (datasource.pluginExports.QueryEditor) {
       const QueryEditor = datasource.pluginExports.QueryEditor;
       return <QueryEditor />;
