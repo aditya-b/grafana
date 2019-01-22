@@ -224,6 +224,11 @@ type Cfg struct {
 	EnableAlphaPanels                bool
 	DisableSanitizeHtml              bool
 	EnterpriseLicensePath            string
+
+	LoginCookieName     string
+	LoginCookieUsername string
+	LoginCookieSecure   bool
+	LoginCookieMaxDays  int
 }
 
 type CommandLineArgs struct {
@@ -546,6 +551,13 @@ func (cfg *Cfg) Load(args *CommandLineArgs) error {
 	if IsEnterprise {
 		ApplicationName = APP_NAME_ENTERPRISE
 	}
+
+	//login
+	login := iniFile.Section("login")
+	cfg.LoginCookieName = login.Key("cookie_name").String()
+	cfg.LoginCookieMaxDays = login.Key("login_remember_days").MustInt()
+	cfg.LoginCookieSecure = login.Key("cookie_secure").MustBool(false)
+	cfg.LoginCookieUsername = login.Key("cookie_username").String()
 
 	Env = iniFile.Section("").Key("app_mode").MustString("development")
 	InstanceName = iniFile.Section("").Key("instance_name").MustString("unknown_instance_name")
