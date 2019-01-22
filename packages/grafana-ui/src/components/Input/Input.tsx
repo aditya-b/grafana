@@ -1,37 +1,24 @@
-import React, { PureComponent } from 'react';
+import React, { FocusEvent, FormEvent, InputHTMLAttributes, PureComponent } from 'react';
 import classNames from 'classnames';
-import { ValidationEvents, ValidationRule } from 'app/types';
-import { validate, hasValidationEvent } from 'app/core/utils/validate';
+import { validate, hasValidationEvent } from '../../utils';
+import { EventsWithValidation, InputStatus, ValidationEvents, ValidationRule } from '../../types';
 
-export enum InputStatus {
-  Invalid = 'invalid',
-  Valid = 'valid',
-}
-
-export enum InputTypes {
-  Text = 'text',
-  Number = 'number',
-  Password = 'password',
-  Email = 'email',
-}
-
-export enum EventsWithValidation {
-  onBlur = 'onBlur',
-  onFocus = 'onFocus',
-  onChange = 'onChange',
-}
-
-interface Props extends React.HTMLProps<HTMLInputElement> {
+interface Props extends InputHTMLAttributes<HTMLInputElement> {
   validationEvents?: ValidationEvents;
   hideErrorMessage?: boolean;
+  className?: string;
 
   // Override event props and append status as argument
-  onBlur?: (event: React.FocusEvent<HTMLInputElement>, status?: InputStatus) => void;
-  onFocus?: (event: React.FocusEvent<HTMLInputElement>, status?: InputStatus) => void;
-  onChange?: (event: React.FormEvent<HTMLInputElement>, status?: InputStatus) => void;
+  onBlur?: (event: FocusEvent<HTMLInputElement>, status?: InputStatus) => void;
+  onFocus?: (event: FocusEvent<HTMLInputElement>, status?: InputStatus) => void;
+  onChange?: (event: FormEvent<HTMLInputElement>, status?: InputStatus) => void;
 }
 
-export class Input extends PureComponent<Props> {
+interface State {
+  error: string;
+}
+
+export class Input extends PureComponent<Props, State> {
   static defaultProps = {
     className: '',
   };
@@ -49,8 +36,8 @@ export class Input extends PureComponent<Props> {
   }
 
   validatorAsync = (validationRules: ValidationRule[]) => {
-    return evt => {
-      const errors = validate(evt.target.value, validationRules);
+    return event => {
+      const errors = validate(event.target.value, validationRules);
       this.setState(prevState => {
         return {
           ...prevState,
@@ -60,17 +47,20 @@ export class Input extends PureComponent<Props> {
     };
   };
 
-  populateEventPropsWithStatus = (restProps, validationEvents: ValidationEvents) => {
+  populateEventPropsWithStatus = (
+    restProps: InputHTMLAttributes<HTMLInputElement>,
+    validationEvents?: ValidationEvents
+  ) => {
     const inputElementProps = { ...restProps };
     Object.keys(EventsWithValidation).forEach((eventName: EventsWithValidation) => {
       if (hasValidationEvent(eventName, validationEvents) || restProps[eventName]) {
-        inputElementProps[eventName] = async evt => {
-          evt.persist(); // Needed for async. https://reactjs.org/docs/events.html#event-pooling
+        inputElementProps[eventName] = async (event: FocusEvent) => {
+          event.persist(); // Needed for async. https://reactjs.org/docs/events.html#event-pooling
           if (hasValidationEvent(eventName, validationEvents)) {
-            await this.validatorAsync(validationEvents[eventName]).apply(this, [evt]);
+            await this.validatorAsync(validationEvents[eventName]).apply(this, [event]);
           }
           if (restProps[eventName]) {
-            restProps[eventName].apply(null, [evt, this.status]);
+            restProps[eventName].apply(null, [event, this.status]);
           }
         };
       }

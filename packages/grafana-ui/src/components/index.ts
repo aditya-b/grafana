@@ -12,6 +12,7 @@ export { default as resetSelectStyles } from './Select/resetSelectStyles';
 // Forms
 export { FormLabel } from './FormLabel/FormLabel';
 export { FormField } from './FormField/FormField';
+export { Input } from './Input/Input';
 
 export { LoadingPlaceholder } from './LoadingPlaceholder/LoadingPlaceholder';
 export { ColorPicker } from './ColorPicker/ColorPicker';
