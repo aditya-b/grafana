@@ -1,7 +1,9 @@
+// Libraries
 import _ from 'lodash';
 import { ThunkAction } from 'redux-thunk';
-import { RawTimeRange, TimeRange } from '@grafana/ui';
 
+// Services & Utils
+import store from 'app/core/store';
 import {
   LAST_USED_DATASOURCE_KEY,
   clearQueryKeys,
@@ -14,10 +16,12 @@ import {
   serializeStateToUrlParam,
 } from 'app/core/utils/explore';
 
+// Actions
 import { updateLocation } from 'app/core/actions';
-import store from 'app/core/store';
-import { DataSourceSelectItem } from 'app/types/datasources';
-import { DataQuery, StoreState } from 'app/types';
+
+// Types
+import { StoreState } from 'app/types';
+import { DataQuery, DataSourceSelectItem, QueryHint  } from '@grafana/ui/src/types';
 import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 import {
   ExploreId,
@@ -26,11 +30,10 @@ import {
   ResultType,
   QueryOptions,
   QueryTransaction,
-  QueryHint,
-  QueryHintGetter,
 } from 'app/types/explore';
-import { Emitter } from 'app/core/core';
 
+import { Emitter } from 'app/core/core';
+import { RawTimeRange, TimeRange, DataSourceApi } from '@grafana/ui';
 import {
   Action as ThunkableAction,
   ActionTypes,
@@ -44,6 +47,7 @@ import {
   QueryTransactionStartAction,
   ScanStopAction,
 } from './actionTypes';
+
 
 type ThunkResult<R> = ThunkAction<R, StoreState, undefined, ThunkableAction>;
 
@@ -212,11 +216,11 @@ export const loadDatasourceMissing = (exploreId: ExploreId): LoadDatasourceMissi
 /**
  * Start the async process of loading a datasource to display a loading indicator
  */
-export const loadDatasourcePending = (exploreId: ExploreId, datasourceId: number): LoadDatasourcePendingAction => ({
+export const loadDatasourcePending = (exploreId: ExploreId, datasourceName: string): LoadDatasourcePendingAction => ({
   type: ActionTypes.LoadDatasourcePending,
   payload: {
     exploreId,
-    datasourceId,
+    datasourceName,
   },
 });
 
@@ -262,12 +266,12 @@ export const loadDatasourceSuccess = (
 /**
  * Main action to asynchronously load a datasource. Dispatches lots of smaller actions for feedback.
  */
-export function loadDatasource(exploreId: ExploreId, instance: any): ThunkResult<void> {
+export function loadDatasource(exploreId: ExploreId, instance: DataSourceApi): ThunkResult<void> {
   return async (dispatch, getState) => {
-    const datasourceId = instance.meta.id;
+    const datasourceName = instance.name;
 
     // Keep ID to track selection
-    dispatch(loadDatasourcePending(exploreId, datasourceId));
+    dispatch(loadDatasourcePending(exploreId, datasourceName));
 
     let datasourceError = null;
     try {
@@ -276,12 +280,13 @@ export function loadDatasource(exploreId: ExploreId, instance: any): ThunkResult
     } catch (error) {
       datasourceError = (error && error.statusText) || 'Network error';
     }
+
     if (datasourceError) {
       dispatch(loadDatasourceFailure(exploreId, datasourceError));
       return;
     }
 
-    if (datasourceId !== getState().explore[exploreId].requestedDatasourceId) {
+    if (datasourceName !== getState().explore[exploreId].requestedDatasourceName) {
       // User already changed datasource again, discard results
       return;
     }
@@ -307,7 +312,7 @@ export function loadDatasource(exploreId: ExploreId, instance: any): ThunkResult
       }
     }
 
-    if (datasourceId !== getState().explore[exploreId].requestedDatasourceId) {
+    if (datasourceName !== getState().explore[exploreId].requestedDatasourceName) {
       // User already changed datasource again, discard results
       return;
     }
@@ -460,7 +465,7 @@ export function queryTransactionSuccess(
 
     // Get query hints
     let hints: QueryHint[];
-    if (datasourceInstance.getQueryHints as QueryHintGetter) {
+    if (datasourceInstance.getQueryHints) {
       hints = datasourceInstance.getQueryHints(transaction.query, result);
     }
 

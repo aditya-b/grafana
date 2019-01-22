@@ -7,11 +7,17 @@ import { isValidTimeSpan } from 'app/core/utils/rangeutil';
 // Components
 import { Switch } from 'app/core/components/Switch/Switch';
 import DataSourceOption from './DataSourceOption';
-import { EventsWithValidation, FormLabel, Input, InputStatus, ValidationEvents } from '@grafana/ui';
+import {
+  DataSourceSelectItem,
+  EventsWithValidation,
+  FormLabel,
+  Input,
+  InputStatus,
+  ValidationEvents,
+} from '@grafana/ui';
 
 // Types
 import { PanelModel } from '../panel_model';
-import { DataSourceSelectItem } from 'app/types';
 
 const timeRangeValidationEvents: ValidationEvents = {
   [EventsWithValidation.onBlur]: [
