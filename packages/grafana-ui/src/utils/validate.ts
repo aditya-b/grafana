@@ -1,7 +1,7 @@
-﻿import { EventsWithValidation, ValidationRule, ValidationEvents } from '..';
+﻿import { EventsWithValidation, ValidationRule, ValidationEvents } from '../types';
 
 export const validate = (value: string, validationRules: ValidationRule[]) => {
-  const errors = validationRules.reduce((acc, currentRule: ValidationRule) => {
+  const errors = validationRules.reduce((acc, currentRule) => {
     if (!currentRule.rule(value)) {
       return acc.concat(currentRule.errorMessage);
     }
@@ -10,6 +10,6 @@ export const validate = (value: string, validationRules: ValidationRule[]) => {
   return errors.length > 0 ? errors : null;
 };
 
-export const hasValidationEvent = (event: EventsWithValidation, validationEvents?: ValidationEvents) => {
+export const hasValidationEvent = (event: EventsWithValidation, validationEvents: ValidationEvents) => {
   return validationEvents && validationEvents[event];
 };
