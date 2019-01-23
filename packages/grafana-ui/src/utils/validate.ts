@@ -10,6 +10,6 @@ export const validate = (value: string, validationRules: ValidationRule[]) => {
   return errors.length > 0 ? errors : null;
 };
 
-export const hasValidationEvent = (event: EventsWithValidation, validationEvents: ValidationEvents) => {
+export const hasValidationEvent = (event: EventsWithValidation, validationEvents?: ValidationEvents) => {
   return validationEvents && validationEvents[event];
 };

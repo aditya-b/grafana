@@ -24,7 +24,7 @@ export class Input extends PureComponent<Props, State> {
   };
 
   state = {
-    error: null,
+    error: '',
   };
 
   get status() {
