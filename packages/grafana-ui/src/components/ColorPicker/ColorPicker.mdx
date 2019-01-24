@@ -1,0 +1,20 @@
+---
+name: ColorPicker
+---
+import {PropsTable} from 'docz'
+import { SeriesColorPicker } from './ColorPicker'
+
+# Delete button
+
+This is a delete button.
+
+## Why
+
+Because it deletes whatever you want!
+
+<SeriesColorPicker color="red" onChange={(c) => console.log(c)}>
+  <span>ClickME!</span>
+</SeriesColorPicker>
+
+### Props
+<PropsTable of={SeriesColorPicker} />

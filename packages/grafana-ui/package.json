@@ -50,6 +50,8 @@
     "@types/tether-drop": "^1.4.8",
     "@types/tinycolor2": "^1.4.1",
     "awesome-typescript-loader": "^5.2.1",
+    "docz": "^0.13.7",
+    "docz-theme-default": "^0.13.7",
     "react-docgen-typescript-loader": "^3.0.0",
     "react-docgen-typescript-webpack-plugin": "^1.1.0",
     "react-test-renderer": "^16.7.0",
