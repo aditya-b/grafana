@@ -1,4 +1,4 @@
-import React, { FocusEvent, FormEvent, InputHTMLAttributes, PureComponent } from 'react';
+import React, { ChangeEvent, FocusEvent, FormEvent, InputHTMLAttributes, PureComponent, SyntheticEvent } from 'react';
 import classNames from 'classnames';
 import { validate, hasValidationEvent } from '../../utils';
 import { EventsWithValidation, InputStatus, ValidationEvents, ValidationRule } from '../../types';
@@ -36,7 +36,7 @@ export class Input extends PureComponent<Props, State> {
   }
 
   validatorAsync = (validationRules: ValidationRule[]) => {
-    return event => {
+    return (event: ChangeEvent<HTMLInputElement>) => {
       const errors = validate(event.target.value, validationRules);
       this.setState(prevState => {
         return {
@@ -54,7 +54,7 @@ export class Input extends PureComponent<Props, State> {
     const inputElementProps = { ...restProps };
     Object.keys(EventsWithValidation).forEach((eventName: EventsWithValidation) => {
       if (hasValidationEvent(eventName, validationEvents) || restProps[eventName]) {
-        inputElementProps[eventName] = async (event: FocusEvent) => {
+        inputElementProps[eventName] = async (event: SyntheticEvent) => {
           event.persist(); // Needed for async. https://reactjs.org/docs/events.html#event-pooling
           if (hasValidationEvent(eventName, validationEvents)) {
             await this.validatorAsync(validationEvents[eventName]).apply(this, [event]);
