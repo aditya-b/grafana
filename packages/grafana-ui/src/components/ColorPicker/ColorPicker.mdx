@@ -1,20 +1,30 @@
 ---
 name: ColorPicker
 ---
-import {PropsTable} from 'docz'
-import { SeriesColorPicker } from './ColorPicker'
 
-# Delete button
+import { PropsTable, Playground } from 'docz';
+import { ColorPicker } from './ColorPicker';
 
-This is a delete button.
+# Color picker
+
+Enables selecting colors from Named Colors Palette and from Spectrum Palette
 
 ## Why
 
 Because it deletes whatever you want!
 
-<SeriesColorPicker color="red" onChange={(c) => console.log(c)}>
+<ColorPicker color="red" onChange={c => console.log(c)}>
   <span>ClickME!</span>
-</SeriesColorPicker>
+</ColorPicker>
+
+### Playground
+
+<Playground>
+  <ColorPicker color="red" onChange={c => console.log(c)}>
+    <span>ClickME!</span>
+  </ColorPicker>
+</Playground>
 
 ### Props
-<PropsTable of={SeriesColorPicker} />
+
+<PropsTable of={ColorPicker} />

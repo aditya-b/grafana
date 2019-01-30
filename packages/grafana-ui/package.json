@@ -6,7 +6,8 @@
   "scripts": {
     "tslint": "tslint -c tslint.json --project tsconfig.json",
     "typecheck": "tsc --noEmit",
-    "storybook": "start-storybook -p 9001 -c .storybook -s ../../public"
+    "storybook": "start-storybook -p 9001 -c .storybook -s ../../public",
+    "docs": "docz dev"
   },
   "author": "",
   "license": "ISC",
