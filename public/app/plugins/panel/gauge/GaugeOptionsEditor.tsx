@@ -1,10 +1,28 @@
 import React, { PureComponent } from 'react';
-import { FormField, PanelOptionsProps, PanelOptionsGroup, Switch } from '@grafana/ui';
+import {
+  FormField,
+  FormLabel,
+  PanelOptionsProps,
+  PanelOptionsGroup,
+  Select,
+  SelectOptionItem,
+  Switch,
+} from '@grafana/ui';
 
 import { GaugeOptions } from './types';
 
 export default class GaugeOptionsEditor extends PureComponent<PanelOptionsProps<GaugeOptions>> {
-  labelWidth = 8;
+  labelWidth = 9;
+  multiSeriesOptions: SelectOptionItem[] = [
+    {
+      value: 'combine',
+      label: 'Combine',
+    },
+    {
+      value: 'repeat',
+      label: 'Repeat',
+    },
+  ];
 
   onToggleThresholdLabels = () =>
     this.props.onChange({ ...this.props.options, showThresholdLabels: !this.props.options.showThresholdLabels });
@@ -15,6 +33,8 @@ export default class GaugeOptionsEditor extends PureComponent<PanelOptionsProps<
   onMinValueChange = ({ target }) => this.props.onChange({ ...this.props.options, minValue: target.value });
 
   onMaxValueChange = ({ target }) => this.props.onChange({ ...this.props.options, maxValue: target.value });
+
+  onMultiSeriesModeChange = ({ value }) => this.props.onChange({ ...this.props.options, multiSeriesMode: value });
 
   render() {
     const { options } = this.props;
@@ -36,6 +56,16 @@ export default class GaugeOptionsEditor extends PureComponent<PanelOptionsProps<
           checked={showThresholdMarkers}
           onChange={this.onToggleThresholdMarkers}
         />
+        <div className="gf-form">
+          <FormLabel width={this.labelWidth}>Multi series mode</FormLabel>
+          <Select
+            defaultValue={this.multiSeriesOptions[0]}
+            onChange={this.onMultiSeriesModeChange}
+            options={this.multiSeriesOptions}
+            value={this.multiSeriesOptions.find(item => options.multiSeriesMode === item.value)}
+            width={12}
+          />
+        </div>
       </PanelOptionsGroup>
     );
   }
