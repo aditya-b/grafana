@@ -71,7 +71,7 @@ export class GaugePanel extends PureComponent<Props> {
       return (
         <div className="singlestat-panel" key={`${timeSeries.label}-${index}`} style={style}>
           {this.renderGauge(series.stats[options.stat], gaugeWidth, gaugeHeight, theme)}
-          <div style={{ textAlign: 'center' }}>{series.label}</div>
+          {options.multiSeriesMode === 'repeat' && <div style={{ textAlign: 'center' }}>{series.label}</div>}
         </div>
       );
     });

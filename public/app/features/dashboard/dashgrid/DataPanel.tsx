@@ -182,6 +182,28 @@ export class DataPanel extends Component<Props, State> {
     };
   };
 
+  renderLoadingStates() {
+    const { loading, errorMessage } = this.state;
+    if (loading === LoadingState.Loading) {
+      return (
+        <div className="panel-loading">
+          <i className="fa fa-spinner fa-spin" />
+        </div>
+      );
+    } else if (loading === LoadingState.Error) {
+      return (
+        <Tooltip content={errorMessage} placement="bottom-start" theme="error">
+          <div className="panel-info-corner panel-info-corner--error">
+            <i className="fa" />
+            <span className="panel-info-corner-inner" />
+          </div>
+        </Tooltip>
+      );
+    }
+
+    return null;
+  }
+
   render() {
     const { queries } = this.props;
     const { loading, isFirstLoad } = this.state;
@@ -221,27 +243,5 @@ export class DataPanel extends Component<Props, State> {
         </ErrorBoundary>
       </>
     );
-  }
-
-  private renderLoadingStates(): JSX.Element {
-    const { loading, errorMessage } = this.state;
-    if (loading === LoadingState.Loading) {
-      return (
-        <div className="panel-loading">
-          <i className="fa fa-spinner fa-spin" />
-        </div>
-      );
-    } else if (loading === LoadingState.Error) {
-      return (
-        <Tooltip content={errorMessage} placement="bottom-start" theme="error">
-          <div className="panel-info-corner panel-info-corner--error">
-            <i className="fa" />
-            <span className="panel-info-corner-inner" />
-          </div>
-        </Tooltip>
-      );
-    }
-
-    return null;
   }
 }

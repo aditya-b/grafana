@@ -36,6 +36,8 @@ export interface State {
   timeRange?: TimeRange;
   isError: boolean;
   error: string;
+  isWarning: boolean;
+  warning: string;
 }
 
 export class PanelChrome extends PureComponent<Props, State> {
@@ -43,10 +45,12 @@ export class PanelChrome extends PureComponent<Props, State> {
   state = {
     refreshCounter: 0,
     renderCounter: 0,
-    isError: true,
-    error: 'Something has gone terribly wrong 🤔',
+    isError: false,
+    error: '',
     timeRange: {} as TimeRange,
     timeInfo: '',
+    isWarning: false,
+    warning: '',
   };
 
   componentDidMount() {

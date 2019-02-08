@@ -44,12 +44,27 @@ export default class GaugePanelOptions extends PureComponent<PanelOptionsProps<G
       valueMappings,
     });
 
+  isCombineAndNotSupportedStat() {
+    const { options } = this.props;
+    const { multiSeriesMode, stat } = options;
+
+    return multiSeriesMode === 'combine' && (stat !== 'min' && stat !== 'max' && stat !== 'avg' && stat !== 'total');
+  }
+
   render() {
     const { onChange, options } = this.props;
     return (
       <ThemeProvider>
         {theme => (
           <>
+            {this.isCombineAndNotSupportedStat() && (
+              <div style={{ padding: '20px 10px' }}>
+                <i className="fa fa-warning" style={{ fontSize: '20px' }} />
+                <span style={{ marginLeft: '8px' }}>
+                  You have selected a non supported stat for multi series mode Combine
+                </span>
+              </div>
+            )}
             <PanelOptionsGrid>
               <ValueOptions onChange={onChange} options={options} />
               <GaugeOptionsEditor onChange={onChange} options={options} />
