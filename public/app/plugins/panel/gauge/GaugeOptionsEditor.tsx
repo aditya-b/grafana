@@ -12,7 +12,7 @@ import {
 import { GaugeOptions } from './types';
 
 export default class GaugeOptionsEditor extends PureComponent<PanelOptionsProps<GaugeOptions>> {
-  labelWidth = 9;
+  labelWidth = 10;
   multiSeriesOptions: SelectOptionItem[] = [
     {
       value: 'combine',
@@ -57,7 +57,9 @@ export default class GaugeOptionsEditor extends PureComponent<PanelOptionsProps<
           onChange={this.onToggleThresholdMarkers}
         />
         <div className="gf-form">
-          <FormLabel width={this.labelWidth}>Multi series mode</FormLabel>
+          <FormLabel tooltip="Combine will limit stats to Min, Max, Average and Total" width={this.labelWidth}>
+            Multi series mode
+          </FormLabel>
           <Select
             defaultValue={this.multiSeriesOptions[0]}
             onChange={this.onMultiSeriesModeChange}

@@ -173,16 +173,3 @@ export function processTimeSeries({ timeSeries, nullValueMode }: Options): TimeS
 
   return vmSeries;
 }
-
-export function combineMultipleTimeSeries(timeSeries: TimeSeriesVMs) {
-  // return timeSeries.reduce((accumulator, currentValue) => {
-  //   const stats = accumulator.stats;
-  //   stats.total += currentValue.stats.total;
-  //   stats.min += currentValue.stats.min;
-  //   stats.max += currentValue.stats.max;
-  //   stats.current += currentValue.stats.current;
-  //   stats.avg += currentValue.stats.avg;
-  //
-  //   return { ...timeSeries[0], label: 'Combined time series', stats: stats };
-  // });
-}

@@ -2,7 +2,7 @@
 import React, { PureComponent } from 'react';
 
 // Services & Utils
-import { processTimeSeries, combineMultipleTimeSeries } from '@grafana/ui';
+import { processTimeSeries } from '@grafana/ui';
 
 // Components
 import { Gauge } from '@grafana/ui';
@@ -15,12 +15,27 @@ import { ThemeProvider } from 'app/core/utils/ConfigProvider';
 interface Props extends PanelProps<GaugeOptions> {}
 
 export class GaugePanel extends PureComponent<Props> {
+  combineTimeSeries(timeSeries) {
+    const combined = timeSeries.reduce((accumulator, currentValue) => {
+      const stats = accumulator.stats;
+      stats.total += currentValue.stats.total;
+      stats.min += currentValue.stats.min;
+      stats.max += currentValue.stats.max;
+      stats.avg += currentValue.stats.avg;
+
+      return { ...timeSeries[0], label: 'Combined time series', stats: stats };
+    });
+
+    combined.stats.avg = combined.stats.avg / timeSeries.length;
+
+    return [combined];
+  }
+
   renderMultipleGauge(timeSeries, theme) {
     const { options, height, width } = this.props;
 
     if (options.multiSeriesMode === 'combine') {
-      timeSeries = combineMultipleTimeSeries(timeSeries);
-      console.log(timeSeries);
+      timeSeries = this.combineTimeSeries(timeSeries);
     }
 
     return timeSeries.map((series, index) => {
