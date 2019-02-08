@@ -12,6 +12,7 @@ export interface PanelProps<T = any> {
   width: number;
   height: number;
   onInterpolate: InterpolateFunction;
+  onFatalError?: (error: string) => void;
 }
 
 export interface PanelData {

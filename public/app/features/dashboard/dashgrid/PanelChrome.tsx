@@ -34,19 +34,20 @@ export interface State {
   renderCounter: number;
   timeInfo?: string;
   timeRange?: TimeRange;
+  isError: boolean;
+  error: string;
 }
 
 export class PanelChrome extends PureComponent<Props, State> {
   timeSrv: TimeSrv = getTimeSrv();
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      refreshCounter: 0,
-      renderCounter: 0,
-    };
-  }
+  state = {
+    refreshCounter: 0,
+    renderCounter: 0,
+    isError: true,
+    error: 'Something has gone terribly wrong 🤔',
+    timeRange: {} as TimeRange,
+    timeInfo: '',
+  };
 
   componentDidMount() {
     this.props.panel.events.on('refresh', this.onRefresh);
@@ -90,11 +91,18 @@ export class PanelChrome extends PureComponent<Props, State> {
     }
   };
 
+  onFatalError = (error: string) => {
+    this.setState({
+      isError: true,
+      error: error,
+    });
+  };
+
   get isVisible() {
     return !this.props.dashboard.otherPanelInFullscreen(this.props.panel);
   }
 
-  renderPanel(loading, panelData, width, height): JSX.Element {
+  renderPanelComponent(loading, panelData, width, height) {
     const { panel, plugin } = this.props;
     const { timeRange, renderCounter } = this.state;
     const PanelComponent = plugin.exports.Panel;
@@ -116,16 +124,43 @@ export class PanelChrome extends PureComponent<Props, State> {
           height={height - PANEL_HEADER_HEIGHT - variables.panelVerticalPadding}
           renderCounter={renderCounter}
           onInterpolate={this.onInterpolate}
+          onFatalError={this.onFatalError}
         />
       </div>
     );
   }
 
+  renderPanel(width, height) {
+    const { panel } = this.props;
+    const { timeRange, refreshCounter } = this.state;
+    const { datasource, targets } = panel;
+
+    if (panel.snapshotData) {
+      return this.renderPanelComponent(false, panel.snapshotData, width, height);
+    } else {
+      return (
+        <DataPanel
+          datasource={datasource}
+          queries={targets}
+          timeRange={timeRange}
+          isVisible={this.isVisible}
+          widthPixels={width}
+          refreshCounter={refreshCounter}
+          onDataResponse={this.onDataResponse}
+        >
+          {({ loading, panelData }) => {
+            return this.renderPanelComponent(loading, panelData, width, height);
+          }}
+        </DataPanel>
+      );
+    }
+  }
+
   render() {
     const { panel, dashboard } = this.props;
-    const { refreshCounter, timeRange, timeInfo } = this.state;
+    const { error, isError, timeInfo } = this.state;
 
-    const { datasource, targets, transparent } = panel;
+    const { transparent } = panel;
     const containerClassNames = `panel-container panel-container--absolute ${transparent ? 'panel-transparent' : ''}`;
     return (
       <AutoSizer>
@@ -133,7 +168,6 @@ export class PanelChrome extends PureComponent<Props, State> {
           if (width === 0) {
             return null;
           }
-
           return (
             <div className={containerClassNames}>
               <PanelHeader
@@ -145,22 +179,13 @@ export class PanelChrome extends PureComponent<Props, State> {
                 scopedVars={panel.scopedVars}
                 links={panel.links}
               />
-              {panel.snapshotData ? (
-                this.renderPanel(false, panel.snapshotData, width, height)
+              {isError ? (
+                <div className="panel-error">
+                  <h3>Error occurred when rendering panel</h3>
+                  {error}
+                </div>
               ) : (
-                <DataPanel
-                  datasource={datasource}
-                  queries={targets}
-                  timeRange={timeRange}
-                  isVisible={this.isVisible}
-                  widthPixels={width}
-                  refreshCounter={refreshCounter}
-                  onDataResponse={this.onDataResponse}
-                >
-                  {({ loading, panelData }) => {
-                    return this.renderPanel(loading, panelData, width, height);
-                  }}
-                </DataPanel>
+                this.renderPanel(width, height)
               )}
             </div>
           );

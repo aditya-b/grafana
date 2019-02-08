@@ -77,6 +77,12 @@ div.flot-text {
   }
 }
 
+.panel-error {
+  margin: 20px auto 0;
+  max-width: 900px;
+  font-size: 16px;
+}
+
 .panel-content {
   padding: $panel-padding;
   height: calc(100% - 27px);
