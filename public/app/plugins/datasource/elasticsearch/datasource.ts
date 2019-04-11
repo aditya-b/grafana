@@ -4,6 +4,8 @@ import moment from 'moment';
 import { ElasticResponse } from './elastic_response';
 import { IndexPattern } from './index_pattern';
 import { ElasticQueryBuilder } from './query_builder';
+import { LogsModel, LogRowModel, LogsStream, LogsMetaItem, makeSeriesForLogs } from 'app/core/logs_model';
+import { LogLevel } from '@grafana/ui';
 
 export class ElasticDatasource {
   basicAuth: string;
@@ -247,24 +249,57 @@ export class ElasticDatasource {
 
     // add global adhoc filters to timeFilter
     const adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+    let logsResult = false;
 
     for (const target of targets) {
       if (target.hide) {
         continue;
       }
 
-      if (target.alias) {
-        target.alias = this.templateSrv.replace(target.alias, options.scopedVars, 'lucene');
+      let queryObj;
+      if (target.key !== undefined) {
+        logsResult = true;
+        // target = {
+        //   ...target,
+        //   bucketAggs: [
+        //     {
+        //       field: '@timestamp',
+        //       id: '2',
+        //       settings: {
+        //         interval: '5m',
+        //         min_doc_count: 1,
+        //         trimEdges: 0,
+        //       },
+        //       type: 'date_histogram',
+        //     },
+        //   ],
+        //   metrics: [
+        //     {
+        //       field: '@value',
+        //       id: '1',
+        //       meta: {},
+        //       settings: {},
+        //       type: 'count',
+        //     },
+        //   ],
+        //   timeField: '@timestamp',
+        // };
+
+        queryObj = this.queryBuilder.getLogsQuery(target);
+      } else {
+        if (target.alias) {
+          target.alias = this.templateSrv.replace(target.alias, options.scopedVars, 'lucene');
+        }
+
+        const queryString = this.templateSrv.replace(target.query || '*', options.scopedVars, 'lucene');
+        queryObj = this.queryBuilder.build(target, adhocFilters, queryString);
       }
 
-      const queryString = this.templateSrv.replace(target.query || '*', options.scopedVars, 'lucene');
-      const queryObj = this.queryBuilder.build(target, adhocFilters, queryString);
       const esQuery = angular.toJson(queryObj);
 
       const searchType = queryObj.size === 0 && this.esVersion < 5 ? 'count' : 'query_then_fetch';
       const header = this.getQueryHeader(searchType, options.range.from, options.range.to);
       payload += header + '\n';
-
       payload += esQuery + '\n';
       sentTargets.push(target);
     }
@@ -278,8 +313,56 @@ export class ElasticDatasource {
     payload = this.templateSrv.replace(payload, options.scopedVars);
 
     return this.post('_msearch', payload).then(res => {
-      return new ElasticResponse(sentTargets, res).getTimeSeries();
+      const er = new ElasticResponse(sentTargets, res);
+      if (logsResult) {
+        return er.getLogs();
+      }
+
+      return er.getTimeSeries();
     });
+  }
+
+  mergeStreams(streams: LogsStream[], intervalMs: number): LogsModel {
+    const rows = [] as LogRowModel[];
+
+    if (streams.length > 0) {
+      for (let n = 0; n < streams[0].entries.length; n++) {
+        const entry = streams[0].entries[n];
+        const { line } = entry;
+        const ts = entry.ts || entry.timestamp;
+        // Assumes unique-ness, needs nanosec precision for timestamp
+        const key = `EK${ts}`;
+        const time = moment(ts);
+        const timeEpochMs = time.valueOf();
+        const timeFromNow = time.fromNow();
+        const timeLocal = time.format('YYYY-MM-DD HH:mm:ss');
+
+        rows.push({
+          key,
+          logLevel: LogLevel.unknown,
+          timeFromNow,
+          timeEpochMs,
+          timeLocal,
+          uniqueLabels: {},
+          hasAnsi: false,
+          entry: line,
+          raw: line,
+          labels: {},
+          searchWords: [],
+          timestamp: ts,
+        });
+      }
+    }
+
+    const series = makeSeriesForLogs(rows, intervalMs);
+
+    return {
+      id: '1',
+      hasUniqueLabels: false,
+      rows,
+      series,
+      meta: [] as LogsMetaItem[],
+    };
   }
 
   getFields(query) {

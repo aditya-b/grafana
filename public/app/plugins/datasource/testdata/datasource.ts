@@ -17,6 +17,7 @@ export class TestDataDatasource implements DataSourceApi<TestDataQuery> {
   }
 
   query(options: DataQueryOptions<TestDataQuery>) {
+    console.log(options);
     const queries = _.filter(options.targets, item => {
       return item.hide !== true;
     }).map(item => {

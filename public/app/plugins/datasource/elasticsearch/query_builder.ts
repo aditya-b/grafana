@@ -367,4 +367,46 @@ export class ElasticQueryBuilder {
 
     return query;
   }
+
+  getLogsQuery(target) {
+    console.log(target);
+    if (!target.bucketAggs || target.bucketAggs.length !== 0) {
+      throw { message: 'Only raw_document query supported' };
+    }
+
+    const metric = target.metrics[0];
+    if (!metric || metric.type !== 'raw_document') {
+      throw { message: 'Invalid query' };
+    }
+
+    let query: any = {
+      size: 0,
+      query: {
+        bool: {
+          filter: [{ range: this.getRangeFilter() }],
+        },
+      },
+    };
+
+    if (target.query) {
+      query.query.bool.filter.push({
+        query_string: {
+          analyze_wildcard: true,
+          query: target.query,
+        },
+      });
+    }
+
+    const size = (metric.settings && metric.settings.size) || 500;
+    query = this.documentQuery(query, size);
+
+    // query.aggs = {
+    //   '2': {
+    //     date_histogram: this.getDateHistogramAgg(target.bucketAggs[0]),
+    //     aggs: {},
+    //   },
+    // };
+
+    return query;
+  }
 }

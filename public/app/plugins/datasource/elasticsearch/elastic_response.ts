@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import * as queryDef from './query_def';
 import TableModel from 'app/core/table_model';
+import { LogsStream, LogsStreamEntry } from 'app/core/logs_model';
 
 export class ElasticResponse {
   constructor(private targets, private response) {
@@ -407,5 +408,56 @@ export class ElasticResponse {
     }
 
     return { data: seriesList };
+  }
+
+  getLogs() {
+    const allStreams: LogsStream[] = [];
+
+    for (let n = 0; n < this.response.responses.length; n++) {
+      const response = this.response.responses[n];
+      if (response.error) {
+        throw this.getErrorFromElasticResponse(this.response, response.error);
+      }
+
+      const hits = response.hits;
+      let propName, hit, doc, i;
+
+      const ls = {
+        entries: [] as LogsStreamEntry[],
+      } as LogsStream;
+
+      for (i = 0; i < hits.hits.length; i++) {
+        hit = hits.hits[i];
+        doc = {
+          _id: hit._id,
+          _type: hit._type,
+          _index: hit._index,
+        };
+
+        if (hit._source) {
+          for (propName in hit._source) {
+            doc[propName] = hit._source[propName];
+          }
+        }
+
+        for (propName in hit.fields) {
+          doc[propName] = hit.fields[propName];
+        }
+
+        const ts = doc[this.targets[0].timeField][0];
+        delete doc[this.targets[0].timeField];
+        const line = JSON.stringify(doc, null, 2);
+
+        ls.entries.push({
+          ts,
+          line,
+        });
+      }
+
+      allStreams.push(ls);
+    }
+
+    console.log('result', allStreams);
+    return { data: allStreams };
   }
 }
