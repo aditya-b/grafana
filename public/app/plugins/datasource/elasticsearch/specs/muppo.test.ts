@@ -4,7 +4,7 @@ describe('mupppo', () => {
   it('should work', () => {
     expect(true).toEqual(true);
   });
-  it('should work2', () => {
+  it('should work3', () => {
     expect(getFlotPairs).toEqual(false);
   });
 });
