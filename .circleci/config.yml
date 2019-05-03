@@ -70,6 +70,17 @@ jobs:
             name: cache server tests
             command: './scripts/circle-test-cache-servers.sh'
 
+  background-gf:
+    docker:
+      - image: circleci/golang:1.12.4
+      - image: xlson/grafana:$CIRCLE_SHA1
+    working_directory: /go/src/github.com/grafana/grafana
+    steps:
+        - run: dockerize -wait tcp://127.0.0.1:3000 -timeout 120s
+        - run:
+            name: is it there
+            command: 'curl -vv http://localhost:3000/login'
+
   codespell:
     docker:
       - image: circleci/python
@@ -667,6 +678,8 @@ workflows:
 
   build-branches-and-prs:
       jobs:
+        - background-gf:
+            filters: *filter-not-release-or-master
         - build-fast-backend:
             filters: *filter-not-release-or-master
         - build-fast-frontend:
