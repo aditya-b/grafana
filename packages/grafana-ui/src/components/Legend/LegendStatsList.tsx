@@ -22,6 +22,7 @@ export const LegendStatsList: React.FunctionComponent<{ stats: DisplayValue[] }>
   if (stats.length === 0) {
     return null;
   }
+  // @ts-ignore
   return <InlineList items={stats} renderItem={stat => <LegendItemStat stat={stat} />} />;
 };
 

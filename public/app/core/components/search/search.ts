@@ -168,6 +168,7 @@ export class SearchCtrl {
         return;
       }
       this.results = results || [];
+
       this.isLoading = false;
       this.moveSelection(1);
     });
@@ -226,7 +227,7 @@ export class SearchCtrl {
   private getFlattenedResultForNavigation() {
     let folderIndex = 0;
 
-    return _.flatMap(this.results, s => {
+    const a = _.flatMap(this.results, s => {
       let result = [];
 
       result.push({
@@ -247,6 +248,20 @@ export class SearchCtrl {
       folderIndex++;
       return result;
     });
+    console.log(a);
+    return a
+      .concat(a)
+      .concat(a)
+      .concat(a)
+      .concat(a)
+      .concat(a)
+      .concat(a)
+      .concat(a)
+      .concat(a)
+      .concat(a)
+      .concat(a)
+      .concat(a)
+      .concat(a);
   }
 }
 
