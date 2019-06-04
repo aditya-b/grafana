@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/grafana/grafana/pkg/util/errutil"
 	plugin "github.com/hashicorp/go-plugin"
 
 	pluginModel "github.com/grafana/grafana-plugin-model/go/renderer"
@@ -75,7 +76,7 @@ func (rs *RenderingService) Run(ctx context.Context) error {
 	rs.pluginInfo = plugins.Renderer
 
 	if err := rs.startPlugin(ctx); err != nil {
-		return err
+		return errutil.Wrap("Failed to start rendering plugin", err)
 	}
 
 	rs.renderAction = rs.renderViaPlugin

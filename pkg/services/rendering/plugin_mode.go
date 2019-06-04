@@ -9,6 +9,7 @@ import (
 
 	pluginModel "github.com/grafana/grafana-plugin-model/go/renderer"
 	"github.com/grafana/grafana/pkg/plugins"
+	"github.com/grafana/grafana/pkg/util/errutil"
 	plugin "github.com/hashicorp/go-plugin"
 )
 
@@ -36,12 +37,13 @@ func (rs *RenderingService) startPlugin(ctx context.Context) error {
 
 	rpcClient, err := rs.pluginClient.Client()
 	if err != nil {
-		return err
+		// If you are here try running the rendering service on its own and check the output if there is an error.
+		return errutil.Wrap("Failed to get rpc client, it is possible rendering server failed to start", err)
 	}
 
 	raw, err := rpcClient.Dispense(rs.pluginInfo.Id)
 	if err != nil {
-		return err
+		return errutil.Wrap("Failed to dispense plugin", err)
 	}
 
 	rs.grpcPlugin = raw.(pluginModel.RendererPlugin)
