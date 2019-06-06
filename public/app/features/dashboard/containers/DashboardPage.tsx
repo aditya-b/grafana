@@ -291,6 +291,7 @@ export class DashboardPage extends PureComponent<Props, State> {
             setScrollTop={this.setScrollTop}
             scrollTop={updateScrollTop}
             updateAfterMountMs={500}
+            autoHide={true}
             className="custom-scrollbar--page"
           >
             {editview && <DashboardSettings dashboard={dashboard} />}

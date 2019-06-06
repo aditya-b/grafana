@@ -97,7 +97,7 @@ $brand-gradient: linear-gradient(
   rgba(255, 68, 0, 0.7) 100%
 );
 
-$page-gradient: linear-gradient(180deg, $dark-5 10px, dark-2 100px);
+$page-gradient: linear-gradient(180deg, $dark-5 10px, $dark-2 100px);
 $edit-gradient: linear-gradient(180deg, $dark-2 50%, $input-black);
 
 // Links
