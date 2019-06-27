@@ -340,6 +340,7 @@ func TestAlertNotificationSQLAccess(t *testing.T) {
 				_, err := dbSession.Insert(notificationState)
 				//fmt.Println(">>>", err)
 				_, err = dbSession.Insert(notificationState)
+				assert.True(t, dialect.IsUniqueConstraintViolation(err))
 				//fmt.Println(">>> >>>", err)
 				cmd := &models.GetOrCreateNotificationStateQuery{AlertId: alertID, OrgId: orgID, NotifierId: notifierID}
 				nj := &models.AlertNotificationState{}
