@@ -5,14 +5,16 @@ import (
 	"testing"
 	"time"
 
+	//"fmt"
 	"github.com/grafana/grafana/pkg/components/simplejson"
 	"github.com/grafana/grafana/pkg/models"
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAlertNotificationSQLAccess(t *testing.T) {
 	Convey("Testing Alert notification sql access", t, func() {
-		InitTestDB(t)
+		sqlStore := InitTestDB(t)
 
 		Convey("Alert notification state", func() {
 			var alertID int64 = 7
@@ -320,6 +322,32 @@ func TestAlertNotificationSQLAccess(t *testing.T) {
 				So(err, ShouldBeNil)
 				So(len(query.Result), ShouldEqual, 4)
 			})
+		})
+
+		t.Run("just testing", func(t *testing.T) {
+			err := sqlStore.WithTransactionalDbSession(context.Background(), func(dbSession *DBSession) error {
+				var alertID int64 = 42
+				var orgID int64 = 5
+				var notifierID int64 = 10
+
+				notificationState := &models.AlertNotificationState{
+					OrgId:      orgID,
+					AlertId:    alertID,
+					NotifierId: notifierID,
+					State:      models.AlertNotificationStateUnknown,
+					UpdatedAt:  timeNow().Unix(),
+				}
+				_, err := dbSession.Insert(notificationState)
+				//fmt.Println(">>>", err)
+				_, err = dbSession.Insert(notificationState)
+				//fmt.Println(">>> >>>", err)
+				cmd := &models.GetOrCreateNotificationStateQuery{AlertId: alertID, OrgId: orgID, NotifierId: notifierID}
+				nj := &models.AlertNotificationState{}
+				_, err = getAlertNotificationState(dbSession, cmd, nj)
+				//fmt.Println(">>> >>> >>>", err)
+				return err
+			})
+			assert.Nil(t, err)
 		})
 	})
 }
