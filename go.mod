@@ -41,6 +41,7 @@ require (
 	github.com/hashicorp/go-version v1.1.0
 	github.com/inconshreveable/log15 v0.0.0-20180818164646-67afb5ed74ec
 	github.com/jonboulle/clockwork v0.1.0 // indirect
+	github.com/jung-kurt/gofpdf v1.5.4
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/klauspost/compress v1.4.1 // indirect
 	github.com/klauspost/cpuid v1.2.0 // indirect
