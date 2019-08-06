@@ -1,7 +1,9 @@
 import { getFlotTickDecimals } from 'app/core/utils/ticks';
 import _ from 'lodash';
 import { getValueFormat, ValueFormatter } from '@grafana/ui';
-import { stringToJsRegex, DecimalCount } from '@grafana/data';
+import { DecimalCount } from '@grafana/data';
+import { stringToJsRegex } from '@grafana/data';
+import tinycolor from 'tinycolor2';
 
 function matchSeriesOverride(aliasOrRegex: string, seriesAlias: string) {
   if (!aliasOrRegex) {
@@ -106,6 +108,22 @@ export default class TimeSeries {
     this.aliasEscaped = _.escape(opts.alias);
     this.color = opts.color;
     this.bars = { fillColor: opts.color };
+    this.bars = {
+      fillColor: {
+        colors: [
+          tinycolor(opts.color)
+            .lighten(6)
+            .spin(-7)
+            .toString(),
+          tinycolor(opts.color)
+            .darken(6)
+            .spin(7)
+            .toString(),
+          // tinycolor(opts.color).darken(7).toString(),
+          // tinycolor(opts.color).lighten(7).toString(),
+        ],
+      },
+    };
     this.valueFormater = getValueFormat('none');
     this.stats = {};
     this.legend = true;
