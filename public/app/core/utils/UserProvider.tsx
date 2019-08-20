@@ -61,7 +61,7 @@ export class UserProvider extends PureComponent<Props, State> {
     this.setState({
       loadingStates: { ...this.state.loadingStates, loadUser: true },
     });
-    const user = await getBackendSrv().get('/api/user');
+    const user = await getBackendSrv().get('/api/users/' + this.props.userId);
     this.setState({ user, loadingStates: { ...this.state.loadingStates, loadUser: Object.keys(user).length === 0 } });
   };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserProvider } from 'app/core/utils/UserProvider';
-import { UserProfileEditForm } from './UserProfileEditForm';
+import { UserProfileEditForm } from 'app/core/components/user/UserProfileEditForm';
 import { SharedPreferences } from 'app/core/components/SharedPreferences/SharedPreferences';
 import { config } from '@grafana/runtime';
 

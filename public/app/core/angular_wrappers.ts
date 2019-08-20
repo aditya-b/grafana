@@ -12,6 +12,7 @@ import { FunctionEditor } from 'app/plugins/datasource/graphite/FunctionEditor';
 import { SearchField } from './components/search/SearchField';
 import { GraphContextMenu } from 'app/plugins/panel/graph/GraphContextMenu';
 import ReactProfileWrapper from 'app/features/profile/ReactProfileWrapper';
+import ReactUserEditWrapper from 'app/features/admin/ReactUserEditWrapper';
 
 export function registerAngularDirectives() {
   react2AngularDirective('sidemenu', SideMenu, []);
@@ -90,4 +91,5 @@ export function registerAngularDirectives() {
   ]);
 
   react2AngularDirective('reactProfileWrapper', ReactProfileWrapper, []);
+  react2AngularDirective('reactUserEditWrapper', ReactUserEditWrapper, ['userId']);
 }

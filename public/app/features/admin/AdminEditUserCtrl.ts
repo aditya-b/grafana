@@ -9,6 +9,7 @@ export default class AdminEditUserCtrl {
   /** @ngInject */
   constructor($scope: any, $routeParams: any, backendSrv: BackendSrv, $location: any, navModelSrv: NavModelSrv) {
     $scope.user = {};
+    $scope.userId = null;
     $scope.sessions = [];
     $scope.newOrg = { name: '', role: 'Editor' };
     $scope.permissions = {};
@@ -16,6 +17,7 @@ export default class AdminEditUserCtrl {
 
     $scope.init = () => {
       if ($routeParams.id) {
+        $scope.userId = $routeParams.id;
         $scope.getUser($routeParams.id);
         $scope.getUserSessions($routeParams.id);
         $scope.getUserOrgs($routeParams.id);
