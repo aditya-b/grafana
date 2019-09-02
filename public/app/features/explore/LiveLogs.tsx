@@ -59,11 +59,11 @@ class LiveLogs extends PureComponent<Props> {
     return (
       <>
         <div className={cx(['logs-rows', styles.logsRowsLive])}>
-          {rowsToRender.map((row: any, index) => {
+          {rowsToRender.map((row: LogRowModel) => {
             return (
               <div
                 className={row.fresh ? cx([logsRow, styles.logsRowFresh]) : cx([logsRow, styles.logsRowOld])}
-                key={`${row.timeEpochMs}-${index}`}
+                key={row.uuid}
               >
                 {showUtc && (
                   <div className={cx([logsRowLocalTime])} title={`Local: ${row.timeLocal} (${row.timeFromNow})`}>

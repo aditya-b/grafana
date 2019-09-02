@@ -143,20 +143,17 @@ describe('Explore item reducer', () => {
             },
           } as DataSourceApi;
           const queries: DataQuery[] = [];
-          const queryKeys: string[] = [];
-          const initalState: Partial<ExploreItemState> = {
+          const initialState: Partial<ExploreItemState> = {
             datasourceInstance: null,
             StartPage: null,
             showingStartPage: false,
             queries,
-            queryKeys,
           };
           const expectedState: any = {
             datasourceInstance,
             StartPage,
             showingStartPage: true,
             queries,
-            queryKeys,
             graphResult: null,
             logsResult: null,
             tableResult: null,
@@ -168,7 +165,7 @@ describe('Explore item reducer', () => {
           };
 
           reducerTester()
-            .givenReducer(itemReducer, initalState)
+            .givenReducer(itemReducer, initialState)
             .whenActionIsDispatched(updateDatasourceInstanceAction({ exploreId: ExploreId.left, datasourceInstance }))
             .thenStateShouldEqual(expectedState);
         });

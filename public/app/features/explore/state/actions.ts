@@ -108,7 +108,7 @@ const updateExploreUIState = (exploreId: ExploreId, uiStateFragment: Partial<Exp
 export function addQueryRow(exploreId: ExploreId, index: number): ThunkResult<void> {
   return (dispatch, getState) => {
     const queries = getState().explore[exploreId].queries;
-    const query = generateEmptyQuery(queries, index);
+    const query = generateEmptyQuery(queries);
 
     dispatch(addQueryRowAction({ exploreId, index, query }));
   };
@@ -169,7 +169,7 @@ export function changeQuery(
     if (query === null) {
       const queries = getState().explore[exploreId].queries;
       const { refId, key } = queries[index];
-      query = generateNewKeyAndAddRefIdIfMissing({ refId, key }, queries, index);
+      query = generateNewKeyAndAddRefIdIfMissing({ refId, key }, queries);
     }
 
     dispatch(changeQueryAction({ exploreId, query, index, override }));
@@ -753,7 +753,7 @@ export function setQueries(exploreId: ExploreId, rawQueries: DataQuery[]): Thunk
   return (dispatch, getState) => {
     // Inject react keys into query objects
     const queries = getState().explore[exploreId].queries;
-    const nextQueries = rawQueries.map((query, index) => generateNewKeyAndAddRefIdIfMissing(query, queries, index));
+    const nextQueries = rawQueries.map((query, index) => generateNewKeyAndAddRefIdIfMissing(query, queries));
     dispatch(setQueriesAction({ exploreId, queries: nextQueries }));
     dispatch(runQueries(exploreId));
   };
@@ -853,7 +853,7 @@ export function refreshExplore(exploreId: ExploreId): ThunkResult<void> {
     const refreshQueries: DataQuery[] = [];
     for (let index = 0; index < queries.length; index++) {
       const query = queries[index];
-      refreshQueries.push(generateNewKeyAndAddRefIdIfMissing(query, refreshQueries, index));
+      refreshQueries.push(generateNewKeyAndAddRefIdIfMissing(query, refreshQueries));
     }
     const timeZone = getTimeZone(getState().user);
     const range = getTimeRangeFromUrl(urlRange, timeZone);

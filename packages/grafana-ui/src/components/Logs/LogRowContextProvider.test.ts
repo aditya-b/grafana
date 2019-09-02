@@ -23,6 +23,7 @@ describe('getRowContexts', () => {
         ],
       });
       const row: LogRowModel = {
+        uuid: 'dsad89saidjs',
         entry: '4',
         labels: (null as any) as Labels,
         hasAnsi: false,
@@ -55,6 +56,7 @@ describe('getRowContexts', () => {
       const firstError = new Error('Error 1');
       const secondError = new Error('Error 2');
       const row: LogRowModel = {
+        uuid: 'dsad89saidjs',
         entry: '4',
         labels: (null as any) as Labels,
         hasAnsi: false,

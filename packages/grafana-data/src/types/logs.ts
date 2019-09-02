@@ -36,8 +36,10 @@ export interface LogsMetaItem {
 }
 
 export interface LogRowModel {
+  uuid: string;
   duplicates?: number;
   entry: string;
+  fresh?: boolean;
   hasAnsi: boolean;
   labels: Labels;
   logLevel: LogLevel;

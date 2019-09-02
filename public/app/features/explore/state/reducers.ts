@@ -2,7 +2,6 @@ import _ from 'lodash';
 import {
   getIntervals,
   ensureQueries,
-  getQueryKeys,
   parseUrlState,
   DEFAULT_UI_STATE,
   generateNewKeyAndAddRefIdIfMissing,
@@ -107,7 +106,6 @@ export const makeExploreItemState = (): ExploreItemState => ({
   showingGraph: true,
   showingTable: true,
   loadingState: LoadingState.NotStarted,
-  queryKeys: [],
   urlState: null,
   update: makeInitialUpdateState(),
   queryErrors: [],
@@ -146,7 +144,6 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
         ...state,
         queries: nextQueries,
         logsHighlighterExpressions: undefined,
-        queryKeys: getQueryKeys(nextQueries, state.datasourceInstance),
       };
     },
   })
@@ -157,14 +154,13 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
       const { query, index } = action.payload;
 
       // Override path: queries are completely reset
-      const nextQuery: DataQuery = generateNewKeyAndAddRefIdIfMissing(query, queries, index);
+      const nextQuery: DataQuery = generateNewKeyAndAddRefIdIfMissing(query, queries);
       const nextQueries = [...queries];
       nextQueries[index] = nextQuery;
 
       return {
         ...state,
         queries: nextQueries,
-        queryKeys: getQueryKeys(nextQueries, state.datasourceInstance),
       };
     },
   })
@@ -214,7 +210,6 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
         tableResult: null,
         logsResult: null,
         showingStartPage: Boolean(state.StartPage),
-        queryKeys: getQueryKeys(queries, state.datasourceInstance),
       };
     },
   })
@@ -237,7 +232,6 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
         mode,
         queries,
         initialized: true,
-        queryKeys: getQueryKeys(queries, state.datasourceInstance),
         ...ui,
         update: makeInitialUpdateState(),
       };
@@ -281,7 +275,6 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
         loadingState: LoadingState.NotStarted,
         StartPage,
         showingStartPage: Boolean(StartPage),
-        queryKeys: [],
         supportedModes,
         mode,
       };
@@ -332,14 +325,14 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
         // Modify all queries
         nextQueries = queries.map((query, i) => {
           const nextQuery = modifier({ ...query }, modification);
-          return generateNewKeyAndAddRefIdIfMissing(nextQuery, queries, i);
+          return generateNewKeyAndAddRefIdIfMissing(nextQuery, queries);
         });
       } else {
         // Modify query only at index
         nextQueries = queries.map((query, i) => {
           if (i === index) {
             const nextQuery = modifier({ ...query }, modification);
-            return generateNewKeyAndAddRefIdIfMissing(nextQuery, queries, i);
+            return generateNewKeyAndAddRefIdIfMissing(nextQuery, queries);
           }
 
           return query;
@@ -348,7 +341,6 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
       return {
         ...state,
         queries: nextQueries,
-        queryKeys: getQueryKeys(nextQueries, state.datasourceInstance),
       };
     },
   })
@@ -402,7 +394,7 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
   .addMapper({
     filter: removeQueryRowAction,
     mapper: (state, action): ExploreItemState => {
-      const { queries, queryKeys } = state;
+      const { queries } = state;
       const { index } = action.payload;
 
       if (queries.length <= 1) {
@@ -410,13 +402,11 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
       }
 
       const nextQueries = [...queries.slice(0, index), ...queries.slice(index + 1)];
-      const nextQueryKeys = [...queryKeys.slice(0, index), ...queryKeys.slice(index + 1)];
 
       return {
         ...state,
         queries: nextQueries,
         logsHighlighterExpressions: undefined,
-        queryKeys: nextQueryKeys,
       };
     },
   })
@@ -444,7 +434,6 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
       return {
         ...state,
         queries: queries.slice(),
-        queryKeys: getQueryKeys(queries, state.datasourceInstance),
       };
     },
   })
@@ -472,7 +461,6 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
       return {
         ...state,
         queries,
-        queryKeys: getQueryKeys(queries, state.datasourceInstance),
       };
     },
   })

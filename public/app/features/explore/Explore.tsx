@@ -328,6 +328,7 @@ export class Explore extends React.PureComponent<ExploreProps> {
   }
 }
 
+const getQueryKeysMemoized = memoizeOne((queries: DataQuery[]) => queries.map(query => query.key));
 const ensureQueriesMemoized = memoizeOne(ensureQueries);
 const getTimeRangeFromUrlMemoized = memoizeOne(getTimeRangeFromUrl);
 
@@ -344,7 +345,6 @@ function mapStateToProps(state: StoreState, { exploreId }: ExploreProps) {
     datasourceMissing,
     initialized,
     showingStartPage,
-    queryKeys,
     urlState,
     update,
     queryErrors,
@@ -356,12 +356,15 @@ function mapStateToProps(state: StoreState, { exploreId }: ExploreProps) {
     showingGraph,
     showingTable,
     absoluteRange,
+    queries,
   } = item;
 
-  const { datasource, queries, range: urlRange, mode: urlMode, ui } = (urlState || {}) as ExploreUrlState;
+  const { datasource, queries: urlQueries, range: urlRange, mode: urlMode, ui } = (urlState || {}) as ExploreUrlState;
   const initialDatasource = datasource || store.get(lastUsedDatasourceKeyForOrgId(state.user.orgId));
-  const initialQueries: DataQuery[] = ensureQueriesMemoized(queries);
+  const initialQueries: DataQuery[] = ensureQueriesMemoized(urlQueries);
   const initialRange = urlRange ? getTimeRangeFromUrlMemoized(urlRange, timeZone).raw : DEFAULT_RANGE;
+
+  const queryKeys = getQueryKeysMemoized(queries);
 
   let newMode: ExploreMode;
   if (supportedModes.length) {

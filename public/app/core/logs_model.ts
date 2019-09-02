@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import shortid from 'shortid';
 import { colors, getFlotPairs, ansicolor } from '@grafana/ui';
 
 import {
@@ -275,6 +276,7 @@ export function logSeriesToLogsModel(logSeries: DataFrame[]): LogsModel {
       const searchWords = series.meta && series.meta.searchWords ? series.meta.searchWords : [];
 
       rows.push({
+        uuid: shortid(),
         logLevel,
         timeFromNow,
         timeEpochMs,

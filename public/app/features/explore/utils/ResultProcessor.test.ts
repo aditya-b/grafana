@@ -163,14 +163,13 @@ describe('ResultProcessor', () => {
         const { resultProcessor } = testContext({ mode: ExploreMode.Logs, observerResponse: null });
         const theResult = resultProcessor.getLogsResult();
 
-        console.log(JSON.stringify(theResult));
-
         expect(theResult).toEqual({
           hasUniqueLabels: false,
           meta: [],
           rows: [
             {
               entry: 'This is a message',
+              uuid: theResult.rows[0].uuid,
               hasAnsi: false,
               labels: undefined,
               logLevel: 'unknown',
@@ -185,6 +184,7 @@ describe('ResultProcessor', () => {
             },
             {
               entry: 'This is a message',
+              uuid: theResult.rows[1].uuid,
               hasAnsi: false,
               labels: undefined,
               logLevel: 'unknown',
@@ -355,6 +355,7 @@ describe('ResultProcessor', () => {
           rows: [
             {
               entry: 'This is a previous message 1',
+              uuid: theResult.rows[0].uuid,
               fresh: false,
               hasAnsi: false,
               labels: { cluster: 'some-cluster' },
@@ -370,6 +371,7 @@ describe('ResultProcessor', () => {
             },
             {
               entry: 'This is a previous message 2',
+              uuid: theResult.rows[1].uuid,
               fresh: false,
               hasAnsi: false,
               labels: { cluster: 'some-cluster' },
@@ -385,6 +387,7 @@ describe('ResultProcessor', () => {
             },
             {
               entry: 'This is a message',
+              uuid: theResult.rows[2].uuid,
               fresh: true,
               hasAnsi: false,
               labels: undefined,
@@ -400,6 +403,7 @@ describe('ResultProcessor', () => {
             },
             {
               entry: 'This is a message',
+              uuid: theResult.rows[3].uuid,
               fresh: true,
               hasAnsi: false,
               labels: undefined,

@@ -225,11 +225,6 @@ export interface ExploreItemState {
   tableResult?: TableModel;
 
   /**
-   * React keys for rendering of QueryRows
-   */
-  queryKeys: string[];
-
-  /**
    * Current logs deduplication strategy
    */
   dedupStrategy?: LogsDedupStrategy;

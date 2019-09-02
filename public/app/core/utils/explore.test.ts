@@ -397,6 +397,7 @@ describe('refreshIntervalToSortOrder', () => {
 
 describe('sortLogsResult', () => {
   const firstRow = {
+    uuid: 'fjdsiofsd98s0fd',
     timestamp: '2019-01-01T21:00:0.0000000Z',
     entry: '',
     hasAnsi: false,
@@ -410,6 +411,7 @@ describe('sortLogsResult', () => {
   };
   const sameAsFirstRow = firstRow;
   const secondRow = {
+    uuid: 'fdsdf9f0sd',
     timestamp: '2019-01-01T22:00:0.0000000Z',
     entry: '',
     hasAnsi: false,

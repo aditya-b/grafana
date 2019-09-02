@@ -1,5 +1,6 @@
 // Libraries
 import _ from 'lodash';
+import shortid from 'shortid';
 import { from } from 'rxjs';
 import { isLive } from '@grafana/ui/src/components/RefreshPicker/RefreshPicker';
 // Services & Utils
@@ -145,7 +146,7 @@ export function buildQueryTransaction(
     queries,
     options,
     scanning,
-    id: generateKey(), // reusing for unique ID
+    id: shortid(),
     done: false,
     latency: 0,
   };
@@ -264,16 +265,12 @@ export function serializeStateToUrlParam(urlState: ExploreUrlState, compact?: bo
   return JSON.stringify(urlState);
 }
 
-export function generateKey(index = 0): string {
-  return `Q-${Date.now()}-${Math.random()}-${index}`;
+export function generateEmptyQuery(queries: DataQuery[]): DataQuery {
+  return { refId: getNextRefIdChar(queries), key: shortid() };
 }
 
-export function generateEmptyQuery(queries: DataQuery[], index = 0): DataQuery {
-  return { refId: getNextRefIdChar(queries), key: generateKey(index) };
-}
-
-export const generateNewKeyAndAddRefIdIfMissing = (target: DataQuery, queries: DataQuery[], index = 0): DataQuery => {
-  const key = generateKey(index);
+export const generateNewKeyAndAddRefIdIfMissing = (target: DataQuery, queries: DataQuery[]): DataQuery => {
+  const key = target.key || shortid();
   const refId = target.refId || getNextRefIdChar(queries);
 
   return { ...target, refId, key };
@@ -284,10 +281,9 @@ export const generateNewKeyAndAddRefIdIfMissing = (target: DataQuery, queries: D
  */
 export function ensureQueries(queries?: DataQuery[]): DataQuery[] {
   if (queries && typeof queries === 'object' && queries.length > 0) {
-    const allQueries = [];
-    for (let index = 0; index < queries.length; index++) {
-      const query = queries[index];
-      const key = generateKey(index);
+    const allQueries: DataQuery[] = [];
+    for (const query of queries) {
+      const key = query.key || shortid();
       let refId = query.refId;
       if (!refId) {
         refId = getNextRefIdChar(allQueries);
@@ -313,7 +309,7 @@ export function hasNonEmptyQuery<TQuery extends DataQuery = any>(queries: TQuery
     queries &&
     queries.some((query: any) => {
       const keys = Object.keys(query)
-        .filter(key => validKeys.indexOf(key) === -1)
+        .filter(key => !validKeys.includes(key))
         .map(k => query[k])
         .filter(v => v);
       return keys.length > 0;
@@ -356,15 +352,6 @@ export function clearHistory(datasourceId: string) {
   const historyKey = `grafana.explore.history.${datasourceId}`;
   store.delete(historyKey);
 }
-
-export const getQueryKeys = (queries: DataQuery[], datasourceInstance: DataSourceApi): string[] => {
-  const queryKeys = queries.reduce((newQueryKeys, query, index) => {
-    const primaryKey = datasourceInstance && datasourceInstance.name ? datasourceInstance.name : query.key;
-    return newQueryKeys.concat(`${primaryKey}-${index}`);
-  }, []);
-
-  return queryKeys;
-};
 
 export const getTimeRange = (timeZone: TimeZone, rawRange: RawTimeRange): TimeRange => {
   return {
@@ -419,11 +406,7 @@ export const instanceOfDataQueryError = (value: any): value is DataQueryError =>
 };
 
 export const getValueWithRefId = (value: any): any | null => {
-  if (!value) {
-    return null;
-  }
-
-  if (typeof value !== 'object') {
+  if (!value || typeof value !== 'object') {
     return null;
   }
 
@@ -452,18 +435,12 @@ export const getFirstQueryErrorWithoutRefId = (errors: DataQueryError[]) => {
 };
 
 export const getRefIds = (value: any): string[] => {
-  if (!value) {
+  if (!value || typeof value !== 'object') {
     return [];
   }
 
-  if (typeof value !== 'object') {
-    return [];
-  }
-
-  const keys = Object.keys(value);
   const refIds = [];
-  for (let index = 0; index < keys.length; index++) {
-    const key = keys[index];
+  for (const key in value) {
     if (key === 'refId') {
       refIds.push(value[key]);
       continue;

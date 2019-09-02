@@ -103,9 +103,9 @@ class UnThemedLogRows extends PureComponent<Props, State> {
       <div className={cx([logsRows])}>
         {hasData &&
         !deferLogs && // Only inject highlighterExpression in the first set for performance reasons
-          firstRows.map((row, index) => (
+          firstRows.map((row) => (
             <LogRow
-              key={index}
+              key={row.uuid}
               getRows={getRows}
               getRowContext={getRowContext}
               highlighterExpressions={highlighterExpressions}
@@ -120,9 +120,9 @@ class UnThemedLogRows extends PureComponent<Props, State> {
         {hasData &&
           !deferLogs &&
           renderAll &&
-          lastRows.map((row, index) => (
+          lastRows.map((row) => (
             <LogRow
-              key={PREVIEW_LIMIT + index}
+              key={row.uuid}
               getRows={getRows}
               getRowContext={getRowContext}
               row={row}
