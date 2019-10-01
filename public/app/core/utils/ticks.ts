@@ -115,6 +115,22 @@ export function getFlotRange(panelMin: any, panelMax: any, datamin: number, data
   return { min, max };
 }
 
+function getSignificantDigitCount(n: number) {
+  //remove decimal and make positive
+  n = Math.abs(parseInt(String(n).replace('.', ''), 10));
+  if (n === 0) {
+    return 0;
+  }
+
+  // kill the 0s at the end of n
+  while (n !== 0 && n % 10 === 0) {
+    n /= 10;
+  }
+
+  // get number of digits
+  return Math.floor(Math.log(n) / Math.LN10) + 1;
+}
+
 /**
  * Calculate tick decimals.
  * Implementation from Flot.
@@ -143,11 +159,14 @@ export function getFlotTickDecimals(datamin: number, datamax: number, axis: { mi
   } else {
     size = 10;
   }
+
   size *= magn;
 
   const tickDecimals = Math.max(0, -Math.floor(Math.log(delta) / Math.LN10) + 1);
-  // grafana addition
-  const scaledDecimals = tickDecimals - Math.floor(Math.log(size) / Math.LN10);
+  const scaledDecimals = getSignificantDigitCount(size);
+  console.log('getFlotTickDecimals delta', delta);
+  console.log('getFlotTickDecimals', scaledDecimals);
+
   return { tickDecimals, scaledDecimals };
 }
 

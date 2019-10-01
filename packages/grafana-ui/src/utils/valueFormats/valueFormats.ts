@@ -97,6 +97,7 @@ export function scaledUnits(factor: number, extArray: string[]) {
 
     let steps = 0;
     const limit = extArray.length;
+    console.log(size + ' scaledDecimals ' + scaledDecimals);
 
     while (Math.abs(size) >= factor) {
       steps++;
@@ -108,7 +109,7 @@ export function scaledUnits(factor: number, extArray: string[]) {
     }
 
     if (steps > 0 && scaledDecimals !== null && scaledDecimals !== undefined) {
-      decimals = scaledDecimals + 3 * steps;
+      decimals = scaledDecimals - 1;
     }
 
     return toFixed(size, decimals) + extArray[steps];
