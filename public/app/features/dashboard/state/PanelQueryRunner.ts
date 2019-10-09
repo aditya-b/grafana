@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 
 // Services & Utils
 import { config } from 'app/core/config';
+import { metaAnalytics } from 'app/core/services/MetaAnalytics';
 import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
 import kbn from 'app/core/utils/kbn';
 import templateSrv from 'app/features/templating/template_srv';
@@ -138,6 +139,11 @@ export class PanelQueryRunner {
       request.scopedVars = Object.assign({}, request.scopedVars, {
         __interval: { text: norm.interval, value: norm.interval },
         __interval_ms: { text: norm.intervalMs.toString(), value: norm.intervalMs },
+      });
+
+      metaAnalytics.increment('panel-request', {
+        panelId,
+        dashboardId,
       });
 
       request.interval = norm.interval;
