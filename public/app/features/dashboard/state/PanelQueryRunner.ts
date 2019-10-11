@@ -141,7 +141,8 @@ export class PanelQueryRunner {
         __interval_ms: { text: norm.intervalMs.toString(), value: norm.intervalMs },
       });
 
-      metaAnalytics.increment('panel-request', {
+      metaAnalytics.increment({
+        name: 'panel-request',
         panelId,
         dashboardId,
       });
