@@ -92,12 +92,12 @@ interface DispatchProps {
 type Props = StateProps & DispatchProps & OwnProps;
 
 interface State {
-  datasourcePickerCollapsed: boolean;
+  showSmallDataSourcePicker: boolean;
 }
 
 export class UnConnectedExploreToolbar extends PureComponent<Props, State> {
   state: State = {
-    datasourcePickerCollapsed: this.props.splitted ? window.innerWidth <= 1210 : window.innerWidth <= 760,
+    showSmallDataSourcePicker: this.props.splitted ? window.innerWidth <= 1210 : window.innerWidth <= 760,
   };
 
   constructor(props: Props) {
@@ -114,7 +114,7 @@ export class UnConnectedExploreToolbar extends PureComponent<Props, State> {
 
   onWidthChange = () => {
     this.setState({
-      datasourcePickerCollapsed: this.props.splitted ? window.innerWidth <= 1210 : window.innerWidth <= 760,
+      showSmallDataSourcePicker: this.props.splitted ? window.innerWidth <= 1210 : window.innerWidth <= 760,
     });
   };
 
@@ -194,7 +194,7 @@ export class UnConnectedExploreToolbar extends PureComponent<Props, State> {
       datasourceLoading,
     } = this.props;
 
-    const { datasourcePickerCollapsed } = this.state;
+    const { showSmallDataSourcePicker } = this.state;
 
     const styles = getStyles();
     const originDashboardIsEditable = Number.isInteger(originPanelId);
@@ -232,7 +232,7 @@ export class UnConnectedExploreToolbar extends PureComponent<Props, State> {
                     datasources={exploreDatasources}
                     current={selectedDatasource}
                     showLoading={datasourceLoading}
-                    isCollapsed={datasourcePickerCollapsed}
+                    isSmall={showSmallDataSourcePicker}
                   />
                 </div>
                 {supportedModes.length > 1 ? (

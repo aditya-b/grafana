@@ -121,7 +121,6 @@ export class Select<T> extends PureComponent<SelectProps<T>> {
       tabSelectsValue,
       onCloseMenu,
       onOpenMenu,
-      isCollapsed,
     } = this.props;
 
     let widthClass = '';
@@ -129,18 +128,7 @@ export class Select<T> extends PureComponent<SelectProps<T>> {
       widthClass = 'width-' + width;
     }
 
-    let collapseClass = '';
-    if (isCollapsed) {
-      collapseClass = 'collapsed';
-    }
-
-    const selectClassNames = classNames(
-      'gf-form-input',
-      'gf-form-input--form-dropdown',
-      widthClass,
-      className,
-      collapseClass
-    );
+    const selectClassNames = classNames('gf-form-input', 'gf-form-input--form-dropdown', widthClass, className);
     const selectComponents = { ...Select.defaultProps.components, ...components };
 
     return (
