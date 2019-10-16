@@ -74,6 +74,7 @@ interface StateProps {
   originPanelId: number;
   queries: DataQuery[];
   datasourceLoading: boolean | null;
+  containerWidth: number;
 }
 
 interface DispatchProps {
@@ -91,33 +92,7 @@ interface DispatchProps {
 
 type Props = StateProps & DispatchProps & OwnProps;
 
-interface State {
-  showSmallDataSourcePicker: boolean;
-}
-
-export class UnConnectedExploreToolbar extends PureComponent<Props, State> {
-  state: State = {
-    showSmallDataSourcePicker: this.props.splitted ? window.innerWidth <= 1210 : window.innerWidth <= 760,
-  };
-
-  constructor(props: Props) {
-    super(props);
-  }
-
-  componentDidMount() {
-    window.addEventListener('resize', this.onWidthChange);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('resize', this.onWidthChange);
-  }
-
-  onWidthChange = () => {
-    this.setState({
-      showSmallDataSourcePicker: this.props.splitted ? window.innerWidth <= 1210 : window.innerWidth <= 760,
-    });
-  };
-
+export class UnConnectedExploreToolbar extends PureComponent<Props> {
   onChangeDatasource = async (option: { value: any }) => {
     this.props.changeDatasource(this.props.exploreId, option.value);
   };
@@ -192,9 +167,10 @@ export class UnConnectedExploreToolbar extends PureComponent<Props, State> {
       isPaused,
       originPanelId,
       datasourceLoading,
+      containerWidth,
     } = this.props;
 
-    const { showSmallDataSourcePicker } = this.state;
+    const showSmallDataSourcePicker = containerWidth < 575;
 
     const styles = getStyles();
     const originDashboardIsEditable = Number.isInteger(originPanelId);
@@ -366,6 +342,7 @@ const mapStateToProps = (state: StoreState, { exploreId }: OwnProps): StateProps
     originPanelId,
     queries,
     datasourceLoading,
+    containerWidth,
   } = exploreItem;
   const selectedDatasource = datasourceInstance
     ? exploreDatasources.find(datasource => datasource.name === datasourceInstance.name)
@@ -374,6 +351,7 @@ const mapStateToProps = (state: StoreState, { exploreId }: OwnProps): StateProps
     datasourceInstance && datasourceInstance.meta && datasourceInstance.meta.streaming ? true : false;
 
   return {
+    containerWidth,
     datasourceMissing,
     exploreDatasources,
     loading,
