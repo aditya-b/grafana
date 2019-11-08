@@ -30,7 +30,6 @@ type UsageStatsService struct {
 }
 
 func (uss *UsageStatsService) Init() error {
-
 	uss.oauthProviders = social.GetOAuthProviders(uss.Cfg)
 	return nil
 }
