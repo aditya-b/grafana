@@ -3,8 +3,11 @@ module github.com/grafana/grafana
 go 1.13
 
 require (
+	9fans.net/go v0.0.2 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/VividCortex/mysqlerr v0.0.0-20170204212430-6c6b55f8796f
+	github.com/alecthomas/gometalinter v3.0.0+incompatible // indirect
+	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/aws/aws-sdk-go v1.25.6
 	github.com/beevik/etree v1.1.0 // indirect
 	github.com/benbjohnson/clock v0.0.0-20161215174838-7dc76406b6d3
@@ -13,6 +16,7 @@ require (
 	github.com/codegangsta/cli v1.20.0
 	github.com/crewjam/saml v0.0.0-20191031171751-c42136edf9b1
 	github.com/davecgh/go-spew v1.1.1
+	github.com/davidrjenni/reftools v0.0.0-20191020193632-c872ffe85332 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20190315220205-a8ed825ac853
 	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51 // indirect
 	github.com/facebookgo/inject v0.0.0-20180706035515-f23751cae28b
@@ -20,6 +24,9 @@ require (
 	github.com/facebookgo/structtag v0.0.0-20150214074306-217e25fb9691 // indirect
 	github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 // indirect
 	github.com/fatih/color v1.7.0
+	github.com/fatih/gomodifytags v1.0.1 // indirect
+	github.com/fatih/motion v1.0.0 // indirect
+	github.com/fatih/structtag v1.1.0 // indirect
 	github.com/go-macaron/binding v0.0.0-20190806013118-0b4f37bab25b
 	github.com/go-macaron/gzip v0.0.0-20160222043647-cad1c6580a07
 	github.com/go-macaron/session v0.0.0-20190805070824-1a3cdc6f5659
@@ -28,6 +35,7 @@ require (
 	github.com/go-xorm/core v0.6.2
 	github.com/go-xorm/xorm v0.7.1
 	github.com/gobwas/glob v0.2.3
+	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/gorilla/websocket v1.4.0
 	github.com/gosimple/slug v1.4.2
 	github.com/grafana/grafana-plugin-model v0.0.0-20190930120109-1fc953a61fb4
@@ -37,14 +45,20 @@ require (
 	github.com/hashicorp/go-version v1.1.0
 	github.com/inconshreveable/log15 v0.0.0-20180818164646-67afb5ed74ec
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+	github.com/josharian/impl v0.0.0-20190715203526-f0d59e96e372 // indirect
+	github.com/jstemmer/gotags v1.4.1 // indirect
 	github.com/jung-kurt/gofpdf v1.10.1
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
+	github.com/kisielk/errcheck v1.2.0 // indirect
+	github.com/klauspost/asmfmt v1.2.1 // indirect
 	github.com/klauspost/compress v1.4.1 // indirect
 	github.com/klauspost/cpuid v1.2.0 // indirect
+	github.com/koron/iferr v0.0.0-20180615142939-bb332a3b1d91 // indirect
 	github.com/lib/pq v1.2.0
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7
 	github.com/mattn/go-sqlite3 v1.11.0
+	github.com/mdempsky/gocode v0.0.0-20190203001940-7fb65232883f // indirect
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.8.1
@@ -54,8 +68,10 @@ require (
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/robfig/cron/v3 v3.0.0
+	github.com/rogpeppe/godef v1.1.1 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20190731233626-505e41936337
+	github.com/stamblerre/gocode v1.0.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	github.com/ua-parser/uap-go v0.0.0-20190826212731-daf92ba38329
@@ -66,12 +82,16 @@ require (
 	github.com/yudai/gojsondiff v1.0.0
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/yudai/pp v2.0.1+incompatible // indirect
+	github.com/zmb3/gogetdoc v0.0.0-20190228002656-b37376c5da6a // indirect
 	go.uber.org/atomic v1.3.2 // indirect
 	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
+	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
 	golang.org/x/oauth2 v0.0.0-20190319182350-c85d3e98c914
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
+	golang.org/x/tools v0.0.0-20191107235519-f7ea15e60b12 // indirect
 	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20191105091915-95d230a53780 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
 	gopkg.in/ini.v1 v1.46.0
@@ -81,4 +101,5 @@ require (
 	gopkg.in/redis.v5 v5.2.9
 	gopkg.in/square/go-jose.v2 v2.3.0
 	gopkg.in/yaml.v2 v2.2.4
+	honnef.co/go/tools v0.0.1-2019.2.3 // indirect
 )

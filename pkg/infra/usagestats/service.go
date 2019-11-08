@@ -2,6 +2,7 @@ package usagestats
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/grafana/grafana/pkg/bus"
@@ -21,16 +22,19 @@ func init() {
 }
 
 type UsageStatsService struct {
-	Cfg      *setting.Cfg       `inject:""`
-	Bus      bus.Bus            `inject:""`
-	SQLStore *sqlstore.SqlStore `inject:""`
-	License  models.Licensing   `inject:""`
+	Cfg               *setting.Cfg       `inject:""`
+	Bus               bus.Bus            `inject:""`
+	SQLStore          *sqlstore.SqlStore `inject:""`
+	License           models.Licensing   `inject:""`
+	activityDataMutex sync.RWMutex
+	activityData      map[string]*ActivityStat
 
 	oauthProviders map[string]bool
 }
 
 func (uss *UsageStatsService) Init() error {
 	uss.oauthProviders = social.GetOAuthProviders(uss.Cfg)
+	uss.activityData = map[string]*ActivityStat{}
 	return nil
 }
 
