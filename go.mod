@@ -89,7 +89,7 @@ require (
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
 	golang.org/x/oauth2 v0.0.0-20190319182350-c85d3e98c914
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/tools v0.0.0-20191107235519-f7ea15e60b12 // indirect
+	golang.org/x/tools v0.0.0-20191111154804-8cb0d02132ec // indirect
 	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20191105091915-95d230a53780 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect

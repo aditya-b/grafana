@@ -27,6 +27,7 @@ func TestMetrics(t *testing.T) {
 			SQLStore: sqlstore.InitTestDB(t),
 			License:  models.OSSLicensingService{},
 		}
+		uss.Init()
 
 		var getSystemStatsQuery *models.GetSystemStatsQuery
 		uss.Bus.AddHandler(func(query *models.GetSystemStatsQuery) error {

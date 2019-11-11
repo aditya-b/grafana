@@ -15,8 +15,6 @@ import (
 	"github.com/grafana/grafana/pkg/setting"
 )
 
-var metricsLogger log.Logger = log.New("metrics")
-
 func init() {
 	registry.RegisterService(&UsageStatsService{})
 }
@@ -28,11 +26,13 @@ type UsageStatsService struct {
 	License           models.Licensing   `inject:""`
 	activityDataMutex sync.RWMutex
 	activityData      map[string]*ActivityStat
+	log               log.Logger
 
 	oauthProviders map[string]bool
 }
 
 func (uss *UsageStatsService) Init() error {
+	uss.log = log.New("metrics")
 	uss.oauthProviders = social.GetOAuthProviders(uss.Cfg)
 	uss.activityData = map[string]*ActivityStat{}
 	return nil

@@ -22,7 +22,7 @@ func (uss *UsageStatsService) sendUsageStats(oauthProviders map[string]bool) {
 		return
 	}
 
-	metricsLogger.Debug(fmt.Sprintf("Sending anonymous usage stats to %s", usageStatsURL))
+	uss.log.Debug(fmt.Sprintf("Sending anonymous usage stats to %s", usageStatsURL))
 
 	version := strings.Replace(setting.BuildVersion, ".", "_", -1)
 
@@ -38,7 +38,7 @@ func (uss *UsageStatsService) sendUsageStats(oauthProviders map[string]bool) {
 
 	statsQuery := models.GetSystemStatsQuery{}
 	if err := uss.Bus.Dispatch(&statsQuery); err != nil {
-		metricsLogger.Error("Failed to get system stats", "error", err)
+		uss.log.Error("Failed to get system stats", "error", err)
 		return
 	}
 
@@ -71,7 +71,7 @@ func (uss *UsageStatsService) sendUsageStats(oauthProviders map[string]bool) {
 
 	dsStats := models.GetDataSourceStatsQuery{}
 	if err := uss.Bus.Dispatch(&dsStats); err != nil {
-		metricsLogger.Error("Failed to get datasource stats", "error", err)
+		uss.log.Error("Failed to get datasource stats", "error", err)
 		return
 	}
 
@@ -92,7 +92,7 @@ func (uss *UsageStatsService) sendUsageStats(oauthProviders map[string]bool) {
 
 	dsAccessStats := models.GetDataSourceAccessStatsQuery{}
 	if err := uss.Bus.Dispatch(&dsAccessStats); err != nil {
-		metricsLogger.Error("Failed to get datasource access stats", "error", err)
+		uss.log.Error("Failed to get datasource access stats", "error", err)
 		return
 	}
 
@@ -121,7 +121,7 @@ func (uss *UsageStatsService) sendUsageStats(oauthProviders map[string]bool) {
 
 	anStats := models.GetAlertNotifierUsageStatsQuery{}
 	if err := uss.Bus.Dispatch(&anStats); err != nil {
-		metricsLogger.Error("Failed to get alert notification stats", "error", err)
+		uss.log.Error("Failed to get alert notification stats", "error", err)
 		return
 	}
 
@@ -153,7 +153,7 @@ func (uss *UsageStatsService) sendUsageStats(oauthProviders map[string]bool) {
 	client := http.Client{Timeout: 5 * time.Second}
 	go func() {
 		if _, err := client.Post(usageStatsURL, "application/json", data); err != nil {
-			metricsLogger.Error("Failed to send usage stats", "err", err)
+			uss.log.Error("Failed to send usage stats", "err", err)
 		}
 	}()
 }
@@ -165,7 +165,7 @@ func (uss *UsageStatsService) updateTotalStats() {
 
 	statsQuery := models.GetSystemStatsQuery{}
 	if err := uss.Bus.Dispatch(&statsQuery); err != nil {
-		metricsLogger.Error("Failed to get system stats", "error", err)
+		uss.log.Error("Failed to get system stats", "error", err)
 		return
 	}
 

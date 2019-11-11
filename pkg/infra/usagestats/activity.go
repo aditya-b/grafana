@@ -11,13 +11,17 @@ import (
 type ActivityStat struct {
 	Type      ActivityStatType
 	Key       string
+	Counter   int64
 	Timestamp time.Time
 }
 
 type ActivityStatType int
 
 const (
-	DashboardOpenedActivity ActivityStatType = 1
+	DashboardOpenedActivity ActivityStatType = iota + 1
+	DashboardQueryActivity
+	ExploreQueryActivity
+	UserActivity
 )
 
 // This is to filter out api usage so we only measure actual users
@@ -27,16 +31,40 @@ func isBrowserUserAgent(userAgent string) bool {
 
 func (uss *UsageStatsService) RecordDashboardGet(dashboardUid string, reqContext *models.ReqContext) {
 	key := fmt.Sprintf("%d-%s", DashboardOpenedActivity, dashboardUid)
+	uss.RecordActivity(key, DashboardOpenedActivity, reqContext)
+}
+
+func (uss *UsageStatsService) RecordQueryActivity(reqContext *models.ReqContext) {
+	var userKey string
+
+	if reqContext.IsSignedIn {
+		userKey = fmt.Sprintf("%d-user-id-%d", UserActivity, reqContext.UserId)
+	} else {
+		userKey = fmt.Sprintf("%d-client-ip-%s", UserActivity, reqContext.RemoteAddr())
+	}
+
+	uss.RecordActivity(userKey, UserActivity, reqContext)
+	uss.RecordActivity("dash-id", DashboardQueryActivity, reqContext)
+}
+
+func (uss *UsageStatsService) RecordActivity(key string, statType ActivityStatType, reqContext *models.ReqContext) {
+	if !isBrowserUserAgent(reqContext.Req.UserAgent()) {
+		return
+	}
 
 	uss.activityDataMutex.Lock()
 
-	stat, ok := uss.activityData[key]
+	fullKey := fmt.Sprintf("%d-%s", statType, key)
+
+	stat, ok := uss.activityData[fullKey]
 	if ok {
+		stat.Counter += 1
 		stat.Timestamp = time.Now()
 	} else {
-		uss.activityData[key] = &ActivityStat{
-			Type:      DashboardOpenedActivity,
-			Key:       key,
+		uss.activityData[fullKey] = &ActivityStat{
+			Type:      statType,
+			Key:       fullKey,
+			Counter:   1,
 			Timestamp: time.Now(),
 		}
 	}
@@ -44,24 +72,35 @@ func (uss *UsageStatsService) RecordDashboardGet(dashboardUid string, reqContext
 	uss.activityDataMutex.Unlock()
 }
 
-// func (uss *UsageStatsService) RecordActivity(ring, reqContext *models.ReqContext) {
-// }
+type ActivityStatTotals struct {
+	OpenedDashboards int64
+	ActiveUsers      int64
+	ActiveDashboards int64
+	DashboardQueries int64
+}
 
-func (uss *UsageStatsService) getActiveDashboardCount() int64 {
+func (uss *UsageStatsService) calculateActivityStats() ActivityStatTotals {
 	uss.activityDataMutex.RLock()
 
-	count := int64(0)
+	stats := ActivityStatTotals{}
 
-	for _, v := range uss.activityData {
-		if time.Now().Sub(v.Timestamp) > time.Hour*24 {
-			continue
-		}
-
-		if v.Type == DashboardOpenedActivity {
-			count++
+	for _, activity := range uss.activityData {
+		switch activity.Type {
+		case DashboardOpenedActivity:
+			stats.OpenedDashboards += activity.Counter
+		case UserActivity:
+			stats.ActiveUsers += 1
+		case DashboardQueryActivity:
+			stats.DashboardQueries += activity.Counter
 		}
 	}
 
 	uss.activityDataMutex.RUnlock()
-	return count
+	return stats
+}
+
+func (uss *UsageStatsService) reset() {
+	uss.activityDataMutex.Lock()
+	uss.activityData = map[string]*ActivityStat{}
+	uss.activityDataMutex.Unlock()
 }
