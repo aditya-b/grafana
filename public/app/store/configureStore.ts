@@ -23,6 +23,7 @@ export function configureStore() {
       return getState().application.logActions;
     },
   });
+
   const storeEnhancers =
     process.env.NODE_ENV !== 'production'
       ? applyMiddleware(toggleLogActionsMiddleware, thunk, logger)
@@ -33,6 +34,7 @@ export function configureStore() {
     {},
     composeEnhancers(storeEnhancers)
   );
+
   setStore(store);
   return store;
 }

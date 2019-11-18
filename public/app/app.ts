@@ -23,6 +23,7 @@ import appEvents from 'app/core/app_events';
 import { addClassIfNoOverlayScrollbar } from 'app/core/utils/scrollbar';
 import { checkBrowserCompatibility } from 'app/core/utils/browser';
 import { importPluginModule } from 'app/features/plugins/plugin_loader';
+import { configureStore } from 'app/store/configureStore';
 
 // add move to lodash for backward compatabiltiy
 // @ts-ignore
@@ -72,6 +73,8 @@ export class GrafanaApp {
     setLocale(config.bootData.user.locale);
 
     setMarkdownOptions({ sanitize: !config.disableSanitizeHtml });
+
+    configureStore();
 
     app.config(
       (

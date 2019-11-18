@@ -88,6 +88,7 @@ export class DashNavTimeControls extends Component<Props> {
     const intervals = dashboard.timepicker.refresh_intervals;
     const timePickerValue = this.timeSrv.timeRange();
     const timeZone = dashboard.getTimezone();
+    console.log('dashnav render', timePickerValue.from);
 
     return (
       <div className="dashboard-timepicker-wrapper">

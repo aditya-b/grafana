@@ -1,9 +1,17 @@
 // Libraries
 import _ from 'lodash';
+
 // Utils
 import kbn from 'app/core/utils/kbn';
 import coreModule from 'app/core/core_module';
+import { store } from 'app/store/store';
+import { ContextSrv } from 'app/core/services/context_srv';
+import { GrafanaRootScope } from 'app/routes/GrafanaCtrl';
+import { getZoomedTimeRange, getShiftedTimeRange } from 'app/core/utils/timePicker';
+
 // Types
+import { ITimeoutService, ILocationService } from 'angular';
+import { DashboardModel } from '../state/DashboardModel';
 import {
   dateMath,
   DefaultTimeRange,
@@ -14,11 +22,7 @@ import {
   dateTime,
   isDateTime,
 } from '@grafana/data';
-import { ITimeoutService, ILocationService } from 'angular';
-import { ContextSrv } from 'app/core/services/context_srv';
-import { DashboardModel } from '../state/DashboardModel';
-import { GrafanaRootScope } from 'app/routes/GrafanaCtrl';
-import { getZoomedTimeRange, getShiftedTimeRange } from 'app/core/utils/timePicker';
+import { UrlQueryValue } from '@grafana/runtime';
 
 export class TimeSrv {
   time: any;
@@ -27,6 +31,9 @@ export class TimeSrv {
   oldRefresh: boolean;
   dashboard: Partial<DashboardModel>;
   timeAtLoad: any;
+  lastUrlFrom: UrlQueryValue;
+  lastUrlTo: UrlQueryValue;
+
   private autoRefreshBlocked: boolean;
 
   /** @ngInject */
@@ -39,10 +46,12 @@ export class TimeSrv {
   ) {
     // default time
     this.time = DefaultTimeRange.raw;
+    this.dashboard = { time: this.time };
 
     $rootScope.$on('zoom-out', this.zoomOut.bind(this));
     $rootScope.$on('shift-time', this.shiftTime.bind(this));
-    $rootScope.$on('$routeUpdate', this.routeUpdated.bind(this));
+
+    store.subscribe(this.onReduxStoreUpdate);
 
     document.addEventListener('visibilitychange', () => {
       if (this.autoRefreshBlocked && document.visibilityState === 'visible') {
@@ -117,10 +126,10 @@ export class TimeSrv {
   }
 
   private initTimeFromUrl() {
-    const params = this.$location.search();
+    const params = store.getState().location.query;
 
     if (params.time && params['time.window']) {
-      this.time = this.getTimeWindow(params.time, params['time.window']);
+      this.time = this.getTimeWindow(params.time as string, params['time.window'] as string);
     }
 
     if (params.from) {
@@ -130,7 +139,7 @@ export class TimeSrv {
       this.time.to = this.parseUrlParam(params.to) || this.time.to;
     }
     // if absolute ignore refresh option saved to dashboard
-    if (params.to && params.to.indexOf('now') === -1) {
+    if (params.to && (params.to as string).indexOf('now') === -1) {
       this.refresh = false;
       this.dashboard.refresh = false;
     }
@@ -138,18 +147,24 @@ export class TimeSrv {
     if (params.refresh) {
       this.refresh = params.refresh || this.refresh;
     }
+
+    console.log('initTimeFromUrl', params.to);
+    this.lastUrlTo = params.to;
+    this.lastUrlFrom = params.from;
   }
 
-  private routeUpdated() {
-    const params = this.$location.search();
-    if (params.left) {
+  private onReduxStoreUpdate = () => {
+    const { query } = store.getState().location;
+
+    if (query.left) {
       return; // explore handles this;
     }
-    const urlRange = this.timeRangeForUrl();
+
     // check if url has time range
-    if (params.from && params.to) {
+    if (query.from && query.to) {
       // is it different from what our current time range?
-      if (params.from !== urlRange.from || params.to !== urlRange.to) {
+      if (query.from !== this.lastUrlFrom || query.to !== this.lastUrlTo) {
+        console.log('update time from redux location', query.to);
         // issue update
         this.initTimeFromUrl();
         this.setTime(this.time, true);
@@ -157,7 +172,7 @@ export class TimeSrv {
     } else if (this.timeHasChangedSinceLoad()) {
       this.setTime(this.timeAtLoad, true);
     }
-  }
+  };
 
   private timeHasChangedSinceLoad() {
     return this.timeAtLoad && (this.timeAtLoad.from !== this.time.from || this.timeAtLoad.to !== this.time.to);

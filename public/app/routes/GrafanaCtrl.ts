@@ -15,7 +15,7 @@ import { TimeSrv, setTimeSrv } from 'app/features/dashboard/services/TimeSrv';
 import { DatasourceSrv } from 'app/features/plugins/datasource_srv';
 import { KeybindingSrv, setKeybindingSrv } from 'app/core/services/keybindingSrv';
 import { AngularLoader, setAngularLoader } from 'app/core/services/AngularLoader';
-import { configureStore } from 'app/store/configureStore';
+import { store } from 'app/store/store';
 
 import { LocationUpdate, setLocationSrv } from '@grafana/runtime';
 import { updateLocation } from 'app/core/actions';
@@ -54,7 +54,6 @@ export class GrafanaCtrl {
     setTimeSrv(timeSrv);
     setLinkSrv(linkSrv);
     setKeybindingSrv(keybindingSrv);
-    const store = configureStore();
     setLocationSrv({
       update: (opt: LocationUpdate) => {
         store.dispatch(updateLocation(opt));
