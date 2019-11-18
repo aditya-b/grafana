@@ -21,55 +21,55 @@ export function patchXMLHTTPRequest(
   };
 }
 
-// class RequestsMonitor {
-//   private queue: Record<string, Map<string, { startTs: number; endTs: number | null; duration: number | null }>> = {};
-//   private counters: Record<string, number> = {};
-//   private lastCompletedTs: Record<string, number> = {};
-//   private logger = loggerFactory('RequestsMonitor');
+class RequestsMonitor {
+  private queue: Record<string, Map<string, { startTs: number; endTs: number | null; duration: number | null }>> = {};
+  private counters: Record<string, number> = {};
+  private lastCompletedTs: Record<string, number> = {};
+  private logger = loggerFactory('RequestsMonitor');
 
-//   push = (location: string, url: string, ts: number) => {
-//     if (!this.queue[location]) {
-//       this.queue[location] = new Map();
-//     }
-//     if (this.counters[location] === undefined) {
-//       this.counters[location] = 0;
-//     }
-//     this.counters[location]++;
-//     this.queue[location].set(url, {
-//       startTs: ts,
-//       endTs: null,
-//       duration: null,
-//     });
-//   };
+  push = (location: string, url: string, ts: number) => {
+    if (!this.queue[location]) {
+      this.queue[location] = new Map();
+    }
+    if (this.counters[location] === undefined) {
+      this.counters[location] = 0;
+    }
+    this.counters[location]++;
+    this.queue[location].set(url, {
+      startTs: ts,
+      endTs: null,
+      duration: null,
+    });
+  };
 
-//   stopMonitoring = (location: string) => {
-//     this.queue[location] = null;
-//     this.logger.log('stopped monitoring', location, this.queue);
-//   };
+  stopMonitoring = (location: string) => {
+    this.queue[location] = null;
+    this.logger.log('stopped monitoring', location, this.queue);
+  };
 
-//   markComplete = (location: string, url: string) => {
-//     const endTs = performance.now();
+  markComplete = (location: string, url: string) => {
+    const endTs = performance.now();
 
-//     if (this.queue[location]) {
-//       const inFlight = this.queue[location].get(url);
-//       this.queue[location].set(url, {
-//         ...inFlight,
-//         endTs,
-//         duration: endTs - inFlight.startTs,
-//       });
-//       this.lastCompletedTs[location] = endTs;
-//       this.counters[location]--;
-//     }
-//   };
+    if (this.queue[location]) {
+      const inFlight = this.queue[location].get(url);
+      this.queue[location].set(url, {
+        ...inFlight,
+        endTs,
+        duration: endTs - inFlight.startTs,
+      });
+      this.lastCompletedTs[location] = endTs;
+      this.counters[location]--;
+    }
+  };
 
-//   hasInFlightRequests = (location: string) => {
-//     return this.counters[location] !== undefined && this.counters[location] !== 0;
-//   };
+  hasInFlightRequests = (location: string) => {
+    return this.counters[location] !== undefined && this.counters[location] !== 0;
+  };
 
-//   getLastCompletedRequest = (location: string) => {
-//     return this.lastCompletedTs[location];
-//   };
-// }
+  getLastCompletedRequest = (location: string) => {
+    return this.lastCompletedTs[location];
+  };
+}
 
 export class NavigationMonitor {
   private currentLocation: string | null = null;
