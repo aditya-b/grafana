@@ -82,7 +82,7 @@ export class TextPanel extends PureComponent<Props, State> {
     getLocationSrv().update({
       partial: true,
       query: {
-        from: 0,
+        from: 100,
         to: new Date().valueOf(),
       },
     });
