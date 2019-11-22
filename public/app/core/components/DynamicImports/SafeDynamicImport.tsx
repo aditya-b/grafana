@@ -3,6 +3,7 @@ import Loadable from 'react-loadable';
 import { LoadingChunkPlaceHolder } from './LoadingChunkPlaceHolder';
 import { ErrorLoadingChunk } from './ErrorLoadingChunk';
 
+const LOADERS_COUNTER = 0;
 export const loadComponentHandler = (props: { error: Error; pastDelay: boolean }) => {
   const { error, pastDelay } = props;
 
@@ -19,7 +20,15 @@ export const loadComponentHandler = (props: { error: Error; pastDelay: boolean }
 
 export const SafeDynamicImport = (importStatement: Promise<any>) => ({ ...props }) => {
   const LoadableComponent = Loadable({
-    loader: () => importStatement,
+    loader: () => {
+      console.log('loader');
+      performance.mark(`loadable-${LOADERS_COUNTER}`);
+      return importStatement.then(result => {
+        console.log('finished');
+        performance.mark(`loadable-${LOADERS_COUNTER}-finished`);
+        return result;
+      });
+    },
     loading: loadComponentHandler,
   });
 

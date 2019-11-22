@@ -22,52 +22,68 @@ export function patchXMLHTTPRequest(
 }
 
 class RequestsMonitor {
-  private queue: Record<string, Map<string, { startTs: number; endTs: number | null; duration: number | null }>> = {};
+  private queue: Map<string, number> = new Map();
   private counters: Record<string, number> = {};
-  private lastCompletedTs: Record<string, number> = {};
+  private lastCompletedTs1: Record<string, number> = {};
+  private lastCompletedTs: number;
   private logger = loggerFactory('RequestsMonitor');
+  private tsPointer: number;
 
-  push = (location: string, url: string, ts: number) => {
-    if (!this.queue[location]) {
-      this.queue[location] = new Map();
-    }
-    if (this.counters[location] === undefined) {
-      this.counters[location] = 0;
-    }
-    this.counters[location]++;
-    this.queue[location].set(url, {
-      startTs: ts,
-      endTs: null,
-      duration: null,
-    });
+  push = (url: string, ts: number) => {
+    this.queue.set(url, ts);
+    // if (!this.queue[location]) {
+    //   this.queue[location] = new Map();
+    // }
+    // if (this.counters[location] === undefined) {
+    //   this.counters[location] = 0;
+    // }
+    // this.counters[location]++;
+    // this.queue[location].set(url, {
+    //   startTs: ts,
+    //   endTs: null,
+    //   duration: null,
+    // });
+  };
+
+  bumpTs = (ts: number) => {
+    this.tsPointer = ts;
   };
 
   stopMonitoring = (location: string) => {
-    this.queue[location] = null;
-    this.logger.log('stopped monitoring', location, this.queue);
+    // this.queue[location] = null;
+    // this.logger.log('stopped monitosring', location, this.queue);
   };
 
-  markComplete = (location: string, url: string) => {
+  markComplete = (url: string) => {
     const endTs = performance.now();
-
-    if (this.queue[location]) {
-      const inFlight = this.queue[location].get(url);
-      this.queue[location].set(url, {
-        ...inFlight,
-        endTs,
-        duration: endTs - inFlight.startTs,
-      });
-      this.lastCompletedTs[location] = endTs;
-      this.counters[location]--;
-    }
+    this.queue.delete(url);
+    // if (this.queue[location]) {
+    //   const inFlight = this.queue[location].get(url);
+    //   this.queue[location].set(url, {
+    //     ...inFlight,
+    //     endTs,
+    //     duration: endTs - inFlight.startTs,
+    //   });
+    this.lastCompletedTs = endTs;
+    //   this.counters[location]--;
+    // }
   };
 
-  hasInFlightRequests = (location: string) => {
-    return this.counters[location] !== undefined && this.counters[location] !== 0;
+  // hasInFlightRequests = (location: string) => {
+  //   return this.counters[location] !== undefined && this.counters[location] !== 0;
+  // };
+  hasInFlightRequests = () => {
+    const res = Array.from(this.queue.values()).filter(ts => {
+      return ts > this.tsPointer;
+      // return true
+    });
+    // console.log(this.tsPointer, this.queue.entries(), res)
+    return res.length > 0;
+    // return this.counters[location] !== undefined && this.counters[location] !== 0;
   };
 
   getLastCompletedRequest = (location: string) => {
-    return this.lastCompletedTs[location];
+    return this.lastCompletedTs;
   };
 }
 
@@ -77,35 +93,56 @@ export class NavigationMonitor {
   private threshold = 2000;
   private navigationInProgress = false;
   private lastCompletedLongTask: number;
+  private lastCompletedLoadable: number;
   private navigationStartTs: number;
   // @ts-ignore
   private longTasksObserver;
+  // @ts-ignore
+  private loadableObserver;
 
   private navigationCounter = 0;
   private logger = loggerFactory('🧭 NavigationMonitor');
+  private lastPerfMarkTs = 0;
+  private loadableEntries = [];
 
   constructor() {
     this.requestsMonitor = new RequestsMonitor();
     patchXMLHTTPRequest(this.monitorRequest, this.stopMonitoringRequest);
+    const now = performance.now();
+
+    const entries = performance.getEntriesByType('mark');
+    for (const entry of entries) {
+      if (entry.startTime < now) {
+        if (entry.name.startsWith('loadable')) {
+          this.loadableEntries.push(entry);
+          this.lastPerfMarkTs = entry.startTime;
+        }
+      }
+    }
+
+    // console.log('INtO', this.loadableEntries);
   }
 
   monitorRequest = (url: string) => {
-    this.requestsMonitor.push(this.currentLocation, url, performance.now());
+    this.requestsMonitor.push(url, performance.now());
   };
 
-  stopMonitoringRequest = (url: string, abandoned?: boolean) => {
-    this.requestsMonitor.markComplete(this.currentLocation, url);
+  stopMonitoringRequest = (url: string) => {
+    this.requestsMonitor.markComplete(url);
   };
 
   startMonitoringLocation = (location: string) => {
     const startTs = this.navigationCounter === 0 ? 0 : performance.now();
     this.navigationCounter++;
+
     if (this.navigationInProgress) {
       this.stopMonitoringLocation(location, this.navigationStartTs, performance.now(), true);
     }
 
     this.logger.info('started', location, startTs);
     this.navigationStartTs = startTs;
+    this.requestsMonitor.bumpTs(startTs);
+
     this.longTasksObserver = new PerformanceObserver(list => {
       const entries = list.getEntries();
       for (const entry of entries) {
@@ -115,13 +152,38 @@ export class NavigationMonitor {
       }
     });
 
+    this.loadableObserver = new PerformanceObserver(list => {
+      const entries = list.getEntries();
+
+      const searchFrom = this.lastPerfMarkTs > startTs ? this.lastPerfMarkTs : startTs;
+
+      for (const entry of entries) {
+        if (entry.startTime > searchFrom) {
+          if (entry.name.startsWith('loadable')) {
+            this.loadableEntries.push(entry);
+            this.lastPerfMarkTs = entry.startTime;
+          }
+        }
+      }
+
+      const finnishedCount = this.loadableEntries.filter(e => e.name.endsWith('finished'));
+      if (finnishedCount.length === this.loadableEntries.length - finnishedCount.length) {
+        this.lastCompletedLoadable = performance.now();
+      }
+      // else {
+      // console.log('not finsihed loadbales');
+      // }
+    });
+
     this.navigationInProgress = true;
     this.currentLocation = location;
     this.longTasksObserver.observe({ entryTypes: ['longtask'] });
+    this.loadableObserver.observe({ entryTypes: ['mark'] });
     requestAnimationFrame(() => this.validateStartedNavigation(startTs));
   };
 
   stopMonitoringLocation = (location: string, startTs: number, endTs: number, abandoned?: boolean) => {
+    // debugger
     this.navigationInProgress = false;
     this.requestsMonitor.stopMonitoring(location);
     this.currentLocation = location;
@@ -152,28 +214,39 @@ export class NavigationMonitor {
 
   validateStartedNavigation = (startTs: number) => {
     const now = performance.now();
-
+    let threshold = this.threshold;
     if (this.navigationInProgress) {
       if (this.navigationCounter === 1) {
         this.getLastLongTask();
+        threshold = 5000;
       }
 
       const lastLongTaskTs = this.lastCompletedLongTask || startTs;
       const lastCompletedRequestTs = this.requestsMonitor.getLastCompletedRequest(this.currentLocation) || startTs;
+      const lastLoadableTs = this.lastCompletedLoadable || startTs;
       const sinceLastLongTask = now - lastLongTaskTs;
       const sinceLastRequest = now - lastCompletedRequestTs;
-      const hasInFlightRequests = this.requestsMonitor.hasInFlightRequests(this.currentLocation);
+      const sinceLastLoadable = now - lastLoadableTs;
+      const hasInFlightRequests = this.requestsMonitor.hasInFlightRequests();
+      let hasInFlightLoadables = true;
+      const finnishedCount = this.loadableEntries.filter(e => e.name.endsWith('finished'));
+
+      if (finnishedCount.length === this.loadableEntries.length - finnishedCount.length) {
+        hasInFlightLoadables = false;
+      } else {
+        console.log('not finsihed loadbales');
+      }
 
       // If there are any ongoing requests defer check to next frame
-      if (hasInFlightRequests) {
+      if (hasInFlightRequests || hasInFlightLoadables) {
         requestAnimationFrame(() => this.validateStartedNavigation(startTs));
         return;
       }
 
       // if last request and last long frame happened later than the 1000ms threshold
       // we assume navigation has finished
-      if (sinceLastLongTask > this.threshold && sinceLastRequest > this.threshold) {
-        this.logger.info(`It\'s been quiet for some time`, { sinceLastLongTask, sinceLastRequest });
+      if (sinceLastLongTask > threshold && sinceLastRequest > threshold && sinceLastLoadable > threshold) {
+        this.logger.info(`It\'s been quiet for some time ${threshold}`, { sinceLastLongTask, sinceLastRequest });
         this.stopMonitoringLocation(
           this.currentLocation,
           startTs,
