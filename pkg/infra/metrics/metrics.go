@@ -29,6 +29,11 @@ var (
 	// MHttpRequestSummary is a metric http request summary
 	MHttpRequestSummary *prometheus.SummaryVec
 
+	// MFrontendNavigationSummary is a metric http request summary
+	MFrontendNavigationSummary *prometheus.SummaryVec
+	// MFrontendTTISummary is a metric time to interactive
+	MFrontendTTISummary *prometheus.SummaryVec
+
 	// MApiUserSignUpStarted is a metric amount of users who started the signup flow
 	MApiUserSignUpStarted prometheus.Counter
 
@@ -193,6 +198,24 @@ func init() {
 			Help: "http request summary",
 		},
 		[]string{"handler", "statuscode", "method"},
+	)
+
+	MFrontendNavigationSummary = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name:      "frontend_navigation_milliseconds",
+			Help:      "frontend navigation summary",
+			Namespace: exporterName,
+		},
+		[]string{"from", "to", "abandoned"},
+	)
+
+	MFrontendTTISummary = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Name:      "frontend_tti_milliseconds",
+			Help:      "frontend time to interactive sumamary",
+			Namespace: exporterName,
+		},
+		[]string{"page"},
 	)
 
 	MApiUserSignUpStarted = newCounterStartingAtZero(prometheus.CounterOpts{
@@ -442,6 +465,8 @@ func initMetricVars() {
 		MProxyStatus,
 		MHttpRequestTotal,
 		MHttpRequestSummary,
+		MFrontendNavigationSummary,
+		MFrontendTTISummary,
 		MApiUserSignUpStarted,
 		MApiUserSignUpCompleted,
 		MApiUserSignUpInvite,

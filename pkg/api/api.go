@@ -102,6 +102,8 @@ func (hs *HTTPServer) registerRoutes() {
 	r.Post("/api/user/password/send-reset-email", bind(dtos.SendResetPasswordEmailForm{}), Wrap(SendResetPasswordEmail))
 	r.Post("/api/user/password/reset", bind(dtos.ResetUserPasswordForm{}), Wrap(ResetPassword))
 
+	r.Post("/api/frontend_metrics", bind(dtos.FrontendPerformanceMetricsCommand{}), Wrap(CollectFrontendMetrics))
+
 	// dashboard snapshots
 	r.Get("/dashboard/snapshot/*", hs.Index)
 	r.Get("/dashboard/snapshots/", reqSignedIn, hs.Index)

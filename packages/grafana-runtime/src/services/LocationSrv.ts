@@ -1,5 +1,16 @@
+export interface LocationState {
+  url: string;
+  path: string;
+  page: string;
+  query: UrlQueryMap;
+  routeParams: UrlQueryMap;
+  replace: boolean;
+  lastUpdated: number;
+}
+
 export interface LocationUpdate {
   path?: string;
+  routeInfo?: string;
   query?: UrlQueryMap;
 
   /**
@@ -23,6 +34,7 @@ export type UrlQueryMap = Record<string, UrlQueryValue>;
 
 export interface LocationSrv {
   update(options: LocationUpdate): void;
+  getLocation: () => LocationState;
 }
 
 let singletonInstance: LocationSrv;
