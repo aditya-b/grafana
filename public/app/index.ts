@@ -23,7 +23,7 @@ setEchoMeta({
 });
 
 // TODO: Pass url from env
-registerEchoConsumer(getPerformanceConsumer({ url: 'http://localhost:8089' }));
+registerEchoConsumer(getPerformanceConsumer({ url: '/api/metrics' }));
 
 window.addEventListener('DOMContentLoaded', () => {
   reportPerformance('dcl', Math.round(performance.now()));

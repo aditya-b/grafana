@@ -55,11 +55,14 @@ export class Echo implements EchoSrv {
     this.consumers.push(consumer);
   };
 
-  consumeEvent = <T extends EchoEvent>(event: Omit<T, 'meta' | 'ts'>) => {
+  consumeEvent = <T extends EchoEvent>(event: Omit<T, 'meta' | 'ts'>, _meta?: {}) => {
     const meta = this.getMeta();
     const metric = {
       ...event,
-      meta,
+      meta: {
+        ...meta,
+        ..._meta,
+      },
       ts: performance.now(),
     };
 
