@@ -30,3 +30,27 @@ export const reportPerformance = (metric: string, value: number) => {
     },
   });
 };
+
+export const reportNavigation = (
+  duration: number,
+  navigationCount: number,
+  from?: string,
+  to?: string,
+  abandoned?: boolean
+) => {
+  getEcho().consumeEvent<PerformanceEvent>(
+    {
+      type: EchoEventType.Navigation,
+      payload: {
+        metricName: 'navigationTime',
+        duration,
+      },
+    },
+    {
+      navigationCount,
+      from,
+      to,
+      abandoned,
+    }
+  );
+};

@@ -8,7 +8,8 @@ export interface PerformanceEventPayload {
   duration: number;
 }
 
-export interface PerformanceEvent extends EchoEvent<EchoEventType.Performance, PerformanceEventPayload> {}
+export interface PerformanceEvent
+  extends EchoEvent<EchoEventType.Performance | EchoEventType.Navigation, PerformanceEventPayload> {}
 
 export interface PerformanceConsumerOptions {
   url: string;
@@ -21,7 +22,7 @@ export interface PerformanceConsumerOptions {
 export class PerformanceConsumer implements EchoConsumer<PerformanceEvent, PerformanceConsumerOptions> {
   private consumedPageLoadMetrics = false;
   private buffer: PerformanceEvent[] = [];
-  supportedEvents = [EchoEventType.Performance];
+  supportedEvents = [EchoEventType.Performance, EchoEventType.Navigation];
 
   constructor(private echoInstance: Echo, public options: PerformanceConsumerOptions) {}
 
@@ -58,13 +59,23 @@ export class PerformanceConsumer implements EchoConsumer<PerformanceEvent, Perfo
     }
 
     const result = {
-      metrics: this.buffer,
+      metrics: this.buffer.map(m => ({
+        type: m.type,
+        name: m.payload.metricName,
+        value: m.payload.duration,
+        meta: m.meta,
+      })),
     };
 
     this.echoInstance.logDebug('PerformanceConsumer flushing: ', result);
 
     if (this.options.url) {
-      getBackendSrv().post(this.options.url, result);
+      getBackendSrv().request({
+        method: 'POST',
+        url: this.options.url,
+        showSuccessAlert: false,
+        data: result,
+      });
       this.buffer = [];
     }
   };

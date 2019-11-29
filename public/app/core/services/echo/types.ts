@@ -8,6 +8,7 @@ export interface EchoMeta {
   windowSize: SizeMeta;
   userAgent: string;
   url?: string;
+  page?: string;
 }
 
 export interface EchoConsumer<T extends EchoEvent = any, O = any> {
@@ -26,6 +27,7 @@ export interface EchoEvent<T extends EchoEventType = any, P = any> {
 
 export enum EchoEventType {
   Performance = 'performance',
+  Navigation = 'navigation',
 }
 
 export interface EchoConsumerCtor<T extends EchoEvent, O> {

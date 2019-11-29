@@ -1,5 +1,6 @@
 import { EchoConsumer, EchoMeta, EchoEvent, EchoSrv } from './types';
 import { KeyValue, CircularVector } from '@grafana/data';
+import { getLocationSrv } from '@grafana/runtime';
 
 interface EchoConfig {
   // How often should metrics be reported
@@ -93,6 +94,7 @@ export class Echo implements EchoSrv {
     return {
       ...this.meta,
       url: window.location.href,
+      page: getLocationSrv().getLocation().page,
     };
   };
 

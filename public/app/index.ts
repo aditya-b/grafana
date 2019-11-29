@@ -24,7 +24,7 @@ setEchoMeta({
 });
 
 // TODO: Pass url from env
-registerEchoConsumer(getPerformanceConsumer({ url: '/api/metrics' }));
+registerEchoConsumer(getPerformanceConsumer({ url: '/api/frontend_metrics' }));
 
 window.addEventListener('DOMContentLoaded', () => {
   reportPerformance('dcl', Math.round(performance.now()));
@@ -36,5 +36,6 @@ app.init();
 // (ノಠ益ಠ)
 // @ts-ignore
 window.navMonitor = new NavigationMonitor();
+
 // @ts-ignore
-window.navMonitor.startMonitoringLocation(window.location.href);
+window.navMonitor.startMonitoringLocation(window.location.href, undefined, window.location);

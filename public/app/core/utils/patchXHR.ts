@@ -1,4 +1,5 @@
 import { loggerFactory } from './loggerFactory';
+import { reportNavigation } from '../services/echo/EchoSrv';
 
 export function patchXMLHTTPRequest(
   beforeXHRSendCb: (url: string) => void,
@@ -30,8 +31,11 @@ class RequestsMonitor {
 
   // Defines timestamp from which the requests should be monitored
   private tsPointer: number;
-
+  private ignoredUrls = ['api/frontend_metrics'];
   push = (url: string, ts: number) => {
+    if (this.ignoredUrls.indexOf(url) > -1) {
+      return;
+    }
     this.queue.set(url, ts);
   };
 
@@ -59,6 +63,10 @@ class RequestsMonitor {
 
 export class NavigationMonitor {
   private currentLocation: string | null = null;
+  private currentNavigatinDetails: {
+    from?: string;
+    to?: string;
+  } = {};
   private requestsMonitor: RequestsMonitor;
   private threshold = 2000;
   private navigationInProgress = false;
@@ -101,13 +109,14 @@ export class NavigationMonitor {
     this.requestsMonitor.markComplete(url);
   };
 
-  startMonitoringLocation = (location: string) => {
+  startMonitoringLocation = (location: string, from?: string, to?: string) => {
     const startTs = this.navigationCounter === 0 ? 0 : performance.now();
     this.navigationCounter++;
-
     if (this.navigationInProgress) {
       this.stopMonitoringLocation(location, this.navigationStartTs, performance.now(), true);
     }
+
+    this.currentNavigatinDetails = { from, to };
 
     this.logger.info('started', location, startTs);
     this.navigationStartTs = startTs;
@@ -152,21 +161,26 @@ export class NavigationMonitor {
   stopMonitoringLocation = (location: string, startTs: number, endTs: number, abandoned?: boolean) => {
     // debugger
     this.navigationInProgress = false;
-    this.requestsMonitor.stopMonitoring(location);
     this.currentLocation = location;
     this.longTasksObserver.disconnect();
     this.longTasksObserver = null;
     this.lastCompletedLongTask = null;
-    this.logger.info(`finished${abandoned ? '[Abandoned]' : ''}`, 'took: ', endTs - startTs, 'started at: ', startTs);
+    reportNavigation(
+      endTs - startTs,
+      this.navigationCounter,
+      this.currentNavigatinDetails.from,
+      this.currentNavigatinDetails.to,
+      abandoned
+    );
   };
 
   getLastLongTask = () => {
     let lastLongTaskTs = 0;
     // TODO: replace with TTI global object
     // @ts-ignore
-    if (window.__navMonitor && window.__navMonitor.e.length > 0) {
+    if (window.__tti && window.__tti.e.length > 0) {
       // @ts-ignore
-      const entries = window.__navMonitor.e;
+      const entries = window.__tti.e;
       for (const entry of entries) {
         if (entry.startTs + entry.duration > lastLongTaskTs) {
           lastLongTaskTs = entry.startTs + entry.duration;
@@ -184,6 +198,7 @@ export class NavigationMonitor {
     let threshold = this.threshold;
     if (this.navigationInProgress) {
       if (this.navigationCounter === 1) {
+        // For first navigation we are utilising tti metric from tti-polyfill
         this.getLastLongTask();
         threshold = 5000;
       }

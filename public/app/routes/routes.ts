@@ -108,11 +108,13 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/dashboard/import', {
       templateUrl: 'public/app/features/manage-dashboards/partials/dashboard_import.html',
+      routeInfo: 'dashboard-import',
       controller: DashboardImportCtrl,
       controllerAs: 'ctrl',
     })
     .when('/datasources', {
       template: '<react-container />',
+      routeInfo: 'datasources-list',
       resolve: {
         component: () =>
           SafeDynamicImport(
@@ -123,6 +125,7 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     .when('/datasources/edit/:id/', {
       template: '<react-container />',
       reloadOnSearch: false, // for tabs
+      routeInfo: 'datasource-edit',
       resolve: {
         component: () =>
           SafeDynamicImport(
@@ -143,6 +146,7 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/datasources/new', {
       template: '<react-container />',
+      routeInfo: 'datasource-new',
       resolve: {
         component: () =>
           SafeDynamicImport(
@@ -152,16 +156,19 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/dashboards', {
       templateUrl: 'public/app/features/manage-dashboards/partials/dashboard_list.html',
+      routeInfo: 'dashboards',
       controller: 'DashboardListCtrl',
       controllerAs: 'ctrl',
     })
     .when('/dashboards/folder/new', {
       templateUrl: 'public/app/features/folders/partials/create_folder.html',
+      routeInfo: 'folder-new',
       controller: CreateFolderCtrl,
       controllerAs: 'ctrl',
     })
     .when('/dashboards/f/:uid/:slug/permissions', {
       template: '<react-container />',
+      routeInfo: 'folder-permissions',
       resolve: {
         component: () =>
           SafeDynamicImport(
@@ -171,6 +178,7 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/dashboards/f/:uid/:slug/settings', {
       template: '<react-container />',
+      routeInfo: 'folder-settings',
       resolve: {
         component: () =>
           SafeDynamicImport(
@@ -190,6 +198,7 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/explore', {
       template: '<react-container />',
+      routeInfo: 'explore',
       reloadOnSearch: false,
       resolve: {
         roles: () => (config.viewersCanEdit ? [] : ['Editor', 'Admin']),
@@ -207,6 +216,7 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/org', {
       template: '<react-container />',
+      routeInfo: 'organization',
       resolve: {
         component: () =>
           SafeDynamicImport(import(/* webpackChunkName: "OrgDetailsPage" */ '../features/org/OrgDetailsPage')),
@@ -214,10 +224,12 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/org/new', {
       templateUrl: 'public/app/features/org/partials/newOrg.html',
+      routeInfo: 'organization-new',
       controller: 'NewOrgCtrl',
     })
     .when('/org/users', {
       template: '<react-container />',
+      routeInfo: 'organization-users',
       resolve: {
         component: () =>
           SafeDynamicImport(import(/* webpackChunkName: "UsersListPage" */ 'app/features/users/UsersListPage')),
@@ -225,11 +237,13 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/org/users/invite', {
       templateUrl: 'public/app/features/org/partials/invite.html',
+      routeInfo: 'organization-user-invite',
       controller: 'UserInviteCtrl',
       controllerAs: 'ctrl',
     })
     .when('/org/apikeys', {
       template: '<react-container />',
+      routeInfo: 'organization-api-keys',
       resolve: {
         roles: () => ['Editor', 'Admin'],
         component: () =>
@@ -238,6 +252,7 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/org/teams', {
       template: '<react-container />',
+      routeInfo: 'organization-teams',
       resolve: {
         roles: () => (config.editorsCanAdmin ? [] : ['Editor', 'Admin']),
         component: () => SafeDynamicImport(import(/* webpackChunkName: "TeamList" */ 'app/features/teams/TeamList')),
@@ -245,6 +260,7 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/org/teams/new', {
       templateUrl: 'public/app/features/teams/partials/create_team.html',
+      routeInfo: 'organization-team-new',
       controller: 'CreateTeamCtrl',
       controllerAs: 'ctrl',
     })
@@ -257,11 +273,13 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/profile', {
       templateUrl: 'public/app/features/profile/partials/profile.html',
+      routeInfo: 'profile',
       controller: 'ProfileCtrl',
       controllerAs: 'ctrl',
     })
     .when('/profile/password', {
       template: '<react-container />',
+      routeInfo: 'profile-password',
       resolve: {
         component: () =>
           SafeDynamicImport(
@@ -277,10 +295,12 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     .when('/admin', {
       templateUrl: 'public/app/features/admin/partials/admin_home.html',
       controller: 'AdminHomeCtrl',
+      routeInfo: 'admin',
       controllerAs: 'ctrl',
     })
     .when('/admin/settings', {
       template: '<react-container />',
+      routeInfo: 'admin-settings',
       resolve: {
         component: () =>
           SafeDynamicImport(import(/* webpackChunkName: "AdminSettings" */ 'app/features/admin/AdminSettings')),
@@ -288,11 +308,13 @@ export function setupAngularRoutes($routeProvider: route.IRouteProvider, $locati
     })
     .when('/admin/users', {
       templateUrl: 'public/app/features/admin/partials/users.html',
+      routeInfo: 'admin-users',
       controller: 'AdminListUsersCtrl',
       controllerAs: 'ctrl',
     })
     .when('/admin/users/create', {
       templateUrl: 'public/app/features/admin/partials/new_user.html',
+      routeInfo: 'admin-user-create',
       controller: 'AdminEditUserCtrl',
     })
     .when('/admin/users/edit/:id', {

@@ -40,13 +40,19 @@ export class BridgeSrv {
       // When previous === undefined then this is initial call and we are already tracking it from index.ts file (L10)
       if (previous !== undefined) {
         // @ts-ignore
-        window.navMonitor.startMonitoringLocation(window.location.href);
+        window.navMonitor.startMonitoringLocation(
+          window.location.href,
+          previous['$$route'].routeInfo,
+          current['$$route'].routeInfo
+        );
       }
+
       store.dispatch(
         updateLocation({
           path: this.$location.path(),
           query: this.$location.search(),
           routeParams: this.$route.current.params,
+          routeInfo: this.$route.current['$$route'].routeInfo,
         })
       );
     });
