@@ -6,7 +6,6 @@ import { updateLocation } from 'app/core/actions';
 import { ITimeoutService, ILocationService, IWindowService } from 'angular';
 import { CoreEvents } from 'app/types';
 import { GrafanaRootScope } from 'app/routes/GrafanaCtrl';
-
 // Services that handles angular -> redux store sync & other react <-> angular sync
 export class BridgeSrv {
   private fullPageReloadRoutes: string[];
@@ -37,7 +36,12 @@ export class BridgeSrv {
       }
     });
 
-    this.$rootScope.$on('$routeChangeSuccess', (evt, data) => {
+    this.$rootScope.$on('$routeChangeSuccess', (evt, current, previous) => {
+      // When previous === undefined then this is initial call and we are already tracking it from index.ts file (L10)
+      if (previous !== undefined) {
+        // @ts-ignore
+        window.navMonitor.startMonitoringLocation(window.location.href);
+      }
       store.dispatch(
         updateLocation({
           path: this.$location.path(),
@@ -60,7 +64,7 @@ export class BridgeSrv {
             this.$location.replace();
           }
         });
-        console.log('store updating angular $location.url', url);
+        // console.log('store updating angular $location.url', url);
       }
     });
 
