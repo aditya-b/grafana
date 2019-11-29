@@ -1,7 +1,7 @@
 import { ThunkAction, ThunkDispatch as GenericThunkDispatch } from 'redux-thunk';
 import { ActionOf } from 'app/core/redux';
 
-import { LocationState } from './location';
+import { LocationState } from '@grafana/runtime';
 import { AlertRulesState } from './alerting';
 import { TeamsState, TeamState } from './teams';
 import { FolderState } from './folders';

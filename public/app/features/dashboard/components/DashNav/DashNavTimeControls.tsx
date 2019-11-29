@@ -4,8 +4,9 @@ import { dateMath } from '@grafana/data';
 
 // Types
 import { DashboardModel } from '../../state';
-import { LocationState, CoreEvents } from 'app/types';
+import { CoreEvents } from 'app/types';
 import { TimeRange, TimeOption, RawTimeRange } from '@grafana/data';
+import { LocationState } from '@grafana/runtime';
 
 // State
 import { updateLocation } from 'app/core/actions';

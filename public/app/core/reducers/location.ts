@@ -1,8 +1,8 @@
-import { LocationState } from 'app/types';
 import { renderUrl } from 'app/core/utils/url';
 import _ from 'lodash';
 import { reducerFactory } from 'app/core/redux';
 import { updateLocation } from 'app/core/actions';
+import { LocationState } from '@grafana/runtime';
 
 export const initialState: LocationState = {
   url: '',
@@ -11,6 +11,7 @@ export const initialState: LocationState = {
   routeParams: {},
   replace: false,
   lastUpdated: 0,
+  page: '',
 };
 
 export const locationReducer = reducerFactory<LocationState>(initialState)
@@ -18,6 +19,7 @@ export const locationReducer = reducerFactory<LocationState>(initialState)
     filter: updateLocation,
     mapper: (state, action): LocationState => {
       const { path, routeParams, replace } = action.payload;
+      const page = action.payload.routeInfo || state.page;
       let query = action.payload.query || state.query;
 
       if (action.payload.partial) {
@@ -32,6 +34,7 @@ export const locationReducer = reducerFactory<LocationState>(initialState)
         routeParams: routeParams || state.routeParams,
         replace: replace === true,
         lastUpdated: new Date().getTime(),
+        page,
       };
     },
   })

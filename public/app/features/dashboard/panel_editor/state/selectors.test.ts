@@ -1,5 +1,5 @@
 import { getActiveTabAndTabs } from './selectors';
-import { LocationState } from '../../../../types';
+import { LocationState } from '@grafana/runtime';
 import { getPanelEditorTab, PanelEditorState, PanelEditorTab, PanelEditorTabIds } from './reducers';
 
 describe('getActiveTabAndTabs', () => {
@@ -15,6 +15,7 @@ describe('getActiveTabAndTabs', () => {
           tab: activeTabId,
         },
         url: 'an url',
+        page: 'page name',
       };
       const panelEditor: PanelEditorState = {
         activeTab: PanelEditorTabIds.Queries,
@@ -43,6 +44,7 @@ describe('getActiveTabAndTabs', () => {
           tab: undefined,
         },
         url: 'an url',
+        page: 'page name',
       };
       const panelEditor: PanelEditorState = {
         activeTab: PanelEditorTabIds.Advanced,
@@ -71,6 +73,7 @@ describe('getActiveTabAndTabs', () => {
           tab: undefined,
         },
         url: 'an url',
+        page: 'page name',
       };
       const panelEditor: PanelEditorState = {
         activeTab: PanelEditorTabIds.Advanced,

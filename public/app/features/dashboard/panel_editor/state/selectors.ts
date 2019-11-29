@@ -1,5 +1,5 @@
 import memoizeOne from 'memoize-one';
-import { LocationState } from '../../../../types';
+import { LocationState } from '@grafana/runtime';
 import { PanelEditorState, PanelEditorTabIds } from './reducers';
 
 export const getActiveTabAndTabs = memoizeOne((location: LocationState, panelEditor: PanelEditorState) => {
