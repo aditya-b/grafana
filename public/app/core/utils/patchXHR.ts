@@ -23,63 +23,33 @@ export function patchXMLHTTPRequest(
 
 class RequestsMonitor {
   private queue: Map<string, number> = new Map();
-  private counters: Record<string, number> = {};
-  private lastCompletedTs1: Record<string, number> = {};
+  // private counters: Record<string, number> = {};
+  // private lastCompletedTs1: Record<string, number> = {};
   private lastCompletedTs: number;
-  private logger = loggerFactory('RequestsMonitor');
+  // private logger = loggerFactory('RequestsMonitor');
+
+  // Defines timestamp from which the requests should be monitored
   private tsPointer: number;
 
   push = (url: string, ts: number) => {
     this.queue.set(url, ts);
-    // if (!this.queue[location]) {
-    //   this.queue[location] = new Map();
-    // }
-    // if (this.counters[location] === undefined) {
-    //   this.counters[location] = 0;
-    // }
-    // this.counters[location]++;
-    // this.queue[location].set(url, {
-    //   startTs: ts,
-    //   endTs: null,
-    //   duration: null,
-    // });
   };
 
   bumpTs = (ts: number) => {
     this.tsPointer = ts;
   };
 
-  stopMonitoring = (location: string) => {
-    // this.queue[location] = null;
-    // this.logger.log('stopped monitosring', location, this.queue);
-  };
-
   markComplete = (url: string) => {
     const endTs = performance.now();
     this.queue.delete(url);
-    // if (this.queue[location]) {
-    //   const inFlight = this.queue[location].get(url);
-    //   this.queue[location].set(url, {
-    //     ...inFlight,
-    //     endTs,
-    //     duration: endTs - inFlight.startTs,
-    //   });
     this.lastCompletedTs = endTs;
-    //   this.counters[location]--;
-    // }
   };
 
-  // hasInFlightRequests = (location: string) => {
-  //   return this.counters[location] !== undefined && this.counters[location] !== 0;
-  // };
   hasInFlightRequests = () => {
     const res = Array.from(this.queue.values()).filter(ts => {
       return ts > this.tsPointer;
-      // return true
     });
-    // console.log(this.tsPointer, this.queue.entries(), res)
     return res.length > 0;
-    // return this.counters[location] !== undefined && this.counters[location] !== 0;
   };
 
   getLastCompletedRequest = (location: string) => {
@@ -103,7 +73,7 @@ export class NavigationMonitor {
   private navigationCounter = 0;
   private logger = loggerFactory('🧭 NavigationMonitor');
   private lastPerfMarkTs = 0;
-  private loadableEntries = [];
+  private loadableEntries: any[] = [];
 
   constructor() {
     this.requestsMonitor = new RequestsMonitor();
@@ -170,9 +140,6 @@ export class NavigationMonitor {
       if (finnishedCount.length === this.loadableEntries.length - finnishedCount.length) {
         this.lastCompletedLoadable = performance.now();
       }
-      // else {
-      // console.log('not finsihed loadbales');
-      // }
     });
 
     this.navigationInProgress = true;
