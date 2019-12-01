@@ -56,7 +56,7 @@ export const RepeatGraphPanel: React.FunctionComponent<Props> = ({ data, timeRan
     time: {
       type: 'time',
       min: xFrom,
-      max: xTo + xRange / 8,
+      max: xTo + xRange / 7,
       mask: 'MM:ss',
       tickCount: 6,
     },
@@ -151,8 +151,8 @@ function renderLineGeom(colors: ChartColors, lastData: ChartDataPoint, xRange: n
       <Guide>
         <Region
           top
-          start={[lastData.time - xRange / 35, 'max']}
-          end={[lastData.time + xRange / 35, 'min']}
+          start={[lastData.time - xRange / 20, 'max']}
+          end={[lastData.time + xRange / 20, 'min']}
           style={{
             fill: `l(100) 0:${colors.bg2} 1:${colors.line}`,
             fillOpacity: 1,
