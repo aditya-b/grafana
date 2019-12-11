@@ -47,15 +47,13 @@ fi
 echo "Build arguments: $OPT"
 echo "current dir: $(pwd)"
 
-# build only amd64 for enterprise
-if echo "$EXTRA_OPTS" | grep -vq enterprise ; then
-  go run build.go -goarch armv6 -cc ${CCARMV6} ${OPT} build
-  go run build.go -goarch armv7 -cc ${CCARMV7} ${OPT} build
-  go run build.go -goarch arm64 -cc ${CCARM64} ${OPT} build
-  go run build.go -goarch armv7 -libc musl -cc ${CCARMV7_MUSL} ${OPT} build
-  go run build.go -goarch arm64 -libc musl -cc ${CCARM64_MUSL} ${OPT} build
-  go run build.go -goos darwin -cc ${CCOSX64} ${OPT} build
-fi
+go run build.go -goarch armv6 -cc ${CCARMV6} ${OPT} build
+go run build.go -goarch armv7 -cc ${CCARMV7} ${OPT} build
+go run build.go -goarch arm64 -cc ${CCARM64} ${OPT} build
+go run build.go -goarch armv7 -libc musl -cc ${CCARMV7_MUSL} ${OPT} build
+go run build.go -goarch arm64 -libc musl -cc ${CCARM64_MUSL} ${OPT} build
+go run build.go -goos darwin -cc ${CCOSX64} ${OPT} build
+
 
 go run build.go -goos windows -cc ${CCWIN64} ${OPT} build
 
@@ -117,6 +115,9 @@ if [ -d '/tmp/phantomjs/windows' ]; then
 else
     echo 'PhantomJS binaries for Windows missing!'
 fi
+
+cp /usr/local/go/lib/time/zoneinfo.zip tools/zoneinfo.zip
 go run build.go -goos windows -pkg-arch amd64 ${OPT} package-only
+rm tools/zoneinfo.zip
 
 go run build.go latest

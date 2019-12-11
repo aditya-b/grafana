@@ -6,9 +6,7 @@ require (
 	9fans.net/go v0.0.2 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/VividCortex/mysqlerr v0.0.0-20170204212430-6c6b55f8796f
-	github.com/alecthomas/gometalinter v3.0.0+incompatible // indirect
-	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
-	github.com/aws/aws-sdk-go v1.25.6
+	github.com/aws/aws-sdk-go v1.25.48
 	github.com/beevik/etree v1.1.0 // indirect
 	github.com/benbjohnson/clock v0.0.0-20161215174838-7dc76406b6d3
 	github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668
@@ -39,7 +37,7 @@ require (
 	github.com/gorilla/websocket v1.4.0
 	github.com/gosimple/slug v1.4.2
 	github.com/grafana/grafana-plugin-model v0.0.0-20190930120109-1fc953a61fb4
-	github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191105165811-c4e9ecfec89f
+	github.com/grafana/grafana-plugin-sdk-go v0.4.0
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v1.0.1
 	github.com/hashicorp/go-version v1.1.0
@@ -55,8 +53,7 @@ require (
 	github.com/klauspost/cpuid v1.2.0 // indirect
 	github.com/koron/iferr v0.0.0-20180615142939-bb332a3b1d91 // indirect
 	github.com/lib/pq v1.2.0
-	github.com/mattn/go-colorable v0.1.1 // indirect
-	github.com/mattn/go-isatty v0.0.7
+	github.com/mattn/go-isatty v0.0.10
 	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/mdempsky/gocode v0.0.0-20190203001940-7fb65232883f // indirect
 	github.com/opentracing/opentracing-go v1.1.0
@@ -85,8 +82,7 @@ require (
 	github.com/zmb3/gogetdoc v0.0.0-20190228002656-b37376c5da6a // indirect
 	go.uber.org/atomic v1.3.2 // indirect
 	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
-	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
-	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
+	golang.org/x/net v0.0.0-20190923162816-aa69164e4478
 	golang.org/x/oauth2 v0.0.0-20190319182350-c85d3e98c914
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	golang.org/x/tools v0.0.0-20191111154804-8cb0d02132ec // indirect
@@ -100,6 +96,5 @@ require (
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/redis.v5 v5.2.9
 	gopkg.in/square/go-jose.v2 v2.3.0
-	gopkg.in/yaml.v2 v2.2.4
-	honnef.co/go/tools v0.0.1-2019.2.3 // indirect
+	gopkg.in/yaml.v2 v2.2.5
 )
