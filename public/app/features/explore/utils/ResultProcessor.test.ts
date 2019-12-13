@@ -14,7 +14,7 @@ jest.mock('@grafana/data/src/datetime/moment_wrapper', () => ({
 }));
 
 import { ResultProcessor } from './ResultProcessor';
-import { ExploreItemState, ExploreMode } from 'app/types/explore';
+import { ExploreItemState } from 'app/types/explore';
 import TableModel from 'app/core/table_model';
 import { TimeSeries, LogRowModel, toDataFrame, FieldType } from '@grafana/data';
 
@@ -41,7 +41,6 @@ const testContext = (options: any = {}) => {
   const emptyTable = toDataFrame({ name: 'empty-table', refId: 'A', fields: [] });
 
   const defaultOptions = {
-    mode: ExploreMode.Metrics,
     dataFrames: [timeSeries, table, emptyTable],
     graphResult: [] as TimeSeries[],
     tableResult: new TableModel(),
@@ -163,7 +162,7 @@ describe('ResultProcessor', () => {
 
     describe('when calling getLogsResult', () => {
       it('then it should return correct logs result', () => {
-        const { resultProcessor, dataFrames } = testContext({ mode: ExploreMode.Logs });
+        const { resultProcessor, dataFrames } = testContext();
         const timeField = dataFrames[0].fields[1];
         const valueField = dataFrames[0].fields[0];
         const logsDataFrame = dataFrames[1];

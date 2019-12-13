@@ -112,6 +112,7 @@ export interface DataSourcePluginMeta<T extends KeyValue = {}> extends PluginMet
   builtIn?: boolean; // Is this for all
   metrics?: boolean;
   logs?: boolean;
+  unified?: boolean;
   annotations?: boolean;
   alerting?: boolean;
   mixed?: boolean;

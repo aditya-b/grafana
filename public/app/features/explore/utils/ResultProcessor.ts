@@ -7,7 +7,7 @@ import {
   toDataFrame,
   getDisplayProcessor,
 } from '@grafana/data';
-import { ExploreItemState, ExploreMode } from 'app/types/explore';
+import { ExploreItemState } from 'app/types/explore';
 import TableModel, { mergeTablesIntoModel } from 'app/core/table_model';
 import { sortLogsResult, refreshIntervalToSortOrder } from 'app/core/utils/explore';
 import { dataFrameToLogsModel } from 'app/core/logs_model';
@@ -23,10 +23,6 @@ export class ResultProcessor {
   ) {}
 
   getGraphResult(): GraphSeriesXY[] | null {
-    if (this.state.mode !== ExploreMode.Metrics) {
-      return null;
-    }
-
     const onlyTimeSeries = this.dataFrames.filter(isTimeSeries);
 
     if (onlyTimeSeries.length === 0) {
@@ -43,10 +39,6 @@ export class ResultProcessor {
   }
 
   getTableResult(): DataFrame | null {
-    if (this.state.mode !== ExploreMode.Metrics) {
-      return null;
-    }
-
     // For now ignore time series
     // We can change this later, just need to figure out how to
     // Ignore time series only for prometheus
@@ -98,10 +90,6 @@ export class ResultProcessor {
   }
 
   getLogsResult(): LogsModel | null {
-    if (this.state.mode !== ExploreMode.Logs) {
-      return null;
-    }
-
     const newResults = dataFrameToLogsModel(this.dataFrames, this.intervalMs, this.timeZone);
     const sortOrder = refreshIntervalToSortOrder(this.state.refreshInterval);
     const sortedNewResults = sortLogsResult(newResults, sortOrder);

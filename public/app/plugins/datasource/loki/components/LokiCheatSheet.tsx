@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react';
 import { shuffle } from 'lodash';
 import { ExploreStartPageProps, DataQuery } from '@grafana/data';
 import LokiLanguageProvider from '../language_provider';
-import { ExploreMode } from 'app/types';
 
 const DEFAULT_EXAMPLES = ['{job="default/prometheus"}'];
 const PREFERRED_LABELS = ['job', 'app', 'k8s_app'];
@@ -135,8 +134,6 @@ export default class LokiCheatSheet extends PureComponent<ExploreStartPageProps,
   }
 
   render() {
-    const { exploreMode } = this.props;
-
-    return exploreMode === ExploreMode.Logs ? this.renderLogsCheatSheet() : this.renderMetricsCheatSheet();
+    return this.renderMetricsCheatSheet();
   }
 }

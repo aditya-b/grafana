@@ -36,6 +36,8 @@ import {
   TimeZone,
   AbsoluteTimeRange,
   LoadingState,
+  LogsModel,
+  DataFrame,
 } from '@grafana/data';
 
 import {
@@ -102,6 +104,8 @@ interface ExploreProps {
   syncedTimes: boolean;
   updateTimeRange: typeof updateTimeRange;
   graphResult?: GraphSeriesXY[];
+  tableResult?: DataFrame;
+  logsResult?: LogsModel;
   loading?: boolean;
   absoluteRange: AbsoluteTimeRange;
   showingGraph?: boolean;
@@ -268,6 +272,8 @@ export class Explore extends React.PureComponent<ExploreProps> {
       queryKeys,
       mode,
       graphResult,
+      tableResult,
+      logsResult,
       loading,
       absoluteRange,
       showingGraph,
@@ -281,6 +287,7 @@ export class Explore extends React.PureComponent<ExploreProps> {
     const styles = getStyles();
     const StartPage = datasourceInstance?.components?.ExploreStartPage;
     const showStartPage = !queryResponse || queryResponse.state === LoadingState.NotStarted;
+    const timeSeriesResult = !!tableResult || !!graphResult;
 
     return (
       <div className={exploreClass} ref={this.getRef}>
@@ -321,7 +328,7 @@ export class Explore extends React.PureComponent<ExploreProps> {
                       )}
                       {!showStartPage && (
                         <>
-                          {mode === ExploreMode.Metrics && (
+                          {timeSeriesResult && (
                             <ExploreGraphPanel
                               series={graphResult}
                               width={width}
@@ -338,10 +345,10 @@ export class Explore extends React.PureComponent<ExploreProps> {
                               showLines={true}
                             />
                           )}
-                          {mode === ExploreMode.Metrics && (
+                          {timeSeriesResult && (
                             <TableContainer width={width} exploreId={exploreId} onClickCell={this.onClickFilterLabel} />
                           )}
-                          {mode === ExploreMode.Logs && (
+                          {logsResult && (
                             <LogsContainer
                               width={width}
                               exploreId={exploreId}
@@ -385,6 +392,8 @@ function mapStateToProps(state: StoreState, { exploreId }: ExploreProps): Partia
     supportedModes,
     mode,
     graphResult,
+    tableResult,
+    logsResult,
     loading,
     showingGraph,
     showingTable,
@@ -400,7 +409,7 @@ function mapStateToProps(state: StoreState, { exploreId }: ExploreProps): Partia
     ? getTimeRangeFromUrlMemoized(urlRange, timeZone)
     : getTimeRange(timeZone, DEFAULT_RANGE);
 
-  let newMode: ExploreMode | undefined;
+  let newMode: ExploreMode | undefined = undefined;
 
   if (supportedModes.length) {
     const urlModeIsValid = supportedModes.includes(urlMode);
@@ -433,6 +442,8 @@ function mapStateToProps(state: StoreState, { exploreId }: ExploreProps): Partia
     initialUI,
     isLive,
     graphResult,
+    tableResult,
+    logsResult,
     loading,
     showingGraph,
     showingTable,
