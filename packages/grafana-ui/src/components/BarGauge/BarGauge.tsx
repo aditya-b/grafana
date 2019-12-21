@@ -39,7 +39,7 @@ export interface Props extends Themeable {
   minValue: number;
   orientation: VizOrientation;
   itemSpacing?: number;
-  displayMode: 'basic' | 'lcd' | 'gradient';
+  displayMode: 'lcd' | 'gradient' | 'basic';
   onClick?: React.MouseEventHandler<HTMLElement>;
   className?: string;
   showUnfilled?: boolean;
@@ -411,7 +411,6 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
   };
 
   const barStyles: CSSProperties = {
-    borderRadius: '3px',
     position: 'relative',
     zIndex: 1,
   };
@@ -431,6 +430,7 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     wrapperStyles.flexDirection = 'column';
     wrapperStyles.justifyContent = 'flex-end';
 
+    barStyles.borderRadius = '3px 3px 0 0';
     barStyles.transition = 'height 1s';
     barStyles.height = `${barHeight}px`;
     barStyles.width = `${maxBarWidth}px`;
@@ -441,10 +441,12 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     if (isBasic) {
       // Basic styles
       barStyles.background = `${tinycolor(valueColor)
-        .setAlpha(0.35)
+        .setAlpha(0.3)
         .toRgbString()}`;
 
-      barStyles.borderTop = `2px solid ${valueColor}`;
+      barStyles.borderWidth = '1px 1px 0 1px';
+      barStyles.borderStyle = 'solid';
+      barStyles.borderColor = valueColor;
     } else {
       // Gradient styles
       barStyles.background = getBarGradient(props, maxBarHeight);
@@ -457,6 +459,7 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     wrapperStyles.justifyContent = 'flex-end';
     wrapperStyles.alignItems = 'stretch';
 
+    barStyles.borderRadius = '0 3px 3px 0';
     barStyles.transition = 'width 1s';
     barStyles.height = `${maxBarHeight}px`;
     barStyles.width = `${barWidth}px`;
@@ -467,9 +470,11 @@ export function getBasicAndGradientStyles(props: Props): BasicAndGradientStyles 
     if (isBasic) {
       // Basic styles
       barStyles.background = `${tinycolor(valueColor)
-        .setAlpha(0.35)
+        .setAlpha(0.3)
         .toRgbString()}`;
-      barStyles.borderRight = `2px solid ${valueColor}`;
+      barStyles.borderWidth = '1px 1px 1px 0';
+      barStyles.borderStyle = 'solid';
+      barStyles.borderColor = valueColor;
     } else {
       // Gradient styles
       barStyles.background = getBarGradient(props, maxBarWidth);
