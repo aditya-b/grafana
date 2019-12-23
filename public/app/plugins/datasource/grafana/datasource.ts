@@ -10,9 +10,9 @@ class GrafanaDatasource {
 
   query(options: any) {
     if (options.targets[0].name === 'candle') {
-      return Promise.resolve(({ data: candle() });
+      return Promise.resolve({ data: candle() });
     }
-    return Promise.resolve(({ data: tree() });
+    return Promise.resolve({ data: tree() });
   }
 
   metricFindQuery(options: any) {
