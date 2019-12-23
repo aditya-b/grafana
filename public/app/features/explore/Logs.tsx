@@ -1,372 +1,172 @@
-import _ from 'lodash';
 import React, { PureComponent } from 'react';
-import Highlighter from 'react-highlight-words';
-import classnames from 'classnames';
 
-import * as rangeUtil from 'app/core/utils/rangeutil';
-import { RawTimeRange } from 'app/types/series';
 import {
-  LogsDedupDescription,
-  LogsDedupStrategy,
-  LogsModel,
-  dedupLogRows,
-  filterLogLevels,
-  getParser,
+  rangeUtil,
+  RawTimeRange,
   LogLevel,
+  TimeZone,
+  AbsoluteTimeRange,
   LogsMetaKind,
-  LogsLabelStat,
-  LogsParser,
-  LogRow,
-  calculateFieldStats,
-} from 'app/core/logs_model';
-import { findHighlightChunksInText } from 'app/core/utils/text';
-import { Switch } from 'app/core/components/Switch/Switch';
-import ToggleButtonGroup, { ToggleButton } from 'app/core/components/ToggleButtonGroup/ToggleButtonGroup';
+  LogsDedupStrategy,
+  LogRowModel,
+  LogsDedupDescription,
+  LogsMetaItem,
+  GraphSeriesXY,
+  LinkModel,
+  Field,
+} from '@grafana/data';
+import { Switch, LogLabels, ToggleButtonGroup, ToggleButton, LogRows } from '@grafana/ui';
+import store from 'app/core/store';
 
-import Graph from './Graph';
-import LogLabels, { Stats } from './LogLabels';
+import { ExploreGraphPanel } from './ExploreGraphPanel';
 
-const PREVIEW_LIMIT = 100;
-
-const graphOptions = {
-  series: {
-    stack: true,
-    bars: {
-      show: true,
-      lineWidth: 5,
-      // barWidth: 10,
-    },
-    // stack: true,
-  },
-  yaxis: {
-    tickDecimals: 0,
-  },
+const SETTINGS_KEYS = {
+  showLabels: 'grafana.explore.logs.showLabels',
+  showTime: 'grafana.explore.logs.showTime',
+  wrapLogMessage: 'grafana.explore.logs.wrapLogMessage',
 };
-
-/**
- * Renders a highlighted field.
- * When hovering, a stats icon is shown.
- */
-const FieldHighlight = onClick => props => {
-  return (
-    <span className={props.className} style={props.style}>
-      {props.children}
-      <span className="logs-row__field-highlight--icon fa fa-signal" onClick={() => onClick(props.children)} />
-    </span>
-  );
-};
-
-interface RowProps {
-  highlighterExpressions?: string[];
-  row: LogRow;
-  showDuplicates: boolean;
-  showLabels: boolean | null; // Tristate: null means auto
-  showLocalTime: boolean;
-  showUtc: boolean;
-  getRows: () => LogRow[];
-  onClickLabel?: (label: string, value: string) => void;
-}
-
-interface RowState {
-  fieldCount: number;
-  fieldLabel: string;
-  fieldStats: LogsLabelStat[];
-  fieldValue: string;
-  parsed: boolean;
-  parser?: LogsParser;
-  parsedFieldHighlights: string[];
-  showFieldStats: boolean;
-}
-
-/**
- * Renders a log line.
- *
- * When user hovers over it for a certain time, it lazily parses the log line.
- * Once a parser is found, it will determine fields, that will be highlighted.
- * When the user requests stats for a field, they will be calculated and rendered below the row.
- */
-class Row extends PureComponent<RowProps, RowState> {
-  mouseMessageTimer: NodeJS.Timer;
-
-  state = {
-    fieldCount: 0,
-    fieldLabel: null,
-    fieldStats: null,
-    fieldValue: null,
-    parsed: false,
-    parser: undefined,
-    parsedFieldHighlights: [],
-    showFieldStats: false,
-  };
-
-  componentWillUnmount() {
-    clearTimeout(this.mouseMessageTimer);
-  }
-
-  onClickClose = () => {
-    this.setState({ showFieldStats: false });
-  };
-
-  onClickHighlight = (fieldText: string) => {
-    const { getRows } = this.props;
-    const { parser } = this.state;
-    const allRows = getRows();
-
-    // Build value-agnostic row matcher based on the field label
-    const fieldLabel = parser.getLabelFromField(fieldText);
-    const fieldValue = parser.getValueFromField(fieldText);
-    const matcher = parser.buildMatcher(fieldLabel);
-    const fieldStats = calculateFieldStats(allRows, matcher);
-    const fieldCount = fieldStats.reduce((sum, stat) => sum + stat.count, 0);
-
-    this.setState({ fieldCount, fieldLabel, fieldStats, fieldValue, showFieldStats: true });
-  };
-
-  onMouseOverMessage = () => {
-    // Don't parse right away, user might move along
-    this.mouseMessageTimer = setTimeout(this.parseMessage, 500);
-  };
-
-  onMouseOutMessage = () => {
-    clearTimeout(this.mouseMessageTimer);
-    this.setState({ parsed: false });
-  };
-
-  parseMessage = () => {
-    if (!this.state.parsed) {
-      const { row } = this.props;
-      const parser = getParser(row.entry);
-      if (parser) {
-        // Use parser to highlight detected fields
-        const parsedFieldHighlights = parser.getFields(this.props.row.entry);
-        this.setState({ parsedFieldHighlights, parsed: true, parser });
-      }
-    }
-  };
-
-  render() {
-    const {
-      getRows,
-      highlighterExpressions,
-      onClickLabel,
-      row,
-      showDuplicates,
-      showLabels,
-      showLocalTime,
-      showUtc,
-    } = this.props;
-    const {
-      fieldCount,
-      fieldLabel,
-      fieldStats,
-      fieldValue,
-      parsed,
-      parsedFieldHighlights,
-      showFieldStats,
-    } = this.state;
-    const previewHighlights = highlighterExpressions && !_.isEqual(highlighterExpressions, row.searchWords);
-    const highlights = previewHighlights ? highlighterExpressions : row.searchWords;
-    const needsHighlighter = highlights && highlights.length > 0;
-    const highlightClassName = classnames('logs-row__match-highlight', {
-      'logs-row__match-highlight--preview': previewHighlights,
-    });
-    return (
-      <div className="logs-row">
-        {showDuplicates && (
-          <div className="logs-row__duplicates">{row.duplicates > 0 ? `${row.duplicates + 1}x` : null}</div>
-        )}
-        <div className={row.logLevel ? `logs-row__level logs-row__level--${row.logLevel}` : ''} />
-        {showUtc && (
-          <div className="logs-row__time" title={`Local: ${row.timeLocal} (${row.timeFromNow})`}>
-            {row.timestamp}
-          </div>
-        )}
-        {showLocalTime && (
-          <div className="logs-row__time" title={`${row.timestamp} (${row.timeFromNow})`}>
-            {row.timeLocal}
-          </div>
-        )}
-        {showLabels && (
-          <div className="logs-row__labels">
-            <LogLabels getRows={getRows} labels={row.uniqueLabels} onClickLabel={onClickLabel} />
-          </div>
-        )}
-        <div className="logs-row__message" onMouseEnter={this.onMouseOverMessage} onMouseLeave={this.onMouseOutMessage}>
-          {parsed && (
-            <Highlighter
-              autoEscape
-              highlightTag={FieldHighlight(this.onClickHighlight)}
-              textToHighlight={row.entry}
-              searchWords={parsedFieldHighlights}
-              highlightClassName="logs-row__field-highlight"
-            />
-          )}
-          {!parsed &&
-            needsHighlighter && (
-              <Highlighter
-                textToHighlight={row.entry}
-                searchWords={highlights}
-                findChunks={findHighlightChunksInText}
-                highlightClassName={highlightClassName}
-              />
-            )}
-          {!parsed && !needsHighlighter && row.entry}
-          {showFieldStats && (
-            <div className="logs-row__stats">
-              <Stats
-                stats={fieldStats}
-                label={fieldLabel}
-                value={fieldValue}
-                onClickClose={this.onClickClose}
-                rowCount={fieldCount}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-}
 
 function renderMetaItem(value: any, kind: LogsMetaKind) {
   if (kind === LogsMetaKind.LabelsMap) {
     return (
       <span className="logs-meta-item__labels">
-        <LogLabels labels={value} plain />
+        <LogLabels labels={value} />
       </span>
     );
   }
   return value;
 }
 
-interface LogsProps {
-  data: LogsModel;
-  highlighterExpressions: string[];
+interface Props {
+  logRows?: LogRowModel[];
+  logsMeta?: LogsMetaItem[];
+  logsSeries?: GraphSeriesXY[];
+  dedupedRows?: LogRowModel[];
+
+  width: number;
+  highlighterExpressions?: string[];
   loading: boolean;
-  position: string;
-  range?: RawTimeRange;
+  absoluteRange: AbsoluteTimeRange;
+  timeZone: TimeZone;
   scanning?: boolean;
   scanRange?: RawTimeRange;
-  onChangeTime?: (range: RawTimeRange) => void;
-  onClickLabel?: (label: string, value: string) => void;
+  dedupStrategy: LogsDedupStrategy;
+  onChangeTime: (range: AbsoluteTimeRange) => void;
+  onClickFilterLabel?: (key: string, value: string) => void;
+  onClickFilterOutLabel?: (key: string, value: string) => void;
   onStartScanning?: () => void;
   onStopScanning?: () => void;
+  onDedupStrategyChange: (dedupStrategy: LogsDedupStrategy) => void;
+  onToggleLogLevel: (hiddenLogLevels: LogLevel[]) => void;
+  getRowContext?: (row: LogRowModel, options?: any) => Promise<any>;
+  getFieldLinks: (field: Field, rowIndex: number) => Array<LinkModel<Field>>;
 }
 
-interface LogsState {
-  dedup: LogsDedupStrategy;
-  deferLogs: boolean;
-  hiddenLogLevels: Set<LogLevel>;
-  renderAll: boolean;
-  showLabels: boolean | null; // Tristate: null means auto
-  showLocalTime: boolean;
-  showUtc: boolean;
+interface State {
+  showLabels: boolean;
+  showTime: boolean;
+  wrapLogMessage: boolean;
 }
 
-export default class Logs extends PureComponent<LogsProps, LogsState> {
-  deferLogsTimer: NodeJS.Timer;
-  renderAllTimer: NodeJS.Timer;
-
+export class Logs extends PureComponent<Props, State> {
   state = {
-    dedup: LogsDedupStrategy.none,
-    deferLogs: true,
-    hiddenLogLevels: new Set(),
-    renderAll: false,
-    showLabels: null,
-    showLocalTime: true,
-    showUtc: false,
+    showLabels: store.getBool(SETTINGS_KEYS.showLabels, false),
+    showTime: store.getBool(SETTINGS_KEYS.showTime, true),
+    wrapLogMessage: store.getBool(SETTINGS_KEYS.wrapLogMessage, true),
   };
-
-  componentDidMount() {
-    // Staged rendering
-    if (this.state.deferLogs) {
-      const { data } = this.props;
-      const rowCount = data && data.rows ? data.rows.length : 0;
-      // Render all right away if not too far over the limit
-      const renderAll = rowCount <= PREVIEW_LIMIT * 2;
-      this.deferLogsTimer = setTimeout(() => this.setState({ deferLogs: false, renderAll }), rowCount);
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    // Staged rendering
-    if (prevState.deferLogs && !this.state.deferLogs && !this.state.renderAll) {
-      this.renderAllTimer = setTimeout(() => this.setState({ renderAll: true }), 2000);
-    }
-  }
-
-  componentWillUnmount() {
-    clearTimeout(this.deferLogsTimer);
-    clearTimeout(this.renderAllTimer);
-  }
 
   onChangeDedup = (dedup: LogsDedupStrategy) => {
-    this.setState(prevState => {
-      if (prevState.dedup === dedup) {
-        return { dedup: LogsDedupStrategy.none };
-      }
-      return { dedup };
-    });
+    const { onDedupStrategyChange } = this.props;
+    if (this.props.dedupStrategy === dedup) {
+      return onDedupStrategyChange(LogsDedupStrategy.none);
+    }
+    return onDedupStrategyChange(dedup);
   };
 
-  onChangeLabels = (event: React.SyntheticEvent) => {
-    const target = event.target as HTMLInputElement;
-    this.setState({
-      showLabels: target.checked,
-    });
+  onChangeLabels = (event?: React.SyntheticEvent) => {
+    const target = event && (event.target as HTMLInputElement);
+    if (target) {
+      const showLabels = target.checked;
+      this.setState({
+        showLabels,
+      });
+      store.set(SETTINGS_KEYS.showLabels, showLabels);
+    }
   };
 
-  onChangeLocalTime = (event: React.SyntheticEvent) => {
-    const target = event.target as HTMLInputElement;
-    this.setState({
-      showLocalTime: target.checked,
-    });
+  onChangeTime = (event?: React.SyntheticEvent) => {
+    const target = event && (event.target as HTMLInputElement);
+    if (target) {
+      const showTime = target.checked;
+      this.setState({
+        showTime,
+      });
+      store.set(SETTINGS_KEYS.showTime, showTime);
+    }
   };
 
-  onChangeUtc = (event: React.SyntheticEvent) => {
-    const target = event.target as HTMLInputElement;
-    this.setState({
-      showUtc: target.checked,
-    });
+  onChangewrapLogMessage = (event?: React.SyntheticEvent) => {
+    const target = event && (event.target as HTMLInputElement);
+    if (target) {
+      const wrapLogMessage = target.checked;
+      this.setState({
+        wrapLogMessage,
+      });
+      store.set(SETTINGS_KEYS.wrapLogMessage, wrapLogMessage);
+    }
   };
 
-  onToggleLogLevel = (rawLevel: string, hiddenRawLevels: Set<string>) => {
-    const hiddenLogLevels: Set<LogLevel> = new Set(Array.from(hiddenRawLevels).map(level => LogLevel[level]));
-    this.setState({ hiddenLogLevels });
+  onToggleLogLevel = (hiddenRawLevels: string[]) => {
+    const hiddenLogLevels: LogLevel[] = hiddenRawLevels.map(level => LogLevel[level as LogLevel]);
+    this.props.onToggleLogLevel(hiddenLogLevels);
   };
 
   onClickScan = (event: React.SyntheticEvent) => {
     event.preventDefault();
-    this.props.onStartScanning();
+    if (this.props.onStartScanning) {
+      this.props.onStartScanning();
+    }
   };
 
   onClickStopScan = (event: React.SyntheticEvent) => {
     event.preventDefault();
-    this.props.onStopScanning();
+    if (this.props.onStopScanning) {
+      this.props.onStopScanning();
+    }
   };
 
   render() {
     const {
-      data,
+      logRows,
+      logsMeta,
+      logsSeries,
       highlighterExpressions,
       loading = false,
-      onClickLabel,
-      position,
-      range,
+      onClickFilterLabel,
+      onClickFilterOutLabel,
+      timeZone,
       scanning,
       scanRange,
+      width,
+      dedupedRows,
+      absoluteRange,
+      onChangeTime,
+      getFieldLinks,
     } = this.props;
-    const { dedup, deferLogs, hiddenLogLevels, renderAll, showLocalTime, showUtc } = this.state;
-    let { showLabels } = this.state;
-    const hasData = data && data.rows && data.rows.length > 0;
-    const showDuplicates = dedup !== LogsDedupStrategy.none;
 
-    // Filtering
-    const filteredData = filterLogLevels(data, hiddenLogLevels);
-    const dedupedData = dedupLogRows(filteredData, dedup);
-    const dedupCount = dedupedData.rows.reduce((sum, row) => sum + row.duplicates, 0);
-    const meta = [...data.meta];
-    if (dedup !== LogsDedupStrategy.none) {
+    if (!logRows) {
+      return null;
+    }
+
+    const { showLabels, showTime, wrapLogMessage } = this.state;
+    const { dedupStrategy } = this.props;
+    const hasData = logRows && logRows.length > 0;
+    const dedupCount = dedupedRows
+      ? dedupedRows.reduce((sum, row) => (row.duplicates ? sum + row.duplicates : sum), 0)
+      : 0;
+    const meta = logsMeta ? [...logsMeta] : [];
+
+    if (dedupStrategy !== LogsDedupStrategy.none) {
       meta.push({
         label: 'Dedup count',
         value: dedupCount,
@@ -374,50 +174,41 @@ export default class Logs extends PureComponent<LogsProps, LogsState> {
       });
     }
 
-    // Staged rendering
-    const processedRows = dedupedData.rows;
-    const firstRows = processedRows.slice(0, PREVIEW_LIMIT);
-    const lastRows = processedRows.slice(PREVIEW_LIMIT);
-
-    // Check for labels
-    if (showLabels === null) {
-      if (hasData) {
-        showLabels = data.rows.some(row => _.size(row.uniqueLabels) > 0);
-      } else {
-        showLabels = true;
-      }
-    }
-
     const scanText = scanRange ? `Scanning ${rangeUtil.describeTimeRange(scanRange)}` : 'Scanning...';
-
-    // React profiler becomes unusable if we pass all rows to all rows and their labels, using getter instead
-    const getRows = () => processedRows;
+    const series = logsSeries ? logsSeries : [];
 
     return (
       <div className="logs-panel">
         <div className="logs-panel-graph">
-          <Graph
-            data={data.series}
-            height="100px"
-            range={range}
-            id={`explore-logs-graph-${position}`}
-            onChangeTime={this.props.onChangeTime}
-            onToggleSeries={this.onToggleLogLevel}
-            userOptions={graphOptions}
+          <ExploreGraphPanel
+            series={series}
+            width={width}
+            onHiddenSeriesChanged={this.onToggleLogLevel}
+            loading={loading}
+            absoluteRange={absoluteRange}
+            isStacked={true}
+            showPanel={false}
+            showingGraph={true}
+            showingTable={true}
+            timeZone={timeZone}
+            showBars={true}
+            showLines={false}
+            onUpdateTimeRange={onChangeTime}
           />
         </div>
         <div className="logs-panel-options">
           <div className="logs-panel-controls">
-            <Switch label="Timestamp" checked={showUtc} onChange={this.onChangeUtc} transparent />
-            <Switch label="Local time" checked={showLocalTime} onChange={this.onChangeLocalTime} transparent />
-            <Switch label="Labels" checked={showLabels} onChange={this.onChangeLabels} transparent />
+            <Switch label="Time" checked={showTime} onChange={this.onChangeTime} transparent />
+            <Switch label="Unique labels" checked={showLabels} onChange={this.onChangeLabels} transparent />
+            <Switch label="Wrap lines" checked={wrapLogMessage} onChange={this.onChangewrapLogMessage} transparent />
             <ToggleButtonGroup label="Dedup" transparent={true}>
-              {Object.keys(LogsDedupStrategy).map((dedupType, i) => (
+              {Object.keys(LogsDedupStrategy).map((dedupType: string, i) => (
                 <ToggleButton
                   key={i}
                   value={dedupType}
                   onChange={this.onChangeDedup}
-                  selected={dedup === dedupType}
+                  selected={dedupStrategy === dedupType}
+                  // @ts-ignore
                   tooltip={LogsDedupDescription[dedupType]}
                 >
                   {dedupType}
@@ -427,62 +218,41 @@ export default class Logs extends PureComponent<LogsProps, LogsState> {
           </div>
         </div>
 
-        {hasData &&
-          meta && (
-            <div className="logs-panel-meta">
-              {meta.map(item => (
-                <div className="logs-panel-meta__item" key={item.label}>
-                  <span className="logs-panel-meta__label">{item.label}:</span>
-                  <span className="logs-panel-meta__value">{renderMetaItem(item.value, item.kind)}</span>
-                </div>
-              ))}
-            </div>
-          )}
+        {hasData && meta && (
+          <div className="logs-panel-meta">
+            {meta.map(item => (
+              <div className="logs-panel-meta__item" key={item.label}>
+                <span className="logs-panel-meta__label">{item.label}:</span>
+                <span className="logs-panel-meta__value">{renderMetaItem(item.value, item.kind)}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
-        <div className="logs-rows">
-          {hasData &&
-            !deferLogs &&
-            // Only inject highlighterExpression in the first set for performance reasons
-            firstRows.map(row => (
-              <Row
-                key={row.key + row.duplicates}
-                getRows={getRows}
-                highlighterExpressions={highlighterExpressions}
-                row={row}
-                showDuplicates={showDuplicates}
-                showLabels={showLabels}
-                showLocalTime={showLocalTime}
-                showUtc={showUtc}
-                onClickLabel={onClickLabel}
-              />
-            ))}
-          {hasData &&
-            !deferLogs &&
-            renderAll &&
-            lastRows.map(row => (
-              <Row
-                key={row.key + row.duplicates}
-                getRows={getRows}
-                row={row}
-                showDuplicates={showDuplicates}
-                showLabels={showLabels}
-                showLocalTime={showLocalTime}
-                showUtc={showUtc}
-                onClickLabel={onClickLabel}
-              />
-            ))}
-          {hasData && deferLogs && <span>Rendering {dedupedData.rows.length} rows...</span>}
-        </div>
-        {!loading &&
-          !hasData &&
-          !scanning && (
-            <div className="logs-panel-nodata">
-              No logs found.
-              <a className="link" onClick={this.onClickScan}>
-                Scan for older logs
-              </a>
-            </div>
-          )}
+        <LogRows
+          logRows={logRows}
+          deduplicatedRows={dedupedRows}
+          dedupStrategy={dedupStrategy}
+          getRowContext={this.props.getRowContext}
+          highlighterExpressions={highlighterExpressions}
+          rowLimit={logRows ? logRows.length : undefined}
+          onClickFilterLabel={onClickFilterLabel}
+          onClickFilterOutLabel={onClickFilterOutLabel}
+          showLabels={showLabels}
+          showTime={showTime}
+          wrapLogMessage={wrapLogMessage}
+          timeZone={timeZone}
+          getFieldLinks={getFieldLinks}
+        />
+
+        {!loading && !hasData && !scanning && (
+          <div className="logs-panel-nodata">
+            No logs found.
+            <a className="link" onClick={this.onClickScan}>
+              Scan for older logs
+            </a>
+          </div>
+        )}
 
         {scanning && (
           <div className="logs-panel-nodata">

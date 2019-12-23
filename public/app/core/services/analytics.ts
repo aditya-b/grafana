@@ -1,10 +1,11 @@
 import $ from 'jquery';
 import coreModule from 'app/core/core_module';
 import config from 'app/core/config';
+import { GrafanaRootScope } from 'app/routes/GrafanaCtrl';
 
 export class Analytics {
   /** @ngInject */
-  constructor(private $rootScope, private $location) {}
+  constructor(private $rootScope: GrafanaRootScope, private $location: any) {}
 
   gaInit() {
     $.ajax({
@@ -35,7 +36,7 @@ export class Analytics {
 }
 
 /** @ngInject */
-function startAnalytics(googleAnalyticsSrv) {
+function startAnalytics(googleAnalyticsSrv: Analytics) {
   if ((config as any).googleAnalyticsId) {
     googleAnalyticsSrv.init();
   }

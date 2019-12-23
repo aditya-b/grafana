@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
-import { PanelModel } from 'app/features/dashboard/panel_model';
-import Tooltip from 'app/core/components/Tooltip/Tooltip';
-import templateSrv from 'app/features/templating/template_srv';
-import { LinkSrv } from 'app/features/dashboard/panellinks/link_srv';
-import { getTimeSrv, TimeSrv } from 'app/features/dashboard/time_srv';
-import Remarkable from 'remarkable';
 
-enum InfoModes {
+import { renderMarkdown, LinkModelSupplier, ScopedVars } from '@grafana/data';
+import { Tooltip, PopoverContent } from '@grafana/ui';
+
+import { PanelModel } from 'app/features/dashboard/state/PanelModel';
+import templateSrv from 'app/features/templating/template_srv';
+import { getTimeSrv, TimeSrv } from 'app/features/dashboard/services/TimeSrv';
+import { getLocationSrv } from '@grafana/runtime';
+
+enum InfoMode {
   Error = 'Error',
   Info = 'Info',
   Links = 'Links',
@@ -16,20 +18,24 @@ interface Props {
   panel: PanelModel;
   title?: string;
   description?: string;
-  scopedVars?: string;
-  links?: [];
+  scopedVars?: ScopedVars;
+  links?: LinkModelSupplier<PanelModel>;
+  error?: string;
 }
 
 export class PanelHeaderCorner extends Component<Props> {
   timeSrv: TimeSrv = getTimeSrv();
 
   getInfoMode = () => {
-    const { panel } = this.props;
+    const { panel, error } = this.props;
+    if (error) {
+      return InfoMode.Error;
+    }
     if (!!panel.description) {
-      return InfoModes.Info;
+      return InfoMode.Info;
     }
     if (panel.links && panel.links.length) {
-      return InfoModes.Links;
+      return InfoMode.Links;
     }
 
     return undefined;
@@ -37,57 +43,67 @@ export class PanelHeaderCorner extends Component<Props> {
 
   getInfoContent = (): JSX.Element => {
     const { panel } = this.props;
-    const markdown = panel.description;
-    const linkSrv = new LinkSrv(templateSrv, this.timeSrv);
+    const markdown = panel.description || '';
     const interpolatedMarkdown = templateSrv.replace(markdown, panel.scopedVars);
-    const remarkableInterpolatedMarkdown = new Remarkable().render(interpolatedMarkdown);
+    const markedInterpolatedMarkdown = renderMarkdown(interpolatedMarkdown);
+    const links = this.props.links && this.props.links.getLinks(panel);
 
-    const html = (
-      <div className="markdown-html">
-        <div dangerouslySetInnerHTML={{ __html: remarkableInterpolatedMarkdown }} />
-        {panel.links &&
-          panel.links.length > 0 && (
-            <ul className="text-left">
-              {panel.links.map((link, idx) => {
-                const info = linkSrv.getPanelLinkAnchorInfo(link, panel.scopedVars);
-                return (
-                  <li key={idx}>
-                    <a className="panel-menu-link" href={info.href} target={info.target}>
-                      {info.title}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+    return (
+      <div className="panel-info-content markdown-html">
+        <div dangerouslySetInnerHTML={{ __html: markedInterpolatedMarkdown }} />
+
+        {links && links.length > 0 && (
+          <ul className="panel-info-corner-links">
+            {links.map((link, idx) => {
+              return (
+                <li key={idx}>
+                  <a className="panel-info-corner-links__item" href={link.href} target={link.target}>
+                    {link.title}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     );
-
-    return html;
   };
 
+  /**
+   * Open the Panel Inspector when we click on an error
+   */
+  onClickError = () => {
+    getLocationSrv().update({ partial: true, query: { inspect: this.props.panel.id } });
+  };
+
+  renderCornerType(infoMode: InfoMode, content: PopoverContent, onClick?: () => void) {
+    const theme = infoMode === InfoMode.Error ? 'error' : 'info';
+    return (
+      <Tooltip content={content} placement="top-start" theme={theme}>
+        <div className={`panel-info-corner panel-info-corner--${infoMode.toLowerCase()}`} onClick={onClick}>
+          <i className="fa" />
+          <span className="panel-info-corner-inner" />
+        </div>
+      </Tooltip>
+    );
+  }
+
   render() {
-    const infoMode: InfoModes | undefined = this.getInfoMode();
+    const infoMode: InfoMode | undefined = this.getInfoMode();
 
     if (!infoMode) {
       return null;
     }
 
-    return (
-      <>
-        {infoMode === InfoModes.Info || infoMode === InfoModes.Links ? (
-          <Tooltip
-            content={this.getInfoContent}
-            className="popper__manager--block"
-            refClassName={`panel-info-corner panel-info-corner--${infoMode.toLowerCase()}`}
-            placement="bottom-start"
-          >
-            <i className="fa" />
-            <span className="panel-info-corner-inner" />
-          </Tooltip>
-        ) : null}
-      </>
-    );
+    if (infoMode === InfoMode.Error) {
+      return this.renderCornerType(infoMode, this.props.error, this.onClickError);
+    }
+
+    if (infoMode === InfoMode.Info || infoMode === InfoMode.Links) {
+      return this.renderCornerType(infoMode, this.getInfoContent);
+    }
+
+    return null;
   }
 }
 

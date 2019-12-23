@@ -1,25 +1,32 @@
+// Libraries
 import React, { PureComponent } from 'react';
-import { getAngularLoader, AngularComponent } from 'app/core/services/AngularLoader';
+
+// Services
+import { getAngularLoader, AngularComponent } from '@grafana/runtime';
+import { getTimeSrv } from 'app/features/dashboard/services/TimeSrv';
+
+// Types
 import { Emitter } from 'app/core/utils/emitter';
-import { getIntervals } from 'app/core/utils/explore';
-import { DataQuery } from 'app/types';
-import { RawTimeRange } from 'app/types/series';
-import { getTimeSrv } from 'app/features/dashboard/time_srv';
+import { DataQuery } from '@grafana/data';
+import { TimeRange } from '@grafana/data';
 import 'app/features/plugins/plugin_loader';
+import { dateTime } from '@grafana/data';
 
 interface QueryEditorProps {
+  error?: any;
   datasource: any;
-  error?: string | JSX.Element;
   onExecuteQuery?: () => void;
-  onQueryChange?: (value: DataQuery, override?: boolean) => void;
+  onQueryChange?: (value: DataQuery) => void;
   initialQuery: DataQuery;
   exploreEvents: Emitter;
-  range: RawTimeRange;
+  range: TimeRange;
+  textEditModeEnabled?: boolean;
 }
 
 export default class QueryEditor extends PureComponent<QueryEditorProps, any> {
   element: any;
   component: AngularComponent;
+  angularScope: any;
 
   async componentDidMount() {
     if (!this.element) {
@@ -33,27 +40,50 @@ export default class QueryEditor extends PureComponent<QueryEditorProps, any> {
     const template = '<plugin-component type="query-ctrl"> </plugin-component>';
     const target = { datasource: datasource.name, ...initialQuery };
     const scopeProps = {
-      target,
       ctrl: {
+        datasource,
+        target,
         refresh: () => {
-          this.props.onQueryChange(target, false);
-          this.props.onExecuteQuery();
+          setTimeout(() => {
+            this.props.onQueryChange?.(target);
+            this.props.onExecuteQuery?.();
+          }, 1);
+        },
+        onQueryChange: () => {
+          setTimeout(() => {
+            this.props.onQueryChange?.(target);
+          }, 1);
         },
         events: exploreEvents,
-        panel: {
-          datasource,
-          targets: [target],
-        },
-        dashboard: {
-          getNextQueryLetter: x => '',
-        },
-        hideEditorRowActions: true,
-        ...getIntervals(range, datasource, null), // Possible to get resolution?
+        panel: { datasource, targets: [target] },
+        dashboard: {},
       },
     };
 
     this.component = loader.load(this.element, scopeProps, template);
-    this.props.onQueryChange(target, false);
+    this.angularScope = scopeProps.ctrl;
+
+    setTimeout(() => {
+      this.props.onQueryChange?.(target);
+      this.props.onExecuteQuery?.();
+    }, 1);
+  }
+
+  componentDidUpdate(prevProps: QueryEditorProps) {
+    const hasToggledEditorMode = prevProps.textEditModeEnabled !== this.props.textEditModeEnabled;
+    const hasNewError = prevProps.error !== this.props.error;
+
+    if (this.component) {
+      if (hasToggledEditorMode && this.angularScope && this.angularScope.toggleEditorMode) {
+        this.angularScope.toggleEditorMode();
+      }
+
+      if (hasNewError || hasToggledEditorMode) {
+        // Some query controllers listen to data error events and need a digest
+        // for some reason this needs to be done in next tick
+        setTimeout(this.component.digest);
+      }
+    }
   }
 
   componentWillUnmount() {
@@ -62,10 +92,13 @@ export default class QueryEditor extends PureComponent<QueryEditorProps, any> {
     }
   }
 
-  initTimeSrv(range) {
+  initTimeSrv(range: TimeRange) {
     const timeSrv = getTimeSrv();
     timeSrv.init({
-      time: range,
+      time: {
+        from: dateTime(range.from),
+        to: dateTime(range.to),
+      },
       refresh: false,
       getTimezone: () => 'utc',
       timeRangeUpdated: () => console.log('refreshDashboard!'),
@@ -73,6 +106,6 @@ export default class QueryEditor extends PureComponent<QueryEditorProps, any> {
   }
 
   render() {
-    return <div ref={element => (this.element = element)} style={{ width: '100%' }} />;
+    return <div className="gf-form-query" ref={element => (this.element = element)} style={{ width: '100%' }} />;
   }
 }

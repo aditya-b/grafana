@@ -14,7 +14,7 @@ import (
 )
 
 func (hs *HTTPServer) RenderToPng(c *m.ReqContext) {
-	queryReader, err := util.NewUrlQueryReader(c.Req.URL)
+	queryReader, err := util.NewURLQueryReader(c.Req.URL)
 	if err != nil {
 		c.Handle(400, "Render parameters error", err)
 		return
@@ -40,6 +40,7 @@ func (hs *HTTPServer) RenderToPng(c *m.ReqContext) {
 		return
 	}
 
+	maxConcurrentLimitForApiCalls := 30
 	result, err := hs.RenderService.Render(c.Req.Context(), rendering.Opts{
 		Width:           width,
 		Height:          height,
@@ -50,7 +51,7 @@ func (hs *HTTPServer) RenderToPng(c *m.ReqContext) {
 		Path:            c.Params("*") + queryParams,
 		Timezone:        queryReader.Get("tz", ""),
 		Encoding:        queryReader.Get("encoding", ""),
-		ConcurrentLimit: 30,
+		ConcurrentLimit: maxConcurrentLimitForApiCalls,
 	})
 
 	if err != nil && err == rendering.ErrTimeout {

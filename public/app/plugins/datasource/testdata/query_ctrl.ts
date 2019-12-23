@@ -1,7 +1,25 @@
 import _ from 'lodash';
+import { dateMath, dateTime } from '@grafana/data';
+import { e2e } from '@grafana/e2e';
 
 import { QueryCtrl } from 'app/plugins/sdk';
-import moment from 'moment';
+import { defaultQuery } from './runStreams';
+import { getBackendSrv } from 'app/core/services/backend_srv';
+
+export const defaultPulse: any = {
+  timeStep: 60,
+  onCount: 3,
+  onValue: 2,
+  offCount: 3,
+  offValue: 1,
+};
+
+export const defaultCSVWave: any = {
+  timeStep: 60,
+  valuesCSV: '0,0,2,2,1,1',
+};
+
+const showLabelsFor = ['random_walk', 'predictable_pulse', 'predictable_csv_wave'];
 
 export class TestDataQueryCtrl extends QueryCtrl {
   static templateUrl = 'partials/query.editor.html';
@@ -12,26 +30,31 @@ export class TestDataQueryCtrl extends QueryCtrl {
   newPointTime: any;
   selectedPoint: any;
 
+  showLabels = false;
+  selectors: typeof e2e.pages.Dashboard.Panels.DataSource.TestData.QueryTab.selectors;
+
   /** @ngInject */
-  constructor($scope, $injector, private backendSrv) {
+  constructor($scope: any, $injector: any) {
     super($scope, $injector);
 
     this.target.scenarioId = this.target.scenarioId || 'random_walk';
     this.scenarioList = [];
-    this.newPointTime = moment();
+    this.newPointTime = dateTime();
     this.selectedPoint = { text: 'Select point', value: null };
+    this.showLabels = showLabelsFor.includes(this.target.scenarioId);
+    this.selectors = e2e.pages.Dashboard.Panels.DataSource.TestData.QueryTab.selectors;
   }
 
   getPoints() {
     return _.map(this.target.points, (point, index) => {
       return {
-        text: moment(point[1]).format('MMMM Do YYYY, H:mm:ss') + ' : ' + point[0],
+        text: dateTime(point[1]).format('MMMM Do YYYY, H:mm:ss') + ' : ' + point[0],
         value: index,
       };
     });
   }
 
-  pointSelected(option) {
+  pointSelected(option: any) {
     this.selectedPoint = option;
   }
 
@@ -43,21 +66,25 @@ export class TestDataQueryCtrl extends QueryCtrl {
 
   addPoint() {
     this.target.points = this.target.points || [];
+    this.newPointTime = dateMath.parse(this.newPointTime);
     this.target.points.push([this.newPointValue, this.newPointTime.valueOf()]);
     this.target.points = _.sortBy(this.target.points, p => p[1]);
     this.refresh();
   }
 
   $onInit() {
-    return this.backendSrv.get('/api/tsdb/testdata/scenarios').then(res => {
-      this.scenarioList = res;
-      this.scenario = _.find(this.scenarioList, { id: this.target.scenarioId });
-    });
+    return getBackendSrv()
+      .get('/api/tsdb/testdata/scenarios')
+      .then((res: any) => {
+        this.scenarioList = res;
+        this.scenario = _.find(this.scenarioList, { id: this.target.scenarioId });
+      });
   }
 
   scenarioChanged() {
     this.scenario = _.find(this.scenarioList, { id: this.target.scenarioId });
     this.target.stringInput = this.scenario.stringInput;
+    this.showLabels = showLabelsFor.includes(this.target.scenarioId);
 
     if (this.target.scenarioId === 'manual_entry') {
       this.target.points = this.target.points || [];
@@ -65,6 +92,28 @@ export class TestDataQueryCtrl extends QueryCtrl {
       delete this.target.points;
     }
 
+    if (this.target.scenarioId === 'streaming_client') {
+      this.target.stream = _.defaults(this.target.stream || {}, defaultQuery);
+    } else {
+      delete this.target.stream;
+    }
+
+    if (this.target.scenarioId === 'predictable_pulse') {
+      this.target.pulseWave = _.defaults(this.target.pulseWave || {}, defaultPulse);
+    } else {
+      delete this.target.pulseWave;
+    }
+
+    if (this.target.scenarioId === 'predictable_csv_wave') {
+      this.target.csvWave = _.defaults(this.target.csvWave || {}, defaultCSVWave);
+    } else {
+      delete this.target.csvWave;
+    }
+
+    this.refresh();
+  }
+
+  streamChanged() {
     this.refresh();
   }
 }

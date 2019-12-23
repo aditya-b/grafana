@@ -1,4 +1,4 @@
-import { Team, TeamGroup, TeamMember } from 'app/types';
+import { Team, TeamGroup, TeamMember, TeamPermissionLevel } from 'app/types';
 
 export const getMultipleMockTeams = (numberOfTeams: number): Team[] => {
   const teams: Team[] = [];
@@ -9,6 +9,7 @@ export const getMultipleMockTeams = (numberOfTeams: number): Team[] => {
       avatarUrl: 'some/url/',
       email: `test-${i}@test.com`,
       memberCount: i,
+      permission: TeamPermissionLevel.Member,
     });
   }
 
@@ -22,10 +23,11 @@ export const getMockTeam = (): Team => {
     avatarUrl: 'some/url/',
     email: 'test@test.com',
     memberCount: 1,
+    permission: TeamPermissionLevel.Member,
   };
 };
 
-export const getMockTeamMembers = (amount: number): TeamMember[] => {
+export const getMockTeamMembers = (amount: number, teamAdminId: number): TeamMember[] => {
   const teamMembers: TeamMember[] = [];
 
   for (let i = 1; i <= amount; i++) {
@@ -34,8 +36,10 @@ export const getMockTeamMembers = (amount: number): TeamMember[] => {
       teamId: 1,
       avatarUrl: 'some/url/',
       email: 'test@test.com',
+      name: 'testName',
       login: `testUser-${i}`,
       labels: ['label 1', 'label 2'],
+      permission: i === teamAdminId ? TeamPermissionLevel.Admin : TeamPermissionLevel.Member,
     });
   }
 
@@ -48,8 +52,10 @@ export const getMockTeamMember = (): TeamMember => {
     teamId: 1,
     avatarUrl: 'some/url/',
     email: 'test@test.com',
+    name: 'testName',
     login: 'testUser',
     labels: [],
+    permission: TeamPermissionLevel.Member,
   };
 };
 

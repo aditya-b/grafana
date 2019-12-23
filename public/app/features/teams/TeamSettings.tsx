@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { FormLabel, Input } from '@grafana/ui';
 
-import { Label } from 'app/core/components/Label/Label';
 import { SharedPreferences } from 'app/core/components/SharedPreferences/SharedPreferences';
 import { updateTeam } from './state/actions';
 import { getRouteParamsId } from 'app/core/selectors/location';
@@ -19,7 +19,7 @@ interface State {
 }
 
 export class TeamSettings extends React.Component<Props, State> {
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
 
     this.state = {
@@ -28,15 +28,15 @@ export class TeamSettings extends React.Component<Props, State> {
     };
   }
 
-  onChangeName = event => {
+  onChangeName = (event: any) => {
     this.setState({ name: event.target.value });
   };
 
-  onChangeEmail = event => {
+  onChangeEmail = (event: any) => {
     this.setState({ email: event.target.value });
   };
 
-  onUpdate = event => {
+  onUpdate = (event: any) => {
     const { name, email } = this.state;
     event.preventDefault();
     this.props.updateTeam(name, email);
@@ -51,8 +51,8 @@ export class TeamSettings extends React.Component<Props, State> {
         <h3 className="page-sub-heading">Team Settings</h3>
         <form name="teamDetailsForm" className="gf-form-group" onSubmit={this.onUpdate}>
           <div className="gf-form max-width-30">
-            <Label>Name</Label>
-            <input
+            <FormLabel>Name</FormLabel>
+            <Input
               type="text"
               required
               value={name}
@@ -60,11 +60,12 @@ export class TeamSettings extends React.Component<Props, State> {
               onChange={this.onChangeName}
             />
           </div>
+
           <div className="gf-form max-width-30">
-            <Label tooltip="This is optional and is primarily used to set the team profile avatar (via gravatar service)">
+            <FormLabel tooltip="This is optional and is primarily used to set the team profile avatar (via gravatar service)">
               Email
-            </Label>
-            <input
+            </FormLabel>
+            <Input
               type="email"
               className="gf-form-input max-width-22"
               value={email}
@@ -74,7 +75,7 @@ export class TeamSettings extends React.Component<Props, State> {
           </div>
 
           <div className="gf-form-button-row">
-            <button type="submit" className="btn btn-success">
+            <button type="submit" className="btn btn-primary">
               Update
             </button>
           </div>
@@ -85,7 +86,7 @@ export class TeamSettings extends React.Component<Props, State> {
   }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state: any) {
   const teamId = getRouteParamsId(state.location);
 
   return {

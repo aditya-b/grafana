@@ -1,38 +1,47 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Render should render API keys table if there are any keys 1`] = `
-<div>
-  <PageHeader
-    model={Object {}}
+<Page
+  navModel={
+    Object {
+      "main": Object {
+        "text": "Configuration",
+      },
+      "node": Object {
+        "text": "Api Keys",
+      },
+    }
+  }
+>
+  <PageContents
+    isLoading={true}
   />
-  <PageLoader
-    pageName="Api keys"
-  />
-</div>
+</Page>
 `;
 
 exports[`Render should render CTA if there are no API keys 1`] = `
-<div>
-  <PageHeader
-    model={Object {}}
-  />
-  <div
-    className="page-container page-body"
+<Page
+  navModel={
+    Object {
+      "main": Object {
+        "text": "Configuration",
+      },
+      "node": Object {
+        "text": "Api Keys",
+      },
+    }
+  }
+>
+  <PageContents
+    isLoading={false}
   >
     <EmptyListCTA
-      model={
-        Object {
-          "buttonIcon": "fa fa-plus",
-          "buttonLink": "#",
-          "buttonTitle": " New API Key",
-          "onClick": [Function],
-          "proTip": "Remember you can provide view-only API access to other applications.",
-          "proTipLink": "",
-          "proTipLinkTitle": "",
-          "proTipTarget": "_blank",
-          "title": "You haven't added any API Keys yet.",
-        }
-      }
+      buttonIcon="gicon gicon-apikeys"
+      buttonLink="#"
+      buttonTitle=" New API Key"
+      onClick={[Function]}
+      proTip="Remember you can provide view-only API access to other applications."
+      title="You haven't added any API Keys yet."
     />
     <Component
       in={false}
@@ -66,7 +75,7 @@ exports[`Render should render CTA if there are no API keys 1`] = `
               >
                 Key name
               </span>
-              <input
+              <Input
                 className="gf-form-input"
                 onChange={[Function]}
                 placeholder="Name"
@@ -115,10 +124,36 @@ exports[`Render should render CTA if there are no API keys 1`] = `
               </span>
             </div>
             <div
+              className="gf-form max-width-21"
+            >
+              <Component
+                tooltip="The api key life duration. For example 1d if your key is going to last for one day. All the supported units are: s,m,h,d,w,M,y"
+              >
+                Time to live
+              </Component>
+              <Input
+                className="gf-form-input"
+                onChange={[Function]}
+                placeholder="1d"
+                type="text"
+                validationEvents={
+                  Object {
+                    "onBlur": Array [
+                      Object {
+                        "errorMessage": "Not a valid duration",
+                        "rule": [Function],
+                      },
+                    ],
+                  }
+                }
+                value=""
+              />
+            </div>
+            <div
               className="gf-form"
             >
               <button
-                className="btn gf-form-btn btn-success"
+                className="btn gf-form-btn btn-primary"
               >
                 Add
               </button>
@@ -127,6 +162,6 @@ exports[`Render should render CTA if there are no API keys 1`] = `
         </form>
       </div>
     </Component>
-  </div>
-</div>
+  </PageContents>
+</Page>
 `;

@@ -1,10 +1,11 @@
 import React, { PureComponent } from 'react';
 import { hot } from 'react-hot-loader';
 import { connect } from 'react-redux';
-import { NavModel, StoreState } from 'app/types';
+import { StoreState } from 'app/types';
 import { getNavModel } from 'app/core/selectors/navModel';
 import { getServerStats, ServerStat } from './state/apis';
-import PageHeader from 'app/core/components/PageHeader/PageHeader';
+import Page from 'app/core/components/Page/Page';
+import { NavModel } from '@grafana/data';
 
 interface Props {
   navModel: NavModel;
@@ -13,21 +14,19 @@ interface Props {
 
 interface State {
   stats: ServerStat[];
+  isLoading: boolean;
 }
 
 export class ServerStats extends PureComponent<Props, State> {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      stats: [],
-    };
-  }
+  state: State = {
+    stats: [],
+    isLoading: true,
+  };
 
   async componentDidMount() {
     try {
       const stats = await this.props.getServerStats();
-      this.setState({ stats });
+      this.setState({ stats, isLoading: false });
     } catch (error) {
       console.error(error);
     }
@@ -35,12 +34,11 @@ export class ServerStats extends PureComponent<Props, State> {
 
   render() {
     const { navModel } = this.props;
-    const { stats } = this.state;
+    const { stats, isLoading } = this.state;
 
     return (
-      <div>
-        <PageHeader model={navModel} />
-        <div className="page-container page-body">
+      <Page navModel={navModel}>
+        <Page.Contents isLoading={isLoading}>
           <table className="filter-table form-inline">
             <thead>
               <tr>
@@ -50,8 +48,8 @@ export class ServerStats extends PureComponent<Props, State> {
             </thead>
             <tbody>{stats.map(StatItem)}</tbody>
           </table>
-        </div>
-      </div>
+        </Page.Contents>
+      </Page>
     );
   }
 }

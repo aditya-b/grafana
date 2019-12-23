@@ -1,161 +1,146 @@
-import { LogLevel, LogsStream } from 'app/core/logs_model';
+import { FieldType, MutableDataFrame } from '@grafana/data';
+import { LokiLegacyStreamResult, LokiStreamResult } from './types';
+import * as ResultTransformer from './result_transformer';
 
-import {
-  findCommonLabels,
-  findUniqueLabels,
-  formatLabels,
-  getLogLevel,
-  mergeStreamsToLogs,
-  parseLabels,
-} from './result_transformer';
-
-describe('getLoglevel()', () => {
-  it('returns no log level on empty line', () => {
-    expect(getLogLevel('')).toBe(LogLevel.unkown);
-  });
-
-  it('returns no log level on when level is part of a word', () => {
-    expect(getLogLevel('this is information')).toBe(LogLevel.unkown);
-  });
-
-  it('returns same log level for long and short version', () => {
-    expect(getLogLevel('[Warn]')).toBe(LogLevel.warning);
-    expect(getLogLevel('[Warning]')).toBe(LogLevel.warning);
-    expect(getLogLevel('[Warn]')).toBe('warning');
-  });
-
-  it('returns log level on line contains a log level', () => {
-    expect(getLogLevel('warn: it is looking bad')).toBe(LogLevel.warn);
-    expect(getLogLevel('2007-12-12 12:12:12 [WARN]: it is looking bad')).toBe(LogLevel.warn);
-  });
-
-  it('returns first log level found', () => {
-    expect(getLogLevel('WARN this could be a debug message')).toBe(LogLevel.warn);
-  });
-});
-
-describe('parseLabels()', () => {
-  it('returns no labels on empty labels string', () => {
-    expect(parseLabels('')).toEqual({});
-    expect(parseLabels('{}')).toEqual({});
-  });
-
-  it('returns labels on labels string', () => {
-    expect(parseLabels('{foo="bar", baz="42"}')).toEqual({ foo: 'bar', baz: '42' });
-  });
-});
-
-describe('formatLabels()', () => {
-  it('returns no labels on empty label set', () => {
-    expect(formatLabels({})).toEqual('');
-    expect(formatLabels({}, 'foo')).toEqual('foo');
-  });
-
-  it('returns label string on label set', () => {
-    expect(formatLabels({ foo: 'bar', baz: '42' })).toEqual('{baz="42", foo="bar"}');
-  });
-});
-
-describe('findCommonLabels()', () => {
-  it('returns no common labels on empty sets', () => {
-    expect(findCommonLabels([{}])).toEqual({});
-    expect(findCommonLabels([{}, {}])).toEqual({});
-  });
-
-  it('returns no common labels on differing sets', () => {
-    expect(findCommonLabels([{ foo: 'bar' }, {}])).toEqual({});
-    expect(findCommonLabels([{}, { foo: 'bar' }])).toEqual({});
-    expect(findCommonLabels([{ baz: '42' }, { foo: 'bar' }])).toEqual({});
-    expect(findCommonLabels([{ foo: '42', baz: 'bar' }, { foo: 'bar' }])).toEqual({});
-  });
-
-  it('returns the single labels set as common labels', () => {
-    expect(findCommonLabels([{ foo: 'bar' }])).toEqual({ foo: 'bar' });
-  });
-});
-
-describe('findUniqueLabels()', () => {
-  it('returns no uncommon labels on empty sets', () => {
-    expect(findUniqueLabels({}, {})).toEqual({});
-  });
-
-  it('returns all labels given no common labels', () => {
-    expect(findUniqueLabels({ foo: '"bar"' }, {})).toEqual({ foo: '"bar"' });
-  });
-
-  it('returns all labels except the common labels', () => {
-    expect(findUniqueLabels({ foo: '"bar"', baz: '"42"' }, { foo: '"bar"' })).toEqual({ baz: '"42"' });
-  });
-});
-
-describe('mergeStreamsToLogs()', () => {
-  it('returns empty logs given no streams', () => {
-    expect(mergeStreamsToLogs([]).rows).toEqual([]);
-  });
-
-  it('returns processed logs from single stream', () => {
-    const stream1: LogsStream = {
-      labels: '{foo="bar"}',
-      entries: [
-        {
-          line: 'WARN boooo',
-          timestamp: '1970-01-01T00:00:00Z',
-        },
-      ],
-    };
-    expect(mergeStreamsToLogs([stream1]).rows).toMatchObject([
+const legacyStreamResult: LokiLegacyStreamResult[] = [
+  {
+    labels: '{foo="bar"}',
+    entries: [
       {
-        entry: 'WARN boooo',
+        line: "foo: [32m'bar'[39m",
+        ts: '1970-01-01T00:00:00Z',
+      },
+    ],
+  },
+  {
+    labels: '{bar="foo"}',
+    entries: [
+      {
+        line: "bar: 'foo'",
+        ts: '1970-01-01T00:00:00Z',
+      },
+    ],
+  },
+];
+
+const streamResult: LokiStreamResult[] = [
+  {
+    stream: {
+      foo: 'bar',
+    },
+    values: [['1970-01-01T00:00:00Z', "foo: [32m'bar'[39m"]],
+  },
+  {
+    stream: {
+      bar: 'foo',
+    },
+    values: [['1970-01-01T00:00:00Z', "bar: 'foo'"]],
+  },
+];
+
+describe('loki result transformer', () => {
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('legacyLogStreamToDataFrame', () => {
+    it('converts streams to series', () => {
+      const data = legacyStreamResult.map(stream => ResultTransformer.legacyLogStreamToDataFrame(stream));
+
+      expect(data.length).toBe(2);
+      expect(data[0].fields[1].labels['foo']).toEqual('bar');
+      expect(data[0].fields[0].values.get(0)).toEqual(legacyStreamResult[0].entries[0].ts);
+      expect(data[0].fields[1].values.get(0)).toEqual(legacyStreamResult[0].entries[0].line);
+      expect(data[0].fields[2].values.get(0)).toEqual('1970-01-01T00:00:00Z_{foo="bar"}');
+      expect(data[1].fields[0].values.get(0)).toEqual(legacyStreamResult[1].entries[0].ts);
+      expect(data[1].fields[1].values.get(0)).toEqual(legacyStreamResult[1].entries[0].line);
+      expect(data[1].fields[2].values.get(0)).toEqual('1970-01-01T00:00:00Z_{bar="foo"}');
+    });
+  });
+
+  describe('lokiLegacyStreamsToDataframes', () => {
+    it('should enhance data frames', () => {
+      jest.spyOn(ResultTransformer, 'enhanceDataFrame');
+      const dataFrames = ResultTransformer.lokiLegacyStreamsToDataframes(
+        { streams: legacyStreamResult },
+        { refId: 'A' },
+        500,
+        {
+          derivedFields: [
+            {
+              matcherRegex: 'tracer=(w+)',
+              name: 'test',
+              url: 'example.com',
+            },
+          ],
+        }
+      );
+
+      expect(ResultTransformer.enhanceDataFrame).toBeCalled();
+      dataFrames.forEach(frame => {
+        expect(
+          frame.fields.filter(field => field.name === 'test' && field.type === 'string').length
+        ).toBeGreaterThanOrEqual(1);
+      });
+    });
+  });
+
+  describe('lokiStreamResultToDataFrame', () => {
+    it('converts streams to series', () => {
+      const data = streamResult.map(stream => ResultTransformer.lokiStreamResultToDataFrame(stream));
+
+      expect(data.length).toBe(2);
+      expect(data[0].fields[1].labels['foo']).toEqual('bar');
+      expect(data[0].fields[0].values.get(0)).toEqual(legacyStreamResult[0].entries[0].ts);
+      expect(data[0].fields[1].values.get(0)).toEqual(legacyStreamResult[0].entries[0].line);
+      expect(data[0].fields[2].values.get(0)).toEqual('1970-01-01T00:00:00Z_{foo="bar"}');
+      expect(data[1].fields[0].values.get(0)).toEqual(legacyStreamResult[1].entries[0].ts);
+      expect(data[1].fields[1].values.get(0)).toEqual(legacyStreamResult[1].entries[0].line);
+      expect(data[1].fields[2].values.get(0)).toEqual('1970-01-01T00:00:00Z_{bar="foo"}');
+    });
+  });
+
+  describe('lokiStreamsToDataframes', () => {
+    it('should enhance data frames', () => {
+      jest.spyOn(ResultTransformer, 'enhanceDataFrame');
+      const dataFrames = ResultTransformer.lokiStreamsToDataframes(streamResult, { refId: 'B' }, 500, {
+        derivedFields: [
+          {
+            matcherRegex: 'trace=(w+)',
+            name: 'test',
+            url: 'example.com',
+          },
+        ],
+      });
+
+      expect(ResultTransformer.enhanceDataFrame).toBeCalled();
+      dataFrames.forEach(frame => {
+        expect(
+          frame.fields.filter(field => field.name === 'test' && field.type === 'string').length
+        ).toBeGreaterThanOrEqual(1);
+      });
+    });
+  });
+
+  describe('appendResponseToBufferedData', () => {
+    it('appends response', () => {
+      const data = new MutableDataFrame();
+      data.addField({ name: 'ts', type: FieldType.time, config: { title: 'Time' } });
+      data.addField({ name: 'line', type: FieldType.string });
+      data.addField({ name: 'labels', type: FieldType.other });
+      data.addField({ name: 'id', type: FieldType.string });
+
+      ResultTransformer.appendLegacyResponseToBufferedData({ streams: legacyStreamResult }, data);
+      expect(data.get(0)).toEqual({
+        ts: '1970-01-01T00:00:00Z',
+        line: "foo: [32m'bar'[39m",
         labels: { foo: 'bar' },
-        key: 'EK1970-01-01T00:00:00Z{foo="bar"}',
-        logLevel: 'warning',
-        uniqueLabels: {},
-      },
-    ]);
-  });
-
-  it('returns merged logs from multiple streams sorted by time and with unique labels', () => {
-    const stream1: LogsStream = {
-      labels: '{foo="bar", baz="1"}',
-      entries: [
-        {
-          line: 'WARN boooo',
-          timestamp: '1970-01-01T00:00:01Z',
-        },
-      ],
-    };
-    const stream2: LogsStream = {
-      labels: '{foo="bar", baz="2"}',
-      entries: [
-        {
-          line: 'INFO 1',
-          timestamp: '1970-01-01T00:00:00Z',
-        },
-        {
-          line: 'INFO 2',
-          timestamp: '1970-01-01T00:00:02Z',
-        },
-      ],
-    };
-    expect(mergeStreamsToLogs([stream1, stream2]).rows).toMatchObject([
-      {
-        entry: 'INFO 2',
-        labels: { foo: 'bar', baz: '2' },
-        logLevel: 'info',
-        uniqueLabels: { baz: '2' },
-      },
-      {
-        entry: 'WARN boooo',
-        labels: { foo: 'bar', baz: '1' },
-        logLevel: 'warning',
-        uniqueLabels: { baz: '1' },
-      },
-      {
-        entry: 'INFO 1',
-        labels: { foo: 'bar', baz: '2' },
-        logLevel: 'info',
-        uniqueLabels: { baz: '2' },
-      },
-    ]);
+        id: '1970-01-01T00:00:00Z_{foo="bar"}',
+      });
+    });
   });
 });

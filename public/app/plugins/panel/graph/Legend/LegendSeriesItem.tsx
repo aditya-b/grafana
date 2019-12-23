@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import classNames from 'classnames';
 import { TimeSeries } from 'app/core/core';
-import { SeriesColorPicker } from 'app/core/components/colorpicker/SeriesColorPicker';
+import { SeriesColorPicker } from '@grafana/ui';
 
 export const LEGEND_STATS = ['min', 'max', 'avg', 'current', 'total'];
 
@@ -9,9 +9,9 @@ export interface LegendLabelProps {
   series: TimeSeries;
   asTable?: boolean;
   hidden?: boolean;
-  onLabelClick?: (series, event) => void;
-  onColorChange?: (series, color: string) => void;
-  onToggleAxis?: (series) => void;
+  onLabelClick: (series: any, event: any) => void;
+  onColorChange: (series: any, color: string) => void;
+  onToggleAxis: (series: any) => void;
 }
 
 export interface LegendValuesProps {
@@ -38,14 +38,14 @@ export class LegendItem extends PureComponent<LegendItemProps, LegendItemState> 
     onToggleAxis: () => {},
   };
 
-  constructor(props) {
+  constructor(props: LegendItemProps) {
     super(props);
     this.state = {
       yaxis: this.props.series.yaxis,
     };
   }
 
-  onLabelClick = e => this.props.onLabelClick(this.props.series, e);
+  onLabelClick = (e: any) => this.props.onLabelClick(this.props.series, e);
 
   onToggleAxis = () => {
     const yaxis = this.state.yaxis === 2 ? 1 : 2;
@@ -54,7 +54,7 @@ export class LegendItem extends PureComponent<LegendItemProps, LegendItemState> 
     this.props.onToggleAxis(info);
   };
 
-  onColorChange = color => {
+  onColorChange = (color: string) => {
     this.props.onColorChange(this.props.series, color);
     // Because of PureComponent nature it makes only shallow props comparison and changing of series.color doesn't run
     // component re-render. In this case we can't rely on color, selected by user, because it may be overwritten
@@ -66,6 +66,7 @@ export class LegendItem extends PureComponent<LegendItemProps, LegendItemState> 
     const { series, asTable } = this.props;
     const legendValueItems = [];
     for (const valueName of LEGEND_STATS) {
+      // @ts-ignore
       if (this.props[valueName]) {
         const valueFormatted = series.formatValue(series.stats[valueName]);
         legendValueItems.push(
@@ -116,11 +117,11 @@ interface LegendSeriesLabelProps {
   label: string;
   color: string;
   yaxis?: number;
-  onLabelClick?: (event) => void;
+  onLabelClick?: (event: any) => void;
 }
 
 class LegendSeriesLabel extends PureComponent<LegendSeriesLabelProps & LegendSeriesIconProps> {
-  static defaultProps = {
+  static defaultProps: Partial<LegendSeriesLabelProps> = {
     yaxis: undefined,
     onLabelClick: () => {},
   };
@@ -154,12 +155,12 @@ interface LegendSeriesIconState {
   color: string;
 }
 
-function SeriesIcon(props) {
-  return <i className="fa fa-minus pointer" style={{ color: props.color }} />;
+function SeriesIcon({ color }: { color: string }) {
+  return <i className="fa fa-minus pointer" style={{ color }} />;
 }
 
 class LegendSeriesIcon extends PureComponent<LegendSeriesIconProps, LegendSeriesIconState> {
-  static defaultProps = {
+  static defaultProps: Partial<LegendSeriesIconProps> = {
     yaxis: undefined,
     onColorChange: () => {},
     onToggleAxis: () => {},
@@ -168,13 +169,17 @@ class LegendSeriesIcon extends PureComponent<LegendSeriesIconProps, LegendSeries
   render() {
     return (
       <SeriesColorPicker
-        optionalClass="graph-legend-icon"
         yaxis={this.props.yaxis}
         color={this.props.color}
-        onColorChange={this.props.onColorChange}
+        onChange={this.props.onColorChange}
         onToggleAxis={this.props.onToggleAxis}
+        enableNamedColors
       >
-        <SeriesIcon color={this.props.color} />
+        {({ ref, showColorPicker, hideColorPicker }) => (
+          <span ref={ref} onClick={showColorPicker} onMouseLeave={hideColorPicker} className="graph-legend-icon">
+            <SeriesIcon color={this.props.color} />
+          </span>
+        )}
       </SeriesColorPicker>
     );
   }

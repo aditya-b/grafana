@@ -16,18 +16,18 @@ permissions and org memberships.
 
 ## OAuth Integrations
 
-- [Google OAuth]({{< relref "auth/google.md" >}})
-- [GitHub OAuth]({{< relref "auth/github.md" >}})
-- [Gitlab OAuth]({{< relref "auth/gitlab.md" >}})
-- [Generic OAuth]({{< relref "auth/generic-oauth.md" >}}) (Okta2, BitBucket, Azure, OneLogin, Auth0)
+- [Google OAuth]({{< relref "google.md" >}})
+- [GitHub OAuth]({{< relref "github.md" >}})
+- [Gitlab OAuth]({{< relref "gitlab.md" >}})
+- [Generic OAuth]({{< relref "generic-oauth.md" >}}) (Okta2, BitBucket, Azure, OneLogin, Auth0)
 
 ## LDAP integrations
 
-- [LDAP Authentication]({{< relref "auth/ldap.md" >}}) (OpenLDAP, ActiveDirectory, etc)
+- [LDAP Authentication]({{< relref "ldap.md" >}}) (OpenLDAP, ActiveDirectory, etc)
 
 ## Auth proxy
 
-- [Auth Proxy]({{< relref "auth/auth-proxy.md" >}}) If you want to handle authentication outside Grafana using a reverse
+- [Auth Proxy]({{< relref "auth-proxy.md" >}}) If you want to handle authentication outside Grafana using a reverse
     proxy.
 
 ## Grafana Auth
@@ -35,6 +35,45 @@ permissions and org memberships.
 Grafana of course has a built in user authentication system with password authentication enabled by default. You can
 disable authentication by enabling anonymous access. You can also hide login form and only allow login through an auth
 provider (listed above). There is also options for allowing self sign up.
+
+### Login and short-lived tokens
+
+> The following applies when using Grafana's built in user authentication, LDAP (without Auth proxy) or OAuth integration.
+
+Grafana are using short-lived tokens as a mechanism for verifying authenticated users.
+These short-lived tokens are rotated each `token_rotation_interval_minutes` for an active authenticated user.
+
+An active authenticated user that gets it token rotated will extend the `login_maximum_inactive_lifetime_days` time from "now" that Grafana will remember the user.
+This means that a user can close its browser and come back before `now + login_maximum_inactive_lifetime_days` and still being authenticated.
+ This is true as long as the time since user login is less than `login_maximum_lifetime_days`.
+
+#### Remote logout
+
+You can logout from other devices by removing login sessions from the bottom of your profile page. If you are
+a Grafana admin user you can also do the same for any user from the Server Admin / Edit User view.
+
+## Settings
+
+Example:
+
+```bash
+[auth]
+
+# Login cookie name
+login_cookie_name = grafana_session
+
+# The lifetime (days) an authenticated user can be inactive before being required to login at next visit. Default is 7 days.
+login_maximum_inactive_lifetime_days = 7
+
+# The maximum lifetime (days) an authenticated user can be logged in since login time before being required to login. Default is 30 days.
+login_maximum_lifetime_days = 30
+
+# How often should auth tokens be rotated for authenticated users when being active. The default is each 10 minutes.
+token_rotation_interval_minutes = 10
+
+# The maximum lifetime (seconds) an api key can be used. If it is set all the api keys should have limited lifetime that is lower than this value.
+api_key_max_seconds_to_live = -1
+```
 
 ### Anonymous authentication
 

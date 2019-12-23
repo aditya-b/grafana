@@ -1,15 +1,20 @@
 import _ from 'lodash';
-import moment from 'moment';
 import alertDef from '../../../features/alerting/state/alertDef';
 import { PanelCtrl } from 'app/plugins/sdk';
 
-import * as dateMath from 'app/core/utils/datemath';
+import { dateMath, dateTime } from '@grafana/data';
+import { PanelEvents } from '@grafana/data';
+import { auto } from 'angular';
+import { BackendSrv } from '@grafana/runtime';
 
 class AlertListPanel extends PanelCtrl {
   static templateUrl = 'module.html';
   static scrollable = true;
 
-  showOptions = [{ text: 'Current state', value: 'current' }, { text: 'Recent state changes', value: 'changes' }];
+  showOptions = [
+    { text: 'Current state', value: 'current' },
+    { text: 'Recent state changes', value: 'changes' },
+  ];
 
   sortOrderOptions = [
     { text: 'Alphabetical (asc)', value: 1 },
@@ -21,9 +26,10 @@ class AlertListPanel extends PanelCtrl {
   currentAlerts: any = [];
   alertHistory: any = [];
   noAlertsMessage: string;
+  templateSrv: string;
 
   // Set and populate defaults
-  panelDefaults = {
+  panelDefaults: any = {
     show: 'current',
     limit: 10,
     stateFilter: [],
@@ -35,21 +41,23 @@ class AlertListPanel extends PanelCtrl {
   };
 
   /** @ngInject */
-  constructor($scope, $injector, private backendSrv) {
+  constructor($scope: any, $injector: auto.IInjectorService, private backendSrv: BackendSrv) {
     super($scope, $injector);
     _.defaults(this.panel, this.panelDefaults);
 
-    this.events.on('init-edit-mode', this.onInitEditMode.bind(this));
-    this.events.on('refresh', this.onRefresh.bind(this));
+    this.events.on(PanelEvents.editModeInitialized, this.onInitEditMode.bind(this));
+    this.events.on(PanelEvents.refresh, this.onRefresh.bind(this));
+    this.templateSrv = this.$injector.get('templateSrv');
 
     for (const key in this.panel.stateFilter) {
       this.stateFilter[this.panel.stateFilter[key]] = true;
     }
   }
 
-  sortResult(alerts) {
+  sortResult(alerts: any[]) {
     if (this.panel.sortOrder === 3) {
       return _.sortBy(alerts, a => {
+        // @ts-ignore
         return alertDef.alertStateSortScore[a.state];
       });
     }
@@ -132,7 +140,7 @@ class AlertListPanel extends PanelCtrl {
     };
 
     if (this.panel.nameFilter) {
-      params.query = this.panel.nameFilter;
+      params.query = this.templateSrv.replace(this.panel.nameFilter, this.panel.scopedVars);
     }
 
     if (this.panel.folderId >= 0) {
@@ -155,7 +163,7 @@ class AlertListPanel extends PanelCtrl {
       this.currentAlerts = this.sortResult(
         _.map(res, al => {
           al.stateModel = alertDef.getStateDisplayModel(al.state);
-          al.newStateDateAgo = moment(al.newStateDate)
+          al.newStateDateAgo = dateTime(al.newStateDate)
             .locale('en')
             .fromNow(true);
           return al;

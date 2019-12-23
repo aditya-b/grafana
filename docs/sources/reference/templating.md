@@ -38,20 +38,81 @@ documentation article for details on value escaping during interpolation.
 
 ### Advanced Formatting Options
 
-> Only available in Grafana v5.1+.
-
-The formatting of the variable interpolation depends on the data source but there are some situations where you might want to change the default formatting. For example, the default for the MySql datasource is to join multiple values as comma-separated with quotes: `'server01','server02'`. In some cases you might want to have a comma-separated string without quotes: `server01,server02`. This is now possible with the advanced formatting options.
+The formatting of the variable interpolation depends on the data source but there are some situations where you might want to change the default formatting. For example, the default for the MySql data source is to join multiple values as comma-separated with quotes: `'server01','server02'`. In some cases you might want to have a comma-separated string without quotes: `server01,server02`. This is now possible with the advanced formatting options.
 
 Syntax: `${var_name:option}`
 
-Filter Option | Example | Raw | Interpolated | Description
------------- | ------------- | ------------- | -------------  | -------------
-`glob` | ${servers:glob} |  `'test1', 'test2'` | `{test1,test2}` | (Default) Formats multi-value variable into a glob (for Graphite queries)
-`regex` | ${servers:regex} | `'test.', 'test2'` | <code>(test\.&#124;test2)</code> | Formats multi-value variable into a regex string
-`pipe` | ${servers:pipe} | `'test.', 'test2'` |  <code>test.&#124;test2</code> | Formats multi-value variable into a pipe-separated string
-`csv`| ${servers:csv} |  `'test1', 'test2'` | `test1,test2` | Formats multi-value variable as a comma-separated string
-`distributed`| ${servers:distributed} | `'test1', 'test2'` | `test1,servers=test2` | Formats multi-value variable in custom format for OpenTSDB.
-`lucene`| ${servers:lucene} | `'test', 'test2'` | `("test" OR "test2")` | Formats multi-value variable as a lucene expression.
+#### Glob
+Formats multi-value variable into a glob (for Graphite queries).
+
+```bash
+servers = ['test1', 'test2']
+String to interpolate: '${servers:glob}'
+Interpolation result: '{test1,test2}'
+```
+
+### Regex
+Formats multi-value variable into a regex string.
+
+```bash
+servers = ['test1.', 'test2']
+String to interpolate: '${servers:regex}'
+Interpolation result: '(test1\.|test2)'
+```
+
+### Pipe
+Formats multi-value variable into a pipe-separated string.
+
+```bash
+servers = ['test1.', 'test2']
+String to interpolate: '${servers:pipe}'
+Interpolation result: 'test1.|test2'
+```
+
+### Csv
+Formats multi-value variable as a comma-separated string.
+
+```bash
+servers = ['test1', 'test2']
+String to interpolate: '${servers:csv}'
+Interpolation result: 'test1,test2'
+```
+
+### Json
+Formats multi-value variable as a comma-separated string.
+
+```bash
+servers = ['test1', 'test2']
+String to interpolate: '${servers:json}'
+Interpolation result: '["test1", "test2"]'
+```
+
+### Distributed
+Formats multi-value variable in custom format for OpenTSDB.
+
+```bash
+servers = ['test1', 'test2']
+String to interpolate: '${servers:distributed}'
+Interpolation result: 'test1,servers=test2'
+```
+
+### Lucene
+Formats multi-value variable in lucene format for Elasticsearch.
+
+```bash
+servers = ['test1', 'test2']
+String to interpolate: '${servers:lucene}'
+Interpolation result: '("test1" OR "test2")'
+```
+
+### Percentencode
+Formats single and multi valued variables for use in URL parameters.
+
+```bash
+servers = ['foo()bar BAZ', 'test2']
+String to interpolate: '${servers:percentencode}'
+Interpolation result: 'foo%28%29bar%20BAZ%2Ctest2'
+```
 
 Test the formatting options on the [Grafana Play site](http://play.grafana.org/d/cJtIfcWiz/template-variable-formatting-options?orgId=1).
 
@@ -86,10 +147,10 @@ Type | Description
 ------- | --------
 *Query* | This variable type allows you to write a data source query that usually returns a list of metric names, tag values or keys. For example, a query that returns a list of server names, sensor ids or data centers.
 *Interval* | This variable can represent time spans. Instead of hard-coding a group by time or date histogram interval, use a variable of this type.
-*Datasource* | This type allows you to quickly change the data source for an entire Dashboard. Useful if you have multiple instances of a data source in for example different environments.
+*Data source* | This type allows you to quickly change the data source for an entire Dashboard. Useful if you have multiple instances of a data source in for example different environments.
 *Custom* | Define the variable options manually using a comma separated list.
 *Constant* | Define a hidden constant. Useful for metric path prefixes for dashboards you want to share. During dashboard export, constant variables will be made into an import option.
-*Ad hoc filters* | Very special kind of variable that only works with some data sources, InfluxDB & Elasticsearch currently. It allows you to add key/value filters that will automatically be added to all metric queries that use the specified data source.
+*Ad hoc filters* | Very special kind of variable that only works with some data sources, InfluxDB and Elasticsearch currently. It allows you to add key/value filters that will automatically be added to all metric queries that use the specified data source.
 *Text box* | This variable type will display as a free text input field with an optional default value.
 
 ### Query options
@@ -175,11 +236,12 @@ demo.robustperception.io:9100
 
 The query expressions are different for each data source.
 
-- [Graphite templating queries]({{< relref "features/datasources/graphite.md#templating" >}})
-- [Elasticsearch templating queries]({{< relref "features/datasources/elasticsearch.md#templating" >}})
-- [InfluxDB templating queries]({{< relref "features/datasources/influxdb.md#templating" >}})
-- [Prometheus templating queries]({{< relref "features/datasources/prometheus.md#templating" >}})
-- [OpenTSDB templating queries]({{< relref "features/datasources/opentsdb.md#templating" >}})
+- [Graphite templating queries]({{< relref "../features/datasources/graphite.md#templating" >}})
+- [Elasticsearch templating queries]({{< relref "../features/datasources/elasticsearch.md#templating" >}})
+- [InfluxDB templating queries]({{< relref "../features/datasources/influxdb.md#templating" >}})
+- [Prometheus templating queries]({{< relref "../features/datasources/prometheus.md#templating" >}})
+- [OpenTSDB templating queries]({{< relref "../features/datasources/opentsdb.md#templating" >}})
+- [AzureMonitor templating queries]({{< relref "../features/datasources/azuremonitor.md#templating-with-variables-for-the-azure-monitor-service" >}})
 
 One thing to note is that query expressions can contain references to other variables and in effect create linked variables.
 Grafana will detect this and automatically refresh a variable when one of it's containing variables change.
@@ -212,7 +274,7 @@ needs to be escaped so that the value can contain lucene control words and quota
 
 #### Formatting troubles
 
-Automatic escaping & formatting can cause problems and it can be tricky to grasp the logic is behind it.
+Automatic escaping and formatting can cause problems and it can be tricky to grasp the logic is behind it.
 Especially for InfluxDB and Prometheus where the use of regex syntax requires that the variable is used in regex operator context.
 If you do not want Grafana to do this automatic regex escaping and formatting your only option is to disable the *Multi-value* or *Include All option*
 options.
@@ -243,6 +305,11 @@ summarize($myinterval, sum, false)
 ## Global Built-in Variables
 
 Grafana has global built-in variables that can be used in expressions in the query editor.
+
+### Time range variables
+
+Grafana has two built in time range variables in `$__from` and `$__to`. They are currently always interpolated
+as epoch milliseconds. These variables are only available in Grafana v6.0 and above.
 
 ### The $__interval Variable
 
@@ -292,9 +359,11 @@ The `direction` controls how the panels will be arranged.
 
 By choosing `horizontal` the panels will be arranged side-by-side. Grafana will automatically adjust the width
 of each repeated panel so that the whole row is filled. Currently, you cannot mix other panels on a row with a repeated
-panel. Each panel will never be smaller that the provided `Min width` if you have many selected values.
+panel.
 
-By choosing `vertical` the panels will be arranged from top to bottom in a column. The `Min width` doesn't have any effect in this case. The width of the repeated panels will be the same as of the first panel (the original template) being repeated.
+Set `Max per row` to tell grafana how many panels per row you want at most. It defaults to *4* if you don't set anything.
+
+By choosing `vertical` the panels will be arranged from top to bottom in a column. The width of the repeated panels will be the same as of the first panel (the original template) being repeated.
 
 Only make changes to the first panel (the original template). To have the changes take effect on all panels you need to trigger a dynamic dashboard re-build.
 You can do this by either changing the variable value (that is the basis for the repeat) or reload the dashboard.

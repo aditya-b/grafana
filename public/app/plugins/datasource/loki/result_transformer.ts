@@ -1,194 +1,477 @@
 import _ from 'lodash';
-import moment from 'moment';
 
 import {
-  LogLevel,
-  LogsMetaItem,
-  LogsModel,
-  LogRow,
-  LogsStream,
-  LogsStreamEntry,
-  LogsStreamLabels,
-  LogsMetaKind,
-} from 'app/core/logs_model';
-import { DEFAULT_LIMIT } from './datasource';
+  parseLabels,
+  FieldType,
+  TimeSeries,
+  Labels,
+  DataFrame,
+  ArrayVector,
+  MutableDataFrame,
+  findUniqueLabels,
+  dateTime,
+  FieldConfig,
+  DataFrameView,
+} from '@grafana/data';
+import templateSrv from 'app/features/templating/template_srv';
+import TableModel from 'app/core/table_model';
+import {
+  LokiLegacyStreamResult,
+  LokiRangeQueryRequest,
+  LokiResponse,
+  LokiMatrixResult,
+  LokiVectorResult,
+  TransformerOptions,
+  LokiLegacyStreamResponse,
+  LokiResultType,
+  LokiStreamResult,
+  LokiTailResponse,
+  LokiQuery,
+  LokiOptions,
+} from './types';
+
+import { formatQuery, getHighlighterExpressionsFromQuery } from './query_utils';
+import { of } from 'rxjs';
 
 /**
- * Returns the log level of a log line.
- * Parse the line for level words. If no level is found, it returns `LogLevel.unknown`.
- *
- * Example: `getLogLevel('WARN 1999-12-31 this is great') // LogLevel.warn`
+ * Transforms LokiLogStream structure into a dataFrame. Used when doing standard queries.
  */
-export function getLogLevel(line: string): LogLevel {
-  if (!line) {
-    return LogLevel.unkown;
+export function legacyLogStreamToDataFrame(
+  stream: LokiLegacyStreamResult,
+  reverse?: boolean,
+  refId?: string
+): DataFrame {
+  let labels: Labels = stream.parsedLabels;
+  if (!labels && stream.labels) {
+    labels = parseLabels(stream.labels);
   }
-  let level: LogLevel;
-  Object.keys(LogLevel).forEach(key => {
-    if (!level) {
-      const regexp = new RegExp(`\\b${key}\\b`, 'i');
-      if (regexp.test(line)) {
-        level = LogLevel[key];
+  const times = new ArrayVector<string>([]);
+  const lines = new ArrayVector<string>([]);
+  const uids = new ArrayVector<string>([]);
+
+  for (const entry of stream.entries) {
+    const ts = entry.ts || entry.timestamp;
+    times.add(ts);
+    lines.add(entry.line);
+    uids.add(`${ts}_${stream.labels}`);
+  }
+
+  if (reverse) {
+    times.buffer = times.buffer.reverse();
+    lines.buffer = lines.buffer.reverse();
+  }
+
+  return {
+    refId,
+    fields: [
+      { name: 'ts', type: FieldType.time, config: { title: 'Time' }, values: times }, // Time
+      { name: 'line', type: FieldType.string, config: {}, values: lines, labels }, // Line
+      { name: 'id', type: FieldType.string, config: {}, values: uids },
+    ],
+    length: times.length,
+  };
+}
+
+export function lokiStreamResultToDataFrame(stream: LokiStreamResult, reverse?: boolean, refId?: string): DataFrame {
+  const labels: Labels = stream.stream;
+
+  const times = new ArrayVector<string>([]);
+  const lines = new ArrayVector<string>([]);
+  const uids = new ArrayVector<string>([]);
+
+  for (const [ts, line] of stream.values) {
+    times.add(
+      dateTime(Number.parseFloat(ts) / 1e6)
+        .utc()
+        .format()
+    );
+    lines.add(line);
+    uids.add(
+      `${ts}_{${Object.entries(labels)
+        .map(([key, val]) => `${key}="${val}"`)
+        .join('')}}`
+    );
+  }
+
+  if (reverse) {
+    times.buffer = times.buffer.reverse();
+    lines.buffer = lines.buffer.reverse();
+  }
+
+  return {
+    refId,
+    fields: [
+      { name: 'ts', type: FieldType.time, config: { title: 'Time' }, values: times }, // Time
+      { name: 'line', type: FieldType.string, config: {}, values: lines, labels }, // Line
+      { name: 'id', type: FieldType.string, config: {}, values: uids },
+    ],
+    length: times.length,
+  };
+}
+
+/**
+ * Transform LokiResponse data and appends it to MutableDataFrame. Used for streaming where the dataFrame can be
+ * a CircularDataFrame creating a fixed size rolling buffer.
+ * TODO: Probably could be unified with the logStreamToDataFrame function.
+ * @param response
+ * @param data Needs to have ts, line, labels, id as fields
+ */
+export function appendLegacyResponseToBufferedData(response: LokiLegacyStreamResponse, data: MutableDataFrame) {
+  // Should we do anything with: response.dropped_entries?
+
+  const streams: LokiLegacyStreamResult[] = response.streams;
+  if (!streams || !streams.length) {
+    return;
+  }
+
+  let baseLabels: Labels = {};
+  for (const f of data.fields) {
+    if (f.type === FieldType.string) {
+      if (f.labels) {
+        baseLabels = f.labels;
       }
+      break;
     }
-  });
-  if (!level) {
-    level = LogLevel.unkown;
   }
-  return level;
-}
 
-/**
- * Regexp to extract Prometheus-style labels
- */
-const labelRegexp = /\b(\w+)(!?=~?)"([^"\n]*?)"/g;
+  for (const stream of streams) {
+    // Find unique labels
+    const labels = parseLabels(stream.labels);
+    const unique = findUniqueLabels(labels, baseLabels);
 
-/**
- * Returns a map of label keys to value from an input selector string.
- *
- * Example: `parseLabels('{job="foo", instance="bar"}) // {job: "foo", instance: "bar"}`
- */
-export function parseLabels(labels: string): LogsStreamLabels {
-  const labelsByKey: LogsStreamLabels = {};
-  labels.replace(labelRegexp, (_, key, operator, value) => {
-    labelsByKey[key] = value;
-    return '';
-  });
-  return labelsByKey;
-}
-
-/**
- * Returns a map labels that are common to the given label sets.
- */
-export function findCommonLabels(labelsSets: LogsStreamLabels[]): LogsStreamLabels {
-  return labelsSets.reduce((acc, labels) => {
-    if (!labels) {
-      throw new Error('Need parsed labels to find common labels.');
+    // Add each line
+    for (const entry of stream.entries) {
+      const ts = entry.ts || entry.timestamp;
+      data.values.ts.add(ts);
+      data.values.line.add(entry.line);
+      data.values.labels.add(unique);
+      data.values.id.add(`${ts}_${stream.labels}`);
     }
-    if (!acc) {
-      // Initial set
-      acc = { ...labels };
+  }
+}
+
+export function appendResponseToBufferedData(response: LokiTailResponse, data: MutableDataFrame) {
+  // Should we do anything with: response.dropped_entries?
+
+  const streams: LokiStreamResult[] = response.streams;
+  if (!streams || !streams.length) {
+    return;
+  }
+
+  let baseLabels: Labels = {};
+  for (const f of data.fields) {
+    if (f.type === FieldType.string) {
+      if (f.labels) {
+        baseLabels = f.labels;
+      }
+      break;
+    }
+  }
+
+  for (const stream of streams) {
+    // Find unique labels
+    const unique = findUniqueLabels(stream.stream, baseLabels);
+
+    // Add each line
+    for (const [ts, line] of stream.values) {
+      data.values.ts.add(parseInt(ts, 10) / 1e6);
+      data.values.line.add(line);
+      data.values.labels.add(unique);
+      data.values.id.add(
+        `${ts}_${Object.entries(unique)
+          .map(([key, val]) => `${key}=${val}`)
+          .join('')}`
+      );
+    }
+  }
+}
+
+function lokiMatrixToTimeSeries(matrixResult: LokiMatrixResult, options: TransformerOptions): TimeSeries {
+  return {
+    target: createMetricLabel(matrixResult.metric, options),
+    datapoints: lokiPointsToTimeseriesPoints(matrixResult.values, options),
+    tags: matrixResult.metric,
+  };
+}
+
+function lokiPointsToTimeseriesPoints(
+  data: Array<[number, string]>,
+  options: TransformerOptions
+): Array<[number, number]> {
+  const stepMs = options.step * 1000;
+  const datapoints: Array<[number, number]> = [];
+
+  let baseTimestampMs = options.start / 1e6;
+  for (const [time, value] of data) {
+    let datapointValue = parseFloat(value);
+    if (isNaN(datapointValue)) {
+      datapointValue = null;
+    }
+
+    const timestamp = time * 1000;
+    for (let t = baseTimestampMs; t < timestamp; t += stepMs) {
+      datapoints.push([0, t]);
+    }
+
+    baseTimestampMs = timestamp + stepMs;
+    datapoints.push([datapointValue, timestamp]);
+  }
+
+  const endTimestamp = options.end / 1e6;
+  for (let t = baseTimestampMs; t <= endTimestamp; t += stepMs) {
+    datapoints.push([0, t]);
+  }
+
+  return datapoints;
+}
+
+export function lokiResultsToTableModel(
+  lokiResults: Array<LokiMatrixResult | LokiVectorResult>,
+  resultCount: number,
+  refId: string,
+  valueWithRefId?: boolean
+): TableModel {
+  if (!lokiResults || lokiResults.length === 0) {
+    return new TableModel();
+  }
+
+  // Collect all labels across all metrics
+  const metricLabels: Set<string> = new Set<string>(
+    lokiResults.reduce((acc, cur) => acc.concat(Object.keys(cur.metric)), [])
+  );
+
+  // Sort metric labels, create columns for them and record their index
+  const sortedLabels = [...metricLabels.values()].sort();
+  const table = new TableModel();
+  table.columns = [
+    { text: 'Time', type: FieldType.time },
+    ...sortedLabels.map(label => ({ text: label, filterable: true })),
+    { text: resultCount > 1 || valueWithRefId ? `Value #${refId}` : 'Value', type: FieldType.time },
+  ];
+
+  // Populate rows, set value to empty string when label not present.
+  lokiResults.forEach(series => {
+    const newSeries: LokiMatrixResult = {
+      metric: series.metric,
+      values: (series as LokiVectorResult).value
+        ? [(series as LokiVectorResult).value]
+        : (series as LokiMatrixResult).values,
+    };
+
+    if (!newSeries.values) {
+      return;
+    }
+
+    if (!newSeries.metric) {
+      table.rows.concat(newSeries.values.map(([a, b]) => [a * 1000, parseFloat(b)]));
     } else {
-      // Remove incoming labels that are missing or not matching in value
-      Object.keys(labels).forEach(key => {
-        if (acc[key] === undefined || acc[key] !== labels[key]) {
-          delete acc[key];
-        }
-      });
-      // Remove common labels that are missing from incoming label set
-      Object.keys(acc).forEach(key => {
-        if (labels[key] === undefined) {
-          delete acc[key];
-        }
-      });
+      table.rows.push(
+        ...newSeries.values.map(([a, b]) => [
+          a * 1000,
+          ...sortedLabels.map(label => newSeries.metric[label] || ''),
+          parseFloat(b),
+        ])
+      );
     }
-    return acc;
-  }, undefined);
-}
-
-/**
- * Returns a map of labels that are in `labels`, but not in `commonLabels`.
- */
-export function findUniqueLabels(labels: LogsStreamLabels, commonLabels: LogsStreamLabels): LogsStreamLabels {
-  const uncommonLabels: LogsStreamLabels = { ...labels };
-  Object.keys(commonLabels).forEach(key => {
-    delete uncommonLabels[key];
   });
-  return uncommonLabels;
+
+  return table;
+}
+
+function createMetricLabel(labelData: { [key: string]: string }, options?: TransformerOptions) {
+  let label =
+    options === undefined || _.isEmpty(options.legendFormat)
+      ? getOriginalMetricName(labelData)
+      : renderTemplate(templateSrv.replace(options.legendFormat), labelData);
+
+  if (!label) {
+    label = options.query;
+  }
+  return label;
+}
+
+function renderTemplate(aliasPattern: string, aliasData: { [key: string]: string }) {
+  const aliasRegex = /\{\{\s*(.+?)\s*\}\}/g;
+  return aliasPattern.replace(aliasRegex, (_, g1) => (aliasData[g1] ? aliasData[g1] : g1));
+}
+
+function getOriginalMetricName(labelData: { [key: string]: string }) {
+  const metricName = labelData.__name__ || '';
+  delete labelData.__name__;
+  const labelPart = Object.entries(labelData)
+    .map(label => `${label[0]}="${label[1]}"`)
+    .join(',');
+  return `${metricName}{${labelPart}}`;
+}
+
+export function lokiStreamsToDataframes(
+  data: LokiStreamResult[],
+  target: { refId: string; expr?: string; regexp?: string },
+  limit: number,
+  config: LokiOptions,
+  reverse = false
+): DataFrame[] {
+  const series: DataFrame[] = data.map(stream => {
+    const dataFrame = lokiStreamResultToDataFrame(stream, reverse);
+    enhanceDataFrame(dataFrame, config);
+    return {
+      ...dataFrame,
+      refId: target.refId,
+      meta: {
+        searchWords: getHighlighterExpressionsFromQuery(formatQuery(target.expr, target.regexp)),
+        limit,
+      },
+    };
+  });
+
+  return series;
+}
+
+export function lokiLegacyStreamsToDataframes(
+  data: LokiLegacyStreamResult | LokiLegacyStreamResponse,
+  target: { refId: string; query?: string; regexp?: string },
+  limit: number,
+  config: LokiOptions,
+  reverse = false
+): DataFrame[] {
+  if (Object.keys(data).length === 0) {
+    return [];
+  }
+
+  if (isLokiLogsStream(data)) {
+    return [legacyLogStreamToDataFrame(data, false, target.refId)];
+  }
+
+  const series: DataFrame[] = data.streams.map(stream => {
+    const dataFrame = legacyLogStreamToDataFrame(stream, reverse);
+    enhanceDataFrame(dataFrame, config);
+
+    return {
+      ...dataFrame,
+      refId: target.refId,
+      meta: {
+        searchWords: getHighlighterExpressionsFromQuery(formatQuery(target.query, target.regexp)),
+        limit,
+      },
+    };
+  });
+
+  return series;
 }
 
 /**
- * Serializes the given labels to a string.
+ * Adds new fields and DataLinks to DataFrame based on DataSource instance config.
+ * @param dataFrame
  */
-export function formatLabels(labels: LogsStreamLabels, defaultValue = ''): string {
-  if (!labels || Object.keys(labels).length === 0) {
-    return defaultValue;
+export const enhanceDataFrame = (dataFrame: DataFrame, config: LokiOptions | null): void => {
+  if (!config) {
+    return;
   }
-  const labelKeys = Object.keys(labels).sort();
-  const cleanSelector = labelKeys.map(key => `${key}="${labels[key]}"`).join(', ');
-  return ['{', cleanSelector, '}'].join('');
-}
 
-export function processEntry(
-  entry: LogsStreamEntry,
-  labels: string,
-  parsedLabels: LogsStreamLabels,
-  uniqueLabels: LogsStreamLabels,
-  search: string
-): LogRow {
-  const { line, timestamp } = entry;
-  // Assumes unique-ness, needs nanosec precision for timestamp
-  const key = `EK${timestamp}${labels}`;
-  const time = moment(timestamp);
-  const timeEpochMs = time.valueOf();
-  const timeFromNow = time.fromNow();
-  const timeLocal = time.format('YYYY-MM-DD HH:mm:ss');
-  const logLevel = getLogLevel(line);
+  const derivedFields = config.derivedFields ?? [];
+  if (!derivedFields.length) {
+    return;
+  }
 
-  return {
-    key,
-    logLevel,
-    timeFromNow,
-    timeEpochMs,
-    timeLocal,
-    uniqueLabels,
-    entry: line,
-    labels: parsedLabels,
-    searchWords: search ? [search] : [],
-    timestamp: timestamp,
+  const fields = derivedFields.reduce((acc, field) => {
+    const config: FieldConfig = {};
+    if (field.url) {
+      config.links = [
+        {
+          url: field.url,
+          title: '',
+        },
+      ];
+    }
+    const dataFrameField = {
+      name: field.name,
+      type: FieldType.string,
+      config,
+      values: new ArrayVector<string>([]),
+    };
+
+    acc[field.name] = dataFrameField;
+    return acc;
+  }, {} as Record<string, any>);
+
+  const view = new DataFrameView(dataFrame);
+  view.forEachRow((row: { line: string }) => {
+    for (const field of derivedFields) {
+      const logMatch = row.line.match(field.matcherRegex);
+      fields[field.name].values.add(logMatch && logMatch[1]);
+    }
+  });
+
+  dataFrame.fields = [...dataFrame.fields, ...Object.values(fields)];
+};
+
+export function rangeQueryResponseToTimeSeries(
+  response: LokiResponse,
+  query: LokiRangeQueryRequest,
+  target: LokiQuery,
+  responseListLength: number
+): TimeSeries[] {
+  const transformerOptions: TransformerOptions = {
+    format: target.format,
+    legendFormat: target.legendFormat,
+    start: query.start,
+    end: query.end,
+    step: query.step,
+    query: query.query,
+    responseListLength,
+    refId: target.refId,
+    valueWithRefId: target.valueWithRefId,
   };
+
+  switch (response.data.resultType) {
+    case LokiResultType.Vector:
+      return response.data.result.map(vecResult =>
+        lokiMatrixToTimeSeries({ metric: vecResult.metric, values: [vecResult.value] }, transformerOptions)
+      );
+    case LokiResultType.Matrix:
+      return response.data.result.map(matrixResult => lokiMatrixToTimeSeries(matrixResult, transformerOptions));
+    default:
+      return [];
+  }
 }
 
-export function mergeStreamsToLogs(streams: LogsStream[], limit = DEFAULT_LIMIT): LogsModel {
-  // Unique model identifier
-  const id = streams.map(stream => stream.labels).join();
+export function processRangeQueryResponse(
+  response: LokiResponse,
+  target: LokiQuery,
+  query: LokiRangeQueryRequest,
+  responseListLength: number,
+  limit: number,
+  config: LokiOptions,
+  reverse = false
+) {
+  switch (response.data.resultType) {
+    case LokiResultType.Stream:
+      return of({
+        data: lokiStreamsToDataframes(response.data.result, target, limit, config, reverse),
+        key: `${target.refId}_log`,
+      });
 
-  // Find unique labels for each stream
-  streams = streams.map(stream => ({
-    ...stream,
-    parsedLabels: parseLabels(stream.labels),
-  }));
-  const commonLabels = findCommonLabels(streams.map(model => model.parsedLabels));
-  streams = streams.map(stream => ({
-    ...stream,
-    uniqueLabels: findUniqueLabels(stream.parsedLabels, commonLabels),
-  }));
-
-  // Merge stream entries into single list of log rows
-  const sortedRows: LogRow[] = _.chain(streams)
-    .reduce(
-      (acc: LogRow[], stream: LogsStream) => [
-        ...acc,
-        ...stream.entries.map(entry =>
-          processEntry(entry, stream.labels, stream.parsedLabels, stream.uniqueLabels, stream.search)
+    case LokiResultType.Vector:
+    case LokiResultType.Matrix:
+      return of({
+        data: rangeQueryResponseToTimeSeries(
+          response,
+          query,
+          {
+            ...target,
+            format: 'time_series',
+          },
+          responseListLength
         ),
-      ],
-      []
-    )
-    .sortBy('timestamp')
-    .reverse()
-    .value();
-
-  // Meta data to display in status
-  const meta: LogsMetaItem[] = [];
-  if (_.size(commonLabels) > 0) {
-    meta.push({
-      label: 'Common labels',
-      value: commonLabels,
-      kind: LogsMetaKind.LabelsMap,
-    });
+        key: target.refId,
+      });
+    default:
+      throw new Error(`Unknown result type "${(response.data as any).resultType}".`);
   }
-  if (limit) {
-    meta.push({
-      label: 'Limit',
-      value: `${limit} (${sortedRows.length} returned)`,
-      kind: LogsMetaKind.String,
-    });
-  }
+}
 
-  return {
-    id,
-    meta,
-    rows: sortedRows,
-  };
+export function isLokiLogsStream(
+  data: LokiLegacyStreamResult | LokiLegacyStreamResponse
+): data is LokiLegacyStreamResult {
+  return !data.hasOwnProperty('streams');
 }

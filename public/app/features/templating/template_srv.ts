@@ -1,18 +1,26 @@
 import kbn from 'app/core/utils/kbn';
 import _ from 'lodash';
 import { variableRegex } from 'app/features/templating/variable';
+import { escapeHtml } from 'app/core/utils/text';
+import { ScopedVars, TimeRange } from '@grafana/data';
 
-function luceneEscape(value) {
+function luceneEscape(value: string) {
   return value.replace(/([\!\*\+\-\=<>\s\&\|\(\)\[\]\{\}\^\~\?\:\\/"])/g, '\\$1');
+}
+
+interface FieldAccessorCache {
+  [key: string]: (obj: any) => any;
 }
 
 export class TemplateSrv {
   variables: any[];
 
   private regex = variableRegex;
-  private index = {};
-  private grafanaVariables = {};
-  private builtIns = {};
+  private index: any = {};
+  private grafanaVariables: any = {};
+  private builtIns: any = {};
+  private timeRange: TimeRange = null;
+  private fieldAccessorCache: FieldAccessorCache = {};
 
   constructor() {
     this.builtIns['__interval'] = { text: '1s', value: '1s' };
@@ -20,13 +28,18 @@ export class TemplateSrv {
     this.variables = [];
   }
 
-  init(variables) {
+  init(variables: any, timeRange?: TimeRange) {
     this.variables = variables;
-    this.updateTemplateData();
+    this.timeRange = timeRange;
+    this.updateIndex();
   }
 
-  updateTemplateData() {
-    const existsOrEmpty = value => value || value === '';
+  getBuiltInIntervalValue() {
+    return this.builtIns.__interval.value;
+  }
+
+  updateIndex() {
+    const existsOrEmpty = (value: any) => value || value === '';
 
     this.index = this.variables.reduce((acc, currentValue) => {
       if (currentValue.current && (currentValue.current.isNone || existsOrEmpty(currentValue.current.value))) {
@@ -34,14 +47,34 @@ export class TemplateSrv {
       }
       return acc;
     }, {});
+
+    if (this.timeRange) {
+      const from = this.timeRange.from.valueOf().toString();
+      const to = this.timeRange.to.valueOf().toString();
+
+      this.index = {
+        ...this.index,
+        ['__from']: {
+          current: { value: from, text: from },
+        },
+        ['__to']: {
+          current: { value: to, text: to },
+        },
+      };
+    }
   }
 
-  variableInitialized(variable) {
+  updateTimeRange(timeRange: TimeRange) {
+    this.timeRange = timeRange;
+    this.updateIndex();
+  }
+
+  variableInitialized(variable: any) {
     this.index[variable.name] = variable;
   }
 
-  getAdhocFilters(datasourceName) {
-    let filters = [];
+  getAdhocFilters(datasourceName: string) {
+    let filters: any = [];
 
     if (this.variables) {
       for (let i = 0; i < this.variables.length; i++) {
@@ -64,7 +97,7 @@ export class TemplateSrv {
     return filters;
   }
 
-  luceneFormat(value) {
+  luceneFormat(value: any) {
     if (typeof value === 'string') {
       return luceneEscape(value);
     }
@@ -77,7 +110,22 @@ export class TemplateSrv {
     return '(' + quotedValues.join(' OR ') + ')';
   }
 
-  formatValue(value, format, variable) {
+  // encode string according to RFC 3986; in contrast to encodeURIComponent()
+  // also the sub-delims "!", "'", "(", ")" and "*" are encoded;
+  // unicode handling uses UTF-8 as in ECMA-262.
+  encodeURIComponentStrict(str: string) {
+    return encodeURIComponent(str).replace(/[!'()*]/g, c => {
+      return (
+        '%' +
+        c
+          .charCodeAt(0)
+          .toString(16)
+          .toUpperCase()
+      );
+    });
+  }
+
+  formatValue(value: any, format: any, variable: any) {
     // for some scopedVars there is no variable
     variable = variable || {};
 
@@ -118,8 +166,24 @@ export class TemplateSrv {
         }
         return value;
       }
-      default: {
+      case 'html': {
         if (_.isArray(value)) {
+          return escapeHtml(value.join(', '));
+        }
+        return escapeHtml(value);
+      }
+      case 'json': {
+        return JSON.stringify(value);
+      }
+      case 'percentencode': {
+        // like glob, but url escaped
+        if (_.isArray(value)) {
+          return this.encodeURIComponentStrict('{' + value.join(',') + '}');
+        }
+        return this.encodeURIComponentStrict(value);
+      }
+      default: {
+        if (_.isArray(value) && value.length > 1) {
           return '{' + value.join(',') + '}';
         }
         return value;
@@ -127,11 +191,11 @@ export class TemplateSrv {
     }
   }
 
-  setGrafanaVariable(name, value) {
+  setGrafanaVariable(name: string, value: any) {
     this.grafanaVariables[name] = value;
   }
 
-  getVariableName(expression) {
+  getVariableName(expression: string) {
     this.regex.lastIndex = 0;
     const match = this.regex.exec(expression);
     if (!match) {
@@ -141,12 +205,12 @@ export class TemplateSrv {
     return variableName;
   }
 
-  variableExists(expression) {
+  variableExists(expression: string) {
     const name = this.getVariableName(expression);
     return name && this.index[name] !== void 0;
   }
 
-  highlightVariablesAsHtml(str) {
+  highlightVariablesAsHtml(str: string) {
     if (!str || !_.isString(str)) {
       return str;
     }
@@ -161,7 +225,7 @@ export class TemplateSrv {
     });
   }
 
-  getAllValue(variable) {
+  getAllValue(variable: any) {
     if (variable.allValue) {
       return variable.allValue;
     }
@@ -172,21 +236,44 @@ export class TemplateSrv {
     return values;
   }
 
-  replace(target, scopedVars?, format?) {
+  getFieldAccessor(fieldPath: string) {
+    const accessor = this.fieldAccessorCache[fieldPath];
+    if (accessor) {
+      return accessor;
+    }
+
+    return (this.fieldAccessorCache[fieldPath] = _.property(fieldPath));
+  }
+
+  getVariableValue(variableName: string, fieldPath: string | undefined, scopedVars: ScopedVars) {
+    const scopedVar = scopedVars[variableName];
+    if (!scopedVar) {
+      return null;
+    }
+
+    if (fieldPath) {
+      return this.getFieldAccessor(fieldPath)(scopedVar.value);
+    }
+
+    return scopedVar.value;
+  }
+
+  replace(target: string, scopedVars?: ScopedVars, format?: string | Function): any {
     if (!target) {
       return target;
     }
 
-    let variable, systemValue, value, fmt;
     this.regex.lastIndex = 0;
 
-    return target.replace(this.regex, (match, var1, var2, fmt2, var3, fmt3) => {
-      variable = this.index[var1 || var2 || var3];
-      fmt = fmt2 || fmt3 || format;
+    return target.replace(this.regex, (match, var1, var2, fmt2, var3, fieldPath, fmt3) => {
+      const variableName = var1 || var2 || var3;
+      const variable = this.index[variableName];
+      const fmt = fmt2 || fmt3 || format;
+
       if (scopedVars) {
-        value = scopedVars[var1 || var2 || var3];
-        if (value) {
-          return this.formatValue(value.value, fmt, variable);
+        const value = this.getVariableValue(variableName, fieldPath, scopedVars);
+        if (value !== null && value !== undefined) {
+          return this.formatValue(value, fmt, variable);
         }
       }
 
@@ -194,12 +281,12 @@ export class TemplateSrv {
         return match;
       }
 
-      systemValue = this.grafanaVariables[variable.current.value];
+      const systemValue = this.grafanaVariables[variable.current.value];
       if (systemValue) {
         return this.formatValue(systemValue, fmt, variable);
       }
 
-      value = variable.current.value;
+      let value = variable.current.value;
       if (this.isAllValue(value)) {
         value = this.getAllValue(variable);
         // skip formatting of custom all values
@@ -213,11 +300,11 @@ export class TemplateSrv {
     });
   }
 
-  isAllValue(value) {
+  isAllValue(value: any) {
     return value === '$__all' || (Array.isArray(value) && value[0] === '$__all');
   }
 
-  replaceWithText(target, scopedVars) {
+  replaceWithText(target: string, scopedVars: ScopedVars) {
     if (!target) {
       return target;
     }
@@ -225,7 +312,7 @@ export class TemplateSrv {
     let variable;
     this.regex.lastIndex = 0;
 
-    return target.replace(this.regex, (match, var1, var2, fmt2, var3) => {
+    return target.replace(this.regex, (match: any, var1: any, var2: any, fmt2: any, var3: any) => {
       if (scopedVars) {
         const option = scopedVars[var1 || var2 || var3];
         if (option) {
@@ -238,11 +325,13 @@ export class TemplateSrv {
         return match;
       }
 
-      return this.grafanaVariables[variable.current.value] || variable.current.text;
+      const value = this.grafanaVariables[variable.current.value];
+
+      return typeof value === 'string' ? value : variable.current.text;
     });
   }
 
-  fillVariableValuesForUrl(params, scopedVars) {
+  fillVariableValuesForUrl(params: any, scopedVars?: ScopedVars) {
     _.each(this.variables, variable => {
       if (scopedVars && scopedVars[variable.name] !== void 0) {
         if (scopedVars[variable.name].skipUrlSync) {
@@ -258,8 +347,8 @@ export class TemplateSrv {
     });
   }
 
-  distributeVariable(value, variable) {
-    value = _.map(value, (val, index) => {
+  distributeVariable(value: any, variable: any) {
+    value = _.map(value, (val: any, index: number) => {
       if (index !== 0) {
         return variable + '=' + val;
       } else {

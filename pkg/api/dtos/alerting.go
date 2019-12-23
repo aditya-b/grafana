@@ -50,6 +50,7 @@ func formatShort(interval time.Duration) string {
 func NewAlertNotification(notification *models.AlertNotification) *AlertNotification {
 	return &AlertNotification{
 		Id:                    notification.Id,
+		Uid:                   notification.Uid,
 		Name:                  notification.Name,
 		Type:                  notification.Type,
 		IsDefault:             notification.IsDefault,
@@ -64,6 +65,7 @@ func NewAlertNotification(notification *models.AlertNotification) *AlertNotifica
 
 type AlertNotification struct {
 	Id                    int64            `json:"id"`
+	Uid                   string           `json:"uid"`
 	Name                  string           `json:"name"`
 	Type                  string           `json:"type"`
 	IsDefault             bool             `json:"isDefault"`
@@ -73,6 +75,24 @@ type AlertNotification struct {
 	Created               time.Time        `json:"created"`
 	Updated               time.Time        `json:"updated"`
 	Settings              *simplejson.Json `json:"settings"`
+}
+
+func NewAlertNotificationLookup(notification *models.AlertNotification) *AlertNotificationLookup {
+	return &AlertNotificationLookup{
+		Id:        notification.Id,
+		Uid:       notification.Uid,
+		Name:      notification.Name,
+		Type:      notification.Type,
+		IsDefault: notification.IsDefault,
+	}
+}
+
+type AlertNotificationLookup struct {
+	Id        int64  `json:"id"`
+	Uid       string `json:"uid"`
+	Name      string `json:"name"`
+	Type      string `json:"type"`
+	IsDefault bool   `json:"isDefault"`
 }
 
 type AlertTestCommand struct {

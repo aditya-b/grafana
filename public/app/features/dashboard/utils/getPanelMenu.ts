@@ -1,13 +1,20 @@
 import { updateLocation } from 'app/core/actions';
 import { store } from 'app/store/store';
+import config from 'app/core/config';
+import { getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
+import { PanelMenuItem } from '@grafana/data';
 
-import { removePanel, duplicatePanel, copyPanel, editPanelJson, sharePanel } from 'app/features/dashboard/utils/panel';
-import { PanelModel } from 'app/features/dashboard/panel_model';
-import { DashboardModel } from 'app/features/dashboard/dashboard_model';
-import { PanelMenuItem } from 'app/types/panel';
+import { copyPanel, duplicatePanel, editPanelJson, removePanel, sharePanel } from 'app/features/dashboard/utils/panel';
+import { PanelModel } from 'app/features/dashboard/state/PanelModel';
+import { DashboardModel } from 'app/features/dashboard/state/DashboardModel';
+import { contextSrv } from '../../../core/services/context_srv';
+import { navigateToExplore } from '../../explore/state/actions';
+import { getExploreUrl } from '../../../core/utils/explore';
+import { getTimeSrv } from '../services/TimeSrv';
 
 export const getPanelMenu = (dashboard: DashboardModel, panel: PanelModel) => {
-  const onViewPanel = () => {
+  const onViewPanel = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
     store.dispatch(
       updateLocation({
         query: {
@@ -20,7 +27,8 @@ export const getPanelMenu = (dashboard: DashboardModel, panel: PanelModel) => {
     );
   };
 
-  const onEditPanel = () => {
+  const onEditPanel = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
     store.dispatch(
       updateLocation({
         query: {
@@ -33,31 +41,68 @@ export const getPanelMenu = (dashboard: DashboardModel, panel: PanelModel) => {
     );
   };
 
-  const onSharePanel = () => {
+  const onNewEditPanel = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
+    store.dispatch(
+      updateLocation({
+        query: {
+          editPanel: panel.id,
+        },
+        partial: true,
+      })
+    );
+  };
+
+  const onSharePanel = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
     sharePanel(dashboard, panel);
   };
 
-  const onDuplicatePanel = () => {
+  const onInspectPanel = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
+    getLocationSrv().update({
+      partial: true,
+      query: {
+        inspect: panel.id,
+      },
+    });
+  };
+
+  const onMore = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
+  };
+
+  const onDuplicatePanel = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
     duplicatePanel(dashboard, panel);
   };
 
-  const onCopyPanel = () => {
+  const onCopyPanel = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
     copyPanel(panel);
   };
 
-  const onEditPanelJson = () => {
+  const onEditPanelJson = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
     editPanelJson(dashboard, panel);
   };
 
-  const onRemovePanel = () => {
+  const onRemovePanel = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
     removePanel(dashboard, panel, true);
+  };
+
+  const onNavigateToExplore = (event: React.MouseEvent<any>) => {
+    event.preventDefault();
+    const openInNewWindow = event.ctrlKey || event.metaKey ? (url: string) => window.open(url) : undefined;
+    store.dispatch(navigateToExplore(panel, { getDataSourceSrv, getTimeSrv, getExploreUrl, openInNewWindow }) as any);
   };
 
   const menu: PanelMenuItem[] = [];
 
   menu.push({
     text: 'View',
-    iconClassName: 'fa fa-fw fa-eye',
+    iconClassName: 'gicon gicon-viewer',
     onClick: onViewPanel,
     shortcut: 'v',
   });
@@ -65,7 +110,7 @@ export const getPanelMenu = (dashboard: DashboardModel, panel: PanelModel) => {
   if (dashboard.meta.canEdit) {
     menu.push({
       text: 'Edit',
-      iconClassName: 'fa fa-fw fa-edit',
+      iconClassName: 'gicon gicon-editor',
       onClick: onEditPanel,
       shortcut: 'e',
     });
@@ -77,6 +122,33 @@ export const getPanelMenu = (dashboard: DashboardModel, panel: PanelModel) => {
     onClick: onSharePanel,
     shortcut: 'p s',
   });
+
+  if (contextSrv.hasAccessToExplore() && panel.datasource) {
+    menu.push({
+      text: 'Explore',
+      iconClassName: 'gicon gicon-explore',
+      shortcut: 'x',
+      onClick: onNavigateToExplore,
+    });
+  }
+
+  if (config.featureToggles.inspect) {
+    menu.push({
+      text: 'Inspect',
+      iconClassName: 'fa fa-fw fa-info-circle',
+      onClick: onInspectPanel,
+      shortcut: 'p i',
+    });
+  }
+
+  if (config.featureToggles.newEdit) {
+    menu.push({
+      text: 'New edit',
+      iconClassName: 'gicon gicon-editor',
+      onClick: onNewEditPanel,
+      shortcut: 'p i',
+    });
+  }
 
   const subMenu: PanelMenuItem[] = [];
 
@@ -103,6 +175,7 @@ export const getPanelMenu = (dashboard: DashboardModel, panel: PanelModel) => {
     text: 'More...',
     iconClassName: 'fa fa-fw fa-cube',
     subMenu: subMenu,
+    onClick: onMore,
   });
 
   if (dashboard.meta.canEdit) {

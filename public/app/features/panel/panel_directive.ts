@@ -1,12 +1,17 @@
 import angular from 'angular';
 import $ from 'jquery';
+// @ts-ignore
 import Drop from 'tether-drop';
+// @ts-ignore
 import baron from 'baron';
+import { PanelEvents } from '@grafana/data';
+import { getLocationSrv } from '@grafana/runtime';
+import { e2e } from '@grafana/e2e';
 
 const module = angular.module('grafana.directives');
 
 const panelTemplate = `
-  <div class="panel-container">
+  <div class="panel-container" ng-class="{'panel-container--no-title': !ctrl.panel.title.length}">
       <div class="panel-header" ng-class="{'grid-drag-handle': !ctrl.panel.fullscreen}">
         <span class="panel-info-corner">
           <i class="fa"></i>
@@ -17,7 +22,7 @@ const panelTemplate = `
           <i class="fa fa-spinner fa-spin"></i>
         </span>
 
-        <panel-header class="panel-title-container" panel-ctrl="ctrl"></panel-header>
+        <panel-header class="panel-title-container" panel-ctrl="ctrl" aria-label={{ctrl.selectors.title(ctrl.panel.title)}}></panel-header>
       </div>
 
       <div class="panel-content">
@@ -33,19 +38,20 @@ module.directive('grafanaPanel', ($rootScope, $document, $timeout) => {
     template: panelTemplate,
     transclude: true,
     scope: { ctrl: '=' },
-    link: (scope, elem) => {
+    link: (scope: any, elem) => {
       const panelContainer = elem.find('.panel-container');
       const panelContent = elem.find('.panel-content');
       const cornerInfoElem = elem.find('.panel-info-corner');
       const ctrl = scope.ctrl;
-      let infoDrop;
-      let panelScrollbar;
+      ctrl.selectors = e2e.pages.Dashboard.Panels.Panel.selectors;
+      let infoDrop: any;
+      let panelScrollbar: any;
 
       // the reason for handling these classes this way is for performance
       // limit the watchers on panels etc
       let transparentLastState = false;
       let lastHasAlertRule = false;
-      let lastAlertState;
+      let lastAlertState: boolean;
       let hasAlertRule;
 
       function mouseEnter() {
@@ -64,14 +70,20 @@ module.directive('grafanaPanel', ($rootScope, $document, $timeout) => {
         }
       }
 
+      function infoCornerClicked() {
+        if (ctrl.error) {
+          getLocationSrv().update({ partial: true, query: { inspect: ctrl.panel.id } });
+        }
+      }
+
       // set initial transparency
       if (ctrl.panel.transparent) {
         transparentLastState = true;
-        panelContainer.addClass('panel-transparent', true);
+        panelContainer.addClass('panel-container--transparent');
       }
 
       // update scrollbar after mounting
-      ctrl.events.on('component-did-mount', () => {
+      ctrl.events.on(PanelEvents.componentDidMount, () => {
         if (ctrl.__proto__.constructor.scrollable) {
           const scrollRootClass = 'baron baron__root baron__clipper panel-content--scrollable';
           const scrollerClass = 'baron__scroller';
@@ -100,33 +112,35 @@ module.directive('grafanaPanel', ($rootScope, $document, $timeout) => {
         }
       });
 
-      ctrl.events.on('panel-size-changed', () => {
-        ctrl.calculatePanelHeight();
+      ctrl.events.on(PanelEvents.panelSizeChanged, () => {
+        ctrl.calculatePanelHeight(panelContainer[0].offsetHeight);
         $timeout(() => {
           resizeScrollableContent();
           ctrl.render();
         });
       });
 
-      ctrl.events.on('view-mode-changed', () => {
+      ctrl.events.on(PanelEvents.viewModeChanged, () => {
         // first wait one pass for dashboard fullscreen view mode to take effect (classses being applied)
         setTimeout(() => {
           // then recalc style
-          ctrl.calculatePanelHeight();
+          ctrl.calculatePanelHeight(panelContainer[0].offsetHeight);
           // then wait another cycle (this might not be needed)
           $timeout(() => {
             ctrl.render();
             resizeScrollableContent();
           });
-        });
+        }, 10);
       });
 
-      // set initial height
-      ctrl.calculatePanelHeight();
+      ctrl.events.on(PanelEvents.render, () => {
+        // set initial height
+        if (!ctrl.height) {
+          ctrl.calculatePanelHeight(panelContainer[0].offsetHeight);
+        }
 
-      ctrl.events.on('render', () => {
         if (transparentLastState !== ctrl.panel.transparent) {
-          panelContainer.toggleClass('panel-transparent', ctrl.panel.transparent === true);
+          panelContainer.toggleClass('panel-container--transparent', ctrl.panel.transparent === true);
           transparentLastState = ctrl.panel.transparent;
         }
 
@@ -192,13 +206,10 @@ module.directive('grafanaPanel', ($rootScope, $document, $timeout) => {
       scope.$watchGroup(['ctrl.error', 'ctrl.panel.description'], updatePanelCornerInfo);
       scope.$watchCollection('ctrl.panel.links', updatePanelCornerInfo);
 
-      cornerInfoElem.on('click', () => {
-        infoDrop.close();
-        scope.$apply(ctrl.openInspector.bind(ctrl));
-      });
-
       elem.on('mouseenter', mouseEnter);
       elem.on('mouseleave', mouseLeave);
+
+      cornerInfoElem.on('click', infoCornerClicked);
 
       scope.$on('$destroy', () => {
         elem.off();

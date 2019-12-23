@@ -45,6 +45,20 @@ func addAlertMigrations(mg *Migrator) {
 	mg.AddMigration("add index alert state", NewAddIndexMigration(alertV1, alertV1.Indices[1]))
 	mg.AddMigration("add index alert dashboard_id", NewAddIndexMigration(alertV1, alertV1.Indices[2]))
 
+	alertRuleTagTable := Table{
+		Name: "alert_rule_tag",
+		Columns: []*Column{
+			{Name: "alert_id", Type: DB_BigInt, Nullable: false},
+			{Name: "tag_id", Type: DB_BigInt, Nullable: false},
+		},
+		Indices: []*Index{
+			{Cols: []string{"alert_id", "tag_id"}, Type: UniqueIndex},
+		},
+	}
+
+	mg.AddMigration("Create alert_rule_tag table v1", NewAddTableMigration(alertRuleTagTable))
+	mg.AddMigration("Add unique index alert_rule_tag.alert_id_tag_id", NewAddIndexMigration(alertRuleTagTable, alertRuleTagTable.Indices[0]))
+
 	alert_notification := Table{
 		Name: "alert_notification",
 		Columns: []*Column{
@@ -136,5 +150,22 @@ func addAlertMigrations(mg *Migrator) {
 
 	mg.AddMigration("Add for to alert table", NewAddColumnMigration(alertV1, &Column{
 		Name: "for", Type: DB_BigInt, Nullable: true,
+	}))
+
+	mg.AddMigration("Add column uid in alert_notification", NewAddColumnMigration(alert_notification, &Column{
+		Name: "uid", Type: DB_NVarchar, Length: 40, Nullable: true,
+	}))
+
+	mg.AddMigration("Update uid column values in alert_notification", new(RawSqlMigration).
+		Sqlite("UPDATE alert_notification SET uid=printf('%09d',id) WHERE uid IS NULL;").
+		Postgres("UPDATE alert_notification SET uid=lpad('' || id::text,9,'0') WHERE uid IS NULL;").
+		Mysql("UPDATE alert_notification SET uid=lpad(id,9,'0') WHERE uid IS NULL;"))
+
+	mg.AddMigration("Add unique index alert_notification_org_id_uid", NewAddIndexMigration(alert_notification, &Index{
+		Cols: []string{"org_id", "uid"}, Type: UniqueIndex,
+	}))
+
+	mg.AddMigration("Remove unique index org_id_name", NewDropIndexMigration(alert_notification, &Index{
+		Cols: []string{"org_id", "name"}, Type: UniqueIndex,
 	}))
 }

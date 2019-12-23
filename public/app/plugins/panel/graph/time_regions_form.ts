@@ -8,7 +8,7 @@ export class TimeRegionFormCtrl {
   colorModes: any;
 
   /** @ngInject */
-  constructor($scope) {
+  constructor($scope: any) {
     this.panel = this.panelCtrl.panel;
 
     const unbindDestroy = $scope.$on('$destroy', () => {
@@ -35,24 +35,27 @@ export class TimeRegionFormCtrl {
       colorMode: 'background6',
       fill: true,
       line: false,
+      // Default colors for new
+      fillColor: 'rgba(234, 112, 112, 0.12)',
+      lineColor: 'rgba(237, 46, 24, 0.60)',
     });
     this.panelCtrl.render();
   }
 
-  removeTimeRegion(index) {
+  removeTimeRegion(index: number) {
     this.panel.timeRegions.splice(index, 1);
     this.panelCtrl.render();
   }
 
-  onFillColorChange(index) {
-    return newColor => {
+  onFillColorChange(index: number) {
+    return (newColor: string) => {
       this.panel.timeRegions[index].fillColor = newColor;
       this.render();
     };
   }
 
-  onLineColorChange(index) {
-    return newColor => {
+  onLineColorChange(index: number) {
+    return (newColor: string) => {
       this.panel.timeRegions[index].lineColor = newColor;
       this.render();
     };

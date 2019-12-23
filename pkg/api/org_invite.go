@@ -6,7 +6,7 @@ import (
 	"github.com/grafana/grafana/pkg/api/dtos"
 	"github.com/grafana/grafana/pkg/bus"
 	"github.com/grafana/grafana/pkg/events"
-	"github.com/grafana/grafana/pkg/metrics"
+	"github.com/grafana/grafana/pkg/infra/metrics"
 	m "github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
@@ -37,12 +37,12 @@ func AddOrgInvite(c *m.ReqContext, inviteDto dtos.AddInviteForm) Response {
 		if err != m.ErrUserNotFound {
 			return Error(500, "Failed to query db for existing user check", err)
 		}
-
-		if setting.DisableLoginForm {
-			return Error(401, "User could not be found", nil)
-		}
 	} else {
 		return inviteExistingUserToOrg(c, userQuery.Result, &inviteDto)
+	}
+
+	if setting.DisableLoginForm {
+		return Error(400, "Cannot invite when login is disabled.", nil)
 	}
 
 	cmd := m.CreateTempUserCommand{}
@@ -51,7 +51,11 @@ func AddOrgInvite(c *m.ReqContext, inviteDto dtos.AddInviteForm) Response {
 	cmd.Name = inviteDto.Name
 	cmd.Status = m.TmpUserInvitePending
 	cmd.InvitedByUserId = c.UserId
-	cmd.Code = util.GetRandomString(30)
+	var err error
+	cmd.Code, err = util.GetRandomString(30)
+	if err != nil {
+		return Error(500, "Could not generate random string", err)
+	}
 	cmd.Role = inviteDto.Role
 	cmd.RemoteAddr = c.Req.RemoteAddr
 
@@ -128,9 +132,11 @@ func RevokeInvite(c *m.ReqContext) Response {
 	return Success("Invite revoked")
 }
 
+// GetInviteInfoByCode gets a pending user invite corresponding to a certain code.
+// A response containing an InviteInfo object is returned if the invite is found.
+// If a (pending) invite is not found, 404 is returned.
 func GetInviteInfoByCode(c *m.ReqContext) Response {
 	query := m.GetTempUserByCodeQuery{Code: c.Params(":code")}
-
 	if err := bus.Dispatch(&query); err != nil {
 		if err == m.ErrTempUserNotFound {
 			return Error(404, "Invite not found", nil)
@@ -139,6 +145,9 @@ func GetInviteInfoByCode(c *m.ReqContext) Response {
 	}
 
 	invite := query.Result
+	if invite.Status != m.TmpUserInvitePending {
+		return Error(404, "Invite not found", nil)
+	}
 
 	return JSON(200, dtos.InviteInfo{
 		Email:     invite.Email,
@@ -148,7 +157,7 @@ func GetInviteInfoByCode(c *m.ReqContext) Response {
 	})
 }
 
-func CompleteInvite(c *m.ReqContext, completeInvite dtos.CompleteInviteForm) Response {
+func (hs *HTTPServer) CompleteInvite(c *m.ReqContext, completeInvite dtos.CompleteInviteForm) Response {
 	query := m.GetTempUserByCodeQuery{Code: completeInvite.InviteCode}
 
 	if err := bus.Dispatch(&query); err != nil {
@@ -177,19 +186,21 @@ func CompleteInvite(c *m.ReqContext, completeInvite dtos.CompleteInviteForm) Res
 
 	user := &cmd.Result
 
-	bus.Publish(&events.SignUpCompleted{
+	if err := bus.Publish(&events.SignUpCompleted{
 		Name:  user.NameOrFallback(),
 		Email: user.Email,
-	})
+	}); err != nil {
+		return Error(500, "failed to publish event", err)
+	}
 
 	if ok, rsp := applyUserInvite(user, invite, true); !ok {
 		return rsp
 	}
 
-	loginUserWithUser(user, c)
+	hs.loginUserWithUser(user, c)
 
-	metrics.M_Api_User_SignUpCompleted.Inc()
-	metrics.M_Api_User_SignUpInvite.Inc()
+	metrics.MApiUserSignUpCompleted.Inc()
+	metrics.MApiUserSignUpInvite.Inc()
 
 	return Success("User created and logged in")
 }

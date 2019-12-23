@@ -1,6 +1,7 @@
 import { AppNotification, AppNotificationSeverity, AppNotificationTimeout } from 'app/types';
+import { getMessageFromError } from 'app/core/utils/errors';
 
-const defaultSuccessNotification: AppNotification = {
+const defaultSuccessNotification = {
   title: '',
   text: '',
   severity: AppNotificationSeverity.Success,
@@ -8,7 +9,7 @@ const defaultSuccessNotification: AppNotification = {
   timeout: AppNotificationTimeout.Success,
 };
 
-const defaultWarningNotification: AppNotification = {
+const defaultWarningNotification = {
   title: '',
   text: '',
   severity: AppNotificationSeverity.Warning,
@@ -16,7 +17,7 @@ const defaultWarningNotification: AppNotification = {
   timeout: AppNotificationTimeout.Warning,
 };
 
-const defaultErrorNotification: AppNotification = {
+const defaultErrorNotification = {
   title: '',
   text: '',
   severity: AppNotificationSeverity.Error,
@@ -24,21 +25,24 @@ const defaultErrorNotification: AppNotification = {
   timeout: AppNotificationTimeout.Error,
 };
 
-export const createSuccessNotification = (title: string, text?: string): AppNotification => ({
+export const createSuccessNotification = (title: string, text = ''): AppNotification => ({
   ...defaultSuccessNotification,
   title: title,
   text: text,
   id: Date.now(),
 });
 
-export const createErrorNotification = (title: string, text?: string): AppNotification => ({
-  ...defaultErrorNotification,
-  title: title,
-  text: text,
-  id: Date.now(),
-});
+export const createErrorNotification = (title: string, text = '', component?: React.ReactElement): AppNotification => {
+  return {
+    ...defaultErrorNotification,
+    text: getMessageFromError(text),
+    title,
+    id: Date.now(),
+    component,
+  };
+};
 
-export const createWarningNotification = (title: string, text?: string): AppNotification => ({
+export const createWarningNotification = (title: string, text = ''): AppNotification => ({
   ...defaultWarningNotification,
   title: title,
   text: text,

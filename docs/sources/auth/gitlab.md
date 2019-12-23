@@ -47,7 +47,7 @@ authentication:
 
 ```bash
 [auth.gitlab]
-enabled = false
+enabled = true
 allow_sign_up = false
 client_id = GITLAB_APPLICATION_ID
 client_secret = GITLAB_SECRET
@@ -115,4 +115,15 @@ token_url = https://gitlab.com/oauth/token
 api_url = https://gitlab.com/api/v4
 allowed_groups = example, foo/bar
 ```
+
+### Team Sync (Enterprise only)
+
+> Only available in Grafana Enterprise v6.4+
+
+With Team Sync you can map your GitLab groups to teams in Grafana so that your users will automatically be added to
+the correct teams. 
+
+Your GitLab groups can be referenced in the same way as `allowed_groups`, like `example` or `foo/bar`.
+
+[Learn more about Team Sync]({{< relref "enhanced_ldap.md" >}})
 

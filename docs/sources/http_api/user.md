@@ -116,12 +116,18 @@ HTTP/1.1 200
 Content-Type: application/json
 
 {
-  "email": "user@mygraf.com"
+  "id": "1",
+  "email": "user@mygraf.com",
   "name": "admin",
   "login": "admin",
   "theme": "light",
   "orgId": 1,
-  "isGrafanaAdmin": true
+  "isGrafanaAdmin": true,
+  "isDisabled": true,
+  "isExternal": false,
+  "authLabels": [],
+  "updatedAt": "2019-09-09T11:31:26+01:00",
+  "createdAt": "2019-09-09T11:31:26+01:00"
 }
 ```
 
@@ -156,12 +162,18 @@ HTTP/1.1 200
 Content-Type: application/json
 
 {
+  "id": 1,
   "email": "user@mygraf.com",
   "name": "admin",
   "login": "admin",
   "theme": "light",
   "orgId": 1,
-  "isGrafanaAdmin": true
+  "isGrafanaAdmin": true,
+  "isDisabled": false,
+  "isExternal": false,
+  "authLabels": null,
+  "updatedAt": "2019-09-25T14:44:37+01:00",
+  "createdAt": "2019-09-25T14:44:37+01:00"
 }
 ```
 
@@ -307,8 +319,7 @@ Authorization: Bearer eyJrIjoiT0tTcG1pUlY2RnVKZTFVaDFsNFZXdE9ZWmNrMkZYbk
 
 {
   "oldPassword": "old_password",
-  "newPassword": "new_password",
-  "confirmNew": "confirm_new_password"
+  "newPassword": "new_password"
 }
 ```
 
@@ -476,4 +487,84 @@ HTTP/1.1 200
 Content-Type: application/json
 
 {"message":"Dashboard unstarred"}
+```
+
+## Auth tokens of the actual User
+
+`GET /api/user/auth-tokens`
+
+Return a list of all auth tokens (devices) that the actual user currently have logged in from.
+
+**Example Request**:
+
+```http
+GET /api/user/auth-tokens HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer eyJrIjoiT0tTcG1pUlY2RnVKZTFVaDFsNFZXdE9ZWmNrMkZYbk
+```
+
+**Example Response**:
+
+```http
+HTTP/1.1 200
+Content-Type: application/json
+
+[
+  {
+    "id": 361,
+    "isActive": true,
+    "clientIp": "127.0.0.1",
+    "browser": "Chrome",
+    "browserVersion": "72.0",
+    "os": "Linux",
+    "osVersion": "",
+    "device": "Other",
+    "createdAt": "2019-03-05T21:22:54+01:00",
+    "seenAt": "2019-03-06T19:41:06+01:00"
+  },
+  {
+    "id": 364,
+    "isActive": false,
+    "clientIp": "127.0.0.1",
+    "browser": "Mobile Safari",
+    "browserVersion": "11.0",
+    "os": "iOS",
+    "osVersion": "11.0",
+    "device": "iPhone",
+    "createdAt": "2019-03-06T19:41:19+01:00",
+    "seenAt": "2019-03-06T19:41:21+01:00"
+  }
+]
+```
+
+## Revoke an auth token of the actual User
+
+`POST /api/user/revoke-auth-token`
+
+Revokes the given auth token (device) for the actual user. User of issued auth token (device) will no longer be logged in
+and will be required to authenticate again upon next activity.
+
+**Example Request**:
+
+```http
+POST /api/user/revoke-auth-token HTTP/1.1
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer eyJrIjoiT0tTcG1pUlY2RnVKZTFVaDFsNFZXdE9ZWmNrMkZYbk
+
+{
+  "authTokenId": 364
+}
+```
+
+**Example Response**:
+
+```http
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "message": "User auth token revoked"
+}
 ```

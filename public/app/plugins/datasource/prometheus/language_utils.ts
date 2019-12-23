@@ -1,12 +1,28 @@
 export const RATE_RANGES = ['1m', '5m', '10m', '30m', '1h'];
 
-export function processLabels(labels, withName = false) {
-  const values = {};
+export const processHistogramLabels = (labels: string[]) => {
+  const result = [];
+  const regexp = new RegExp('_bucket($|:)');
+  for (let index = 0; index < labels.length; index++) {
+    const label = labels[index];
+    const isHistogramValue = regexp.test(label);
+    if (isHistogramValue) {
+      if (result.indexOf(label) === -1) {
+        result.push(label);
+      }
+    }
+  }
+
+  return { values: { __name__: result } };
+};
+
+export function processLabels(labels: Array<{ [key: string]: string }>, withName = false) {
+  const values: { [key: string]: string[] } = {};
   labels.forEach(l => {
     const { __name__, ...rest } = l;
     if (withName) {
       values['__name__'] = values['__name__'] || [];
-      if (values['__name__'].indexOf(__name__) === -1) {
+      if (!values['__name__'].includes(__name__)) {
         values['__name__'].push(__name__);
       }
     }
@@ -15,7 +31,7 @@ export function processLabels(labels, withName = false) {
       if (!values[key]) {
         values[key] = [];
       }
-      if (values[key].indexOf(rest[key]) === -1) {
+      if (!values[key].includes(rest[key])) {
         values[key].push(rest[key]);
       }
     });
@@ -62,7 +78,7 @@ export function parseSelector(query: string, cursorOffset = 1): { labelKeys: any
 
   // Extract clean labels to form clean selector, incomplete labels are dropped
   const selector = query.slice(prefixOpen, suffixClose);
-  const labels = {};
+  const labels: { [key: string]: { value: string; operator: string } } = {};
   selector.replace(labelRegexp, (_, key, operator, value) => {
     labels[key] = { value, operator };
     return '';

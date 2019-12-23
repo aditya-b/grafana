@@ -1,10 +1,12 @@
 import _ from 'lodash';
 import TableModel from 'app/core/table_model';
+import { TimeSeries, FieldType } from '@grafana/data';
+import { TemplateSrv } from 'app/features/templating/template_srv';
 
 export class ResultTransformer {
-  constructor(private templateSrv) {}
+  constructor(private templateSrv: TemplateSrv) {}
 
-  transform(response: any, options: any): any[] {
+  transform(response: any, options: any): Array<TableModel | TimeSeries> {
     const prometheusResult = response.data.data.result;
 
     if (options.format === 'table') {
@@ -18,10 +20,10 @@ export class ResultTransformer {
       ];
     } else if (prometheusResult && options.format === 'heatmap') {
       let seriesList = [];
-      prometheusResult.sort(sortSeriesByLabel);
       for (const metricData of prometheusResult) {
         seriesList.push(this.transformMetricData(metricData, options, options.start, options.end));
       }
+      seriesList.sort(sortSeriesByLabel);
       seriesList = this.transformToHistogramOverTime(seriesList);
       return seriesList;
     } else if (prometheusResult) {
@@ -38,7 +40,7 @@ export class ResultTransformer {
     return [];
   }
 
-  transformMetricData(metricData, options, start, end) {
+  transformMetricData(metricData: any, options: any, start: number, end: number) {
     const dps = [];
     let metricLabel = null;
 
@@ -73,14 +75,18 @@ export class ResultTransformer {
     return {
       datapoints: dps,
       query: options.query,
+      refId: options.refId,
       target: metricLabel,
+      tags: metricData.metric,
     };
   }
 
-  transformMetricDataToTable(md, resultCount: number, refId: string, valueWithRefId?: boolean) {
+  transformMetricDataToTable(md: any, resultCount: number, refId: string, valueWithRefId?: boolean): TableModel {
     const table = new TableModel();
-    let i, j;
-    const metricLabels = {};
+    table.refId = refId;
+
+    let i: number, j: number;
+    const metricLabels: { [key: string]: number } = {};
 
     if (!md || md.length === 0) {
       return table;
@@ -97,10 +103,10 @@ export class ResultTransformer {
 
     // Sort metric labels, create columns for them and record their index
     const sortedLabels = _.keys(metricLabels).sort();
-    table.columns.push({ text: 'Time', type: 'time' });
+    table.columns.push({ text: 'Time', type: FieldType.time });
     _.each(sortedLabels, (label, labelIndex) => {
       metricLabels[label] = labelIndex + 1;
-      table.columns.push({ text: label, filterable: !label.startsWith('__') });
+      table.columns.push({ text: label, filterable: true });
     });
     const valueText = resultCount > 1 || valueWithRefId ? `Value #${refId}` : 'Value';
     table.columns.push({ text: valueText });
@@ -133,15 +139,15 @@ export class ResultTransformer {
     return table;
   }
 
-  transformInstantMetricData(md, options) {
+  transformInstantMetricData(md: any, options: any) {
     const dps = [];
     let metricLabel = null;
     metricLabel = this.createMetricLabel(md.metric, options);
     dps.push([parseFloat(md.value[1]), md.value[0] * 1000]);
-    return { target: metricLabel, datapoints: dps, labels: md.metric };
+    return { target: metricLabel, datapoints: dps, tags: md.metric, refId: options.refId };
   }
 
-  createMetricLabel(labelData, options) {
+  createMetricLabel(labelData: { [key: string]: string }, options: any) {
     let label = '';
     if (_.isUndefined(options) || _.isEmpty(options.legendFormat)) {
       label = this.getOriginalMetricName(labelData);
@@ -154,7 +160,7 @@ export class ResultTransformer {
     return label;
   }
 
-  renderTemplate(aliasPattern, aliasData) {
+  renderTemplate(aliasPattern: string, aliasData: { [key: string]: string }) {
     const aliasRegex = /\{\{\s*(.+?)\s*\}\}/g;
     return aliasPattern.replace(aliasRegex, (match, g1) => {
       if (aliasData[g1]) {
@@ -164,7 +170,7 @@ export class ResultTransformer {
     });
   }
 
-  getOriginalMetricName(labelData) {
+  getOriginalMetricName(labelData: { [key: string]: string }) {
     const metricName = labelData.__name__ || '';
     delete labelData.__name__;
     const labelPart = _.map(_.toPairs(labelData), label => {
@@ -173,7 +179,7 @@ export class ResultTransformer {
     return metricName + '{' + labelPart + '}';
   }
 
-  transformToHistogramOverTime(seriesList) {
+  transformToHistogramOverTime(seriesList: TimeSeries[]) {
     /*      t1 = timestamp1, t2 = timestamp2 etc.
             t1  t2  t3          t1  t2  t3
     le10    10  10  0     =>    10  10  0
@@ -197,13 +203,13 @@ export class ResultTransformer {
   }
 }
 
-function sortSeriesByLabel(s1, s2): number {
+function sortSeriesByLabel(s1: TimeSeries, s2: TimeSeries): number {
   let le1, le2;
 
   try {
     // fail if not integer. might happen with bad queries
-    le1 = parseHistogramLabel(s1.metric.le);
-    le2 = parseHistogramLabel(s2.metric.le);
+    le1 = parseHistogramLabel(s1.target);
+    le2 = parseHistogramLabel(s2.target);
   } catch (err) {
     console.log(err);
     return 0;

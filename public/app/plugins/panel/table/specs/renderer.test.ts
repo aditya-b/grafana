@@ -1,8 +1,28 @@
 import _ from 'lodash';
 import TableModel from 'app/core/table_model';
 import { TableRenderer } from '../renderer';
+import { getColorDefinitionByName, ScopedVars } from '@grafana/data';
+import { ColumnRender } from '../types';
+
+const sanitize = (value: any): string => {
+  return 'sanitized';
+};
+
+const templateSrv = {
+  replace: (value: any, scopedVars: ScopedVars) => {
+    if (scopedVars) {
+      // For testing variables replacement in link
+      _.each(scopedVars, (val, key) => {
+        value = value.replace('$' + key, val.value);
+      });
+    }
+    return value;
+  },
+};
 
 describe('when rendering table', () => {
+  const SemiDarkOrange = getColorDefinitionByName('semi-dark-orange');
+
   describe('given 13 columns', () => {
     const table = new TableModel();
     table.columns = [
@@ -19,9 +39,10 @@ describe('when rendering table', () => {
       { text: 'RangeMapping' },
       { text: 'MappingColored' },
       { text: 'RangeMappingColored' },
+      { text: 'HiddenType' },
     ];
     table.rows = [
-      [1388556366666, 1230, 40, undefined, '', '', 'my.host.com', 'host1', ['value1', 'value2'], 1, 2, 1, 2],
+      [1388556366666, 1230, 40, undefined, '', '', 'my.host.com', 'host1', ['value1', 'value2'], 1, 2, 1, 2, 'ignored'],
     ];
 
     const panel = {
@@ -47,7 +68,7 @@ describe('when rendering table', () => {
           decimals: 1,
           colorMode: 'value',
           thresholds: [50, 80],
-          colors: ['green', 'orange', 'red'],
+          colors: ['#00ff00', SemiDarkOrange.name, 'rgb(1,0,0)'],
         },
         {
           pattern: 'String',
@@ -138,7 +159,7 @@ describe('when rendering table', () => {
           ],
           colorMode: 'value',
           thresholds: [1, 2],
-          colors: ['green', 'orange', 'red'],
+          colors: ['#00ff00', SemiDarkOrange.name, 'rgb(1,0,0)'],
         },
         {
           pattern: 'RangeMappingColored',
@@ -158,27 +179,16 @@ describe('when rendering table', () => {
           ],
           colorMode: 'value',
           thresholds: [2, 5],
-          colors: ['green', 'orange', 'red'],
+          colors: ['#00ff00', SemiDarkOrange.name, 'rgb(1,0,0)'],
+        },
+        {
+          pattern: 'HiddenType',
+          type: 'hidden',
         },
       ],
     };
 
-    const sanitize = value => {
-      return 'sanitized';
-    };
-
-    const templateSrv = {
-      replace: (value, scopedVars) => {
-        if (scopedVars) {
-          // For testing variables replacement in link
-          _.each(scopedVars, (val, key) => {
-            value = value.replace('$' + key, val.value);
-          });
-        }
-        return value;
-      },
-    };
-
+    //@ts-ignore
     const renderer = new TableRenderer(panel, table, 'utc', sanitize, templateSrv);
 
     it('time column should be formated', () => {
@@ -221,24 +231,29 @@ describe('when rendering table', () => {
       expect(html).toBe('<td>1.230 s</td>');
     });
 
-    it('number style should ignore string values', () => {
+    it('number column should format numeric string values', () => {
+      const html = renderer.renderCell(1, 0, '1230');
+      expect(html).toBe('<td>1.230 s</td>');
+    });
+
+    it('number style should ignore string non-numeric values', () => {
       const html = renderer.renderCell(1, 0, 'asd');
       expect(html).toBe('<td>asd</td>');
     });
 
-    it('colored cell should have style', () => {
+    it('colored cell should have style (handles HEX color values)', () => {
       const html = renderer.renderCell(2, 0, 40);
-      expect(html).toBe('<td style="color:green">40.0</td>');
+      expect(html).toBe('<td style="color:#00ff00">40.0</td>');
     });
 
-    it('colored cell should have style', () => {
+    it('colored cell should have style (handles named color values', () => {
       const html = renderer.renderCell(2, 0, 55);
-      expect(html).toBe('<td style="color:orange">55.0</td>');
+      expect(html).toBe(`<td style="color:${SemiDarkOrange.variants.dark}">55.0</td>`);
     });
 
-    it('colored cell should have style', () => {
+    it('colored cell should have style handles(rgb color values)', () => {
       const html = renderer.renderCell(2, 0, 85);
-      expect(html).toBe('<td style="color:red">85.0</td>');
+      expect(html).toBe('<td style="color:rgb(1,0,0)">85.0</td>');
     });
 
     it('unformated undefined should be rendered as string', () => {
@@ -333,51 +348,109 @@ describe('when rendering table', () => {
 
     it('value should be mapped to text and colored cell should have style', () => {
       const html = renderer.renderCell(11, 0, 1);
-      expect(html).toBe('<td style="color:orange">on</td>');
+      expect(html).toBe(`<td style="color:${SemiDarkOrange.variants.dark}">on</td>`);
     });
 
     it('value should be mapped to text and colored cell should have style', () => {
       const html = renderer.renderCell(11, 0, '1');
-      expect(html).toBe('<td style="color:orange">on</td>');
+      expect(html).toBe(`<td style="color:${SemiDarkOrange.variants.dark}">on</td>`);
     });
 
     it('value should be mapped to text and colored cell should have style', () => {
       const html = renderer.renderCell(11, 0, 0);
-      expect(html).toBe('<td style="color:green">off</td>');
+      expect(html).toBe('<td style="color:#00ff00">off</td>');
     });
 
     it('value should be mapped to text and colored cell should have style', () => {
       const html = renderer.renderCell(11, 0, '0');
-      expect(html).toBe('<td style="color:green">off</td>');
+      expect(html).toBe('<td style="color:#00ff00">off</td>');
     });
 
     it('value should be mapped to text and colored cell should have style', () => {
       const html = renderer.renderCell(11, 0, '2.1');
-      expect(html).toBe('<td style="color:red">2.1</td>');
+      expect(html).toBe('<td style="color:rgb(1,0,0)">2.1</td>');
     });
 
     it('value should be mapped to text (range) and colored cell should have style', () => {
       const html = renderer.renderCell(12, 0, 0);
-      expect(html).toBe('<td style="color:green">0</td>');
+      expect(html).toBe('<td style="color:#00ff00">0</td>');
     });
 
     it('value should be mapped to text (range) and colored cell should have style', () => {
       const html = renderer.renderCell(12, 0, 1);
-      expect(html).toBe('<td style="color:green">on</td>');
+      expect(html).toBe('<td style="color:#00ff00">on</td>');
     });
 
     it('value should be mapped to text (range) and colored cell should have style', () => {
       const html = renderer.renderCell(12, 0, 4);
-      expect(html).toBe('<td style="color:orange">off</td>');
+      expect(html).toBe(`<td style="color:${SemiDarkOrange.variants.dark}">off</td>`);
     });
 
     it('value should be mapped to text (range) and colored cell should have style', () => {
       const html = renderer.renderCell(12, 0, '7.1');
-      expect(html).toBe('<td style="color:red">7.1</td>');
+      expect(html).toBe('<td style="color:rgb(1,0,0)">7.1</td>');
+    });
+
+    it('hidden columns should not be rendered', () => {
+      const html = renderer.renderCell(13, 0, 'ignored');
+      expect(html).toBe('');
+    });
+
+    it('render_values should ignore hidden columns', () => {
+      renderer.render(0); // this computes the hidden markers on the columns
+      const { columns, rows } = renderer.render_values();
+      expect(rows).toHaveLength(1);
+      expect(columns).toHaveLength(table.columns.length - 1);
+      expect(columns.filter((col: ColumnRender) => col.hidden)).toHaveLength(0);
     });
   });
 });
 
-function normalize(str) {
+describe('when rendering table with different patterns', () => {
+  it.each`
+    column                 | pattern                        | expected
+    ${'Requests (Failed)'} | ${'/Requests \\(Failed\\)/'}   | ${'<td>1.230 s</td>'}
+    ${'Requests (Failed)'} | ${'/(Req)uests \\(Failed\\)/'} | ${'<td>1.230 s</td>'}
+    ${'Requests (Failed)'} | ${'Requests (Failed)'}         | ${'<td>1.230 s</td>'}
+    ${'Requests (Failed)'} | ${'Requests \\(Failed\\)'}     | ${'<td>1.230 s</td>'}
+    ${'Requests (Failed)'} | ${'/.*/'}                      | ${'<td>1.230 s</td>'}
+    ${'Some other column'} | ${'/.*/'}                      | ${'<td>1.230 s</td>'}
+    ${'Requests (Failed)'} | ${'/Requests (Failed)/'}       | ${'<td>1230</td>'}
+    ${'Requests (Failed)'} | ${'Response (Failed)'}         | ${'<td>1230</td>'}
+  `(
+    'number column should be formatted for a column:$column with the pattern:$pattern',
+    ({ column, pattern, expected }) => {
+      const table = new TableModel();
+      table.columns = [{ text: 'Time' }, { text: column }];
+      table.rows = [[1388556366666, 1230]];
+      const panel = {
+        pageSize: 10,
+        styles: [
+          {
+            pattern: 'Time',
+            type: 'date',
+            format: 'LLL',
+            alias: 'Timestamp',
+          },
+          {
+            pattern: pattern,
+            type: 'number',
+            unit: 'ms',
+            decimals: 3,
+            alias: pattern,
+          },
+        ],
+      };
+
+      //@ts-ignore
+      const renderer = new TableRenderer(panel, table, 'utc', sanitize, templateSrv);
+      const html = renderer.renderCell(1, 0, 1230);
+
+      expect(html).toBe(expected);
+    }
+  );
+});
+
+function normalize(str: string) {
   return str.replace(/\s+/gm, ' ').trim();
 }

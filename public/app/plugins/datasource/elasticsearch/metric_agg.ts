@@ -1,11 +1,14 @@
 import coreModule from 'app/core/core_module';
 import _ from 'lodash';
 import * as queryDef from './query_def';
+import { ElasticsearchAggregation } from './types';
+import { GrafanaRootScope } from 'app/routes/GrafanaCtrl';
+import { CoreEvents } from 'app/types';
 
 export class ElasticMetricAggCtrl {
   /** @ngInject */
-  constructor($scope, uiSegmentSrv, $q, $rootScope) {
-    const metricAggs = $scope.target.metrics;
+  constructor($scope: any, uiSegmentSrv: any, $rootScope: GrafanaRootScope) {
+    const metricAggs: ElasticsearchAggregation[] = $scope.target.metrics;
     $scope.metricAggTypes = queryDef.getMetricAggTypes($scope.esVersion);
     $scope.extendedStats = queryDef.extendedStats;
     $scope.pipelineAggOptions = [];
@@ -22,7 +25,7 @@ export class ElasticMetricAggCtrl {
     };
 
     $rootScope.onAppEvent(
-      'elastic-query-updated',
+      CoreEvents.elasticQueryUpdated,
       () => {
         $scope.index = _.indexOf(metricAggs, $scope.agg);
         $scope.updatePipelineAggOptions();
@@ -35,11 +38,20 @@ export class ElasticMetricAggCtrl {
       $scope.isFirst = $scope.index === 0;
       $scope.isSingle = metricAggs.length === 1;
       $scope.settingsLinkText = '';
+      $scope.variablesLinkText = '';
       $scope.aggDef = _.find($scope.metricAggTypes, { value: $scope.agg.type });
 
       if (queryDef.isPipelineAgg($scope.agg.type)) {
-        $scope.agg.pipelineAgg = $scope.agg.pipelineAgg || 'select metric';
-        $scope.agg.field = $scope.agg.pipelineAgg;
+        if (queryDef.isPipelineAggWithMultipleBucketPaths($scope.agg.type)) {
+          $scope.variablesLinkText = 'Options';
+
+          if ($scope.agg.settings.script) {
+            $scope.variablesLinkText = 'Script: ' + $scope.agg.settings.script.replace(new RegExp('params.', 'g'), '');
+          }
+        } else {
+          $scope.agg.pipelineAgg = $scope.agg.pipelineAgg || 'select metric';
+          $scope.agg.field = $scope.agg.pipelineAgg;
+        }
 
         const pipelineOptions = queryDef.getPipelineOptions($scope.agg);
         if (pipelineOptions.length > 0) {
@@ -72,7 +84,7 @@ export class ElasticMetricAggCtrl {
             $scope.agg.meta,
             (memo, val, key) => {
               if (val) {
-                const def = _.find($scope.extendedStats, { value: key });
+                const def: any = _.find($scope.extendedStats, { value: key });
                 memo.push(def.text);
               }
               return memo;
@@ -119,6 +131,10 @@ export class ElasticMetricAggCtrl {
       $scope.updatePipelineAggOptions();
     };
 
+    $scope.toggleVariables = () => {
+      $scope.showVariables = !$scope.showVariables;
+    };
+
     $scope.onChangeInternal = () => {
       $scope.onChange();
     };
@@ -152,6 +168,7 @@ export class ElasticMetricAggCtrl {
         $scope.target.bucketAggs = [queryDef.defaultBucketAgg()];
       }
 
+      $scope.showVariables = queryDef.isPipelineAggWithMultipleBucketPaths($scope.agg.type);
       $scope.updatePipelineAggOptions();
       $scope.onChange();
     };

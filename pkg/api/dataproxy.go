@@ -2,13 +2,13 @@ package api
 
 import (
 	"github.com/grafana/grafana/pkg/api/pluginproxy"
-	"github.com/grafana/grafana/pkg/metrics"
+	"github.com/grafana/grafana/pkg/infra/metrics"
 	m "github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/plugins"
 )
 
 func (hs *HTTPServer) ProxyDataSourceRequest(c *m.ReqContext) {
-	c.TimeRequest(metrics.M_DataSource_ProxyReq_Timer)
+	c.TimeRequest(metrics.MDataSourceProxyReqTimer)
 
 	dsId := c.ParamsInt64(":id")
 	ds, err := hs.DatasourceCache.GetDatasource(dsId, c.SignedInUser, c.SkipCache)
@@ -31,7 +31,7 @@ func (hs *HTTPServer) ProxyDataSourceRequest(c *m.ReqContext) {
 	// macaron does not include trailing slashes when resolving a wildcard path
 	proxyPath := ensureProxyPathTrailingSlash(c.Req.URL.Path, c.Params("*"))
 
-	proxy := pluginproxy.NewDataSourceProxy(ds, plugin, c, proxyPath)
+	proxy := pluginproxy.NewDataSourceProxy(ds, plugin, c, proxyPath, hs.Cfg)
 	proxy.HandleRequest()
 }
 

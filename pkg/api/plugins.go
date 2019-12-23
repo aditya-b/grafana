@@ -39,7 +39,7 @@ func (hs *HTTPServer) GetPluginList(c *m.ReqContext) Response {
 			continue
 		}
 
-		if pluginDef.State == plugins.PluginStateAlpha && !hs.Cfg.EnableAlphaPanels {
+		if pluginDef.State == plugins.PluginStateAlpha && !hs.Cfg.PluginsEnableAlpha {
 			continue
 		}
 
@@ -47,6 +47,7 @@ func (hs *HTTPServer) GetPluginList(c *m.ReqContext) Response {
 			Id:            pluginDef.Id,
 			Name:          pluginDef.Name,
 			Type:          pluginDef.Type,
+			Category:      pluginDef.Category,
 			Info:          &pluginDef.Info,
 			LatestVersion: pluginDef.GrafanaNetVersion,
 			HasUpdate:     pluginDef.GrafanaNetHasUpdate,
@@ -60,7 +61,7 @@ func (hs *HTTPServer) GetPluginList(c *m.ReqContext) Response {
 		}
 
 		if listItem.DefaultNavUrl == "" || !listItem.Enabled {
-			listItem.DefaultNavUrl = setting.AppSubUrl + "/plugins/" + listItem.Id + "/edit"
+			listItem.DefaultNavUrl = setting.AppSubUrl + "/plugins/" + listItem.Id + "/"
 		}
 
 		// filter out disabled
@@ -178,7 +179,6 @@ func GetPluginMarkdown(c *m.ReqContext) Response {
 }
 
 func ImportDashboard(c *m.ReqContext, apiCmd dtos.ImportDashboardCommand) Response {
-
 	cmd := plugins.ImportDashboardCommand{
 		OrgId:     c.OrgId,
 		User:      c.SignedInUser,
@@ -191,7 +191,7 @@ func ImportDashboard(c *m.ReqContext, apiCmd dtos.ImportDashboardCommand) Respon
 	}
 
 	if err := bus.Dispatch(&cmd); err != nil {
-		return Error(500, "Failed to import dashboard", err)
+		return dashboardSaveErrorToApiResponse(err)
 	}
 
 	return JSON(200, cmd.Result)

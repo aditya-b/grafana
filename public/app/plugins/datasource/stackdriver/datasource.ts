@@ -2,9 +2,14 @@ import { stackdriverUnitMappings } from './constants';
 import appEvents from 'app/core/app_events';
 import _ from 'lodash';
 import StackdriverMetricFindQuery from './StackdriverMetricFindQuery';
+import { StackdriverQuery, MetricDescriptor, StackdriverOptions } from './types';
+import { DataSourceApi, DataQueryRequest, DataSourceInstanceSettings, ScopedVars } from '@grafana/data';
+import { BackendSrv } from 'app/core/services/backend_srv';
+import { TemplateSrv } from 'app/features/templating/template_srv';
+import { TimeSrv } from 'app/features/dashboard/services/TimeSrv';
+import { CoreEvents } from 'app/types';
 
-export default class StackdriverDatasource {
-  id: number;
+export default class StackdriverDatasource extends DataSourceApi<StackdriverQuery, StackdriverOptions> {
   url: string;
   baseUrl: string;
   projectName: string;
@@ -13,41 +18,37 @@ export default class StackdriverDatasource {
   metricTypes: any[];
 
   /** @ngInject */
-  constructor(instanceSettings, private backendSrv, private templateSrv, private timeSrv) {
+  constructor(
+    instanceSettings: DataSourceInstanceSettings<StackdriverOptions>,
+    private backendSrv: BackendSrv,
+    private templateSrv: TemplateSrv,
+    private timeSrv: TimeSrv
+  ) {
+    super(instanceSettings);
     this.baseUrl = `/stackdriver/`;
     this.url = instanceSettings.url;
-    this.doRequest = this.doRequest;
-    this.id = instanceSettings.id;
     this.projectName = instanceSettings.jsonData.defaultProject || '';
     this.authenticationType = instanceSettings.jsonData.authenticationType || 'jwt';
     this.metricTypes = [];
   }
 
-  async getTimeSeries(options) {
+  async getTimeSeries(options: any) {
     const queries = options.targets
-      .filter(target => {
+      .filter((target: any) => {
         return !target.hide && target.metricType;
       })
-      .map(t => {
-        if (!t.hasOwnProperty('aggregation')) {
-          t.aggregation = {
-            crossSeriesReducer: 'REDUCE_MEAN',
-            groupBys: [],
-          };
-        }
+      .map((t: any) => {
         return {
           refId: t.refId,
           intervalMs: options.intervalMs,
           datasourceId: this.id,
           metricType: this.templateSrv.replace(t.metricType, options.scopedVars || {}),
-          primaryAggregation: this.templateSrv.replace(t.aggregation.crossSeriesReducer, options.scopedVars || {}),
-          perSeriesAligner: this.templateSrv.replace(t.aggregation.perSeriesAligner, options.scopedVars || {}),
-          alignmentPeriod: this.templateSrv.replace(t.aggregation.alignmentPeriod, options.scopedVars || {}),
-          groupBys: this.interpolateGroupBys(t.aggregation.groupBys, options.scopedVars),
+          crossSeriesReducer: this.templateSrv.replace(t.crossSeriesReducer || 'REDUCE_MEAN', options.scopedVars || {}),
+          perSeriesAligner: this.templateSrv.replace(t.perSeriesAligner, options.scopedVars || {}),
+          alignmentPeriod: this.templateSrv.replace(t.alignmentPeriod, options.scopedVars || {}),
+          groupBys: this.interpolateGroupBys(t.groupBys, options.scopedVars),
           view: t.view || 'FULL',
-          filters: (t.filters || []).map(f => {
-            return this.templateSrv.replace(f, options.scopedVars || {});
-          }),
+          filters: this.interpolateFilters(t.filters, options.scopedVars),
           aliasBy: this.templateSrv.replace(t.aliasBy, options.scopedVars || {}),
           type: 'timeSeriesQuery',
         };
@@ -69,16 +70,20 @@ export default class StackdriverDatasource {
     }
   }
 
-  async getLabels(metricType, refId) {
+  interpolateFilters(filters: string[], scopedVars: ScopedVars) {
+    return (filters || []).map(f => {
+      return this.templateSrv.replace(f, scopedVars || {}, 'regex');
+    });
+  }
+
+  async getLabels(metricType: string, refId: string) {
     const response = await this.getTimeSeries({
       targets: [
         {
           refId: refId,
           datasourceId: this.id,
           metricType: this.templateSrv.replace(metricType),
-          aggregation: {
-            crossSeriesReducer: 'REDUCE_NONE',
-          },
+          crossSeriesReducer: 'REDUCE_NONE',
           view: 'HEADERS',
         },
       ],
@@ -88,8 +93,8 @@ export default class StackdriverDatasource {
     return response.results[refId];
   }
 
-  interpolateGroupBys(groupBys: string[], scopedVars): string[] {
-    let interpolatedGroupBys = [];
+  interpolateGroupBys(groupBys: string[], scopedVars: {}): string[] {
+    let interpolatedGroupBys: any[] = [];
     (groupBys || []).forEach(gb => {
       const interpolated = this.templateSrv.replace(gb, scopedVars || {}, 'csv').split(',');
       if (Array.isArray(interpolated)) {
@@ -105,22 +110,23 @@ export default class StackdriverDatasource {
     let unit;
     if (targets.length > 0 && targets.every(t => t.unit === targets[0].unit)) {
       if (stackdriverUnitMappings.hasOwnProperty(targets[0].unit)) {
+        // @ts-ignore
         unit = stackdriverUnitMappings[targets[0].unit];
       }
     }
     return unit;
   }
 
-  async query(options) {
-    const result = [];
+  async query(options: DataQueryRequest<StackdriverQuery>) {
+    const result: any[] = [];
     const data = await this.getTimeSeries(options);
     if (data.results) {
-      Object['values'](data.results).forEach(queryRes => {
+      Object['values'](data.results).forEach((queryRes: any) => {
         if (!queryRes.series) {
           return;
         }
         const unit = this.resolvePanelUnitFromTargets(options.targets);
-        queryRes.series.forEach(series => {
+        queryRes.series.forEach((series: any) => {
           let timeSerie: any = {
             target: series.name,
             datapoints: series.points,
@@ -139,20 +145,20 @@ export default class StackdriverDatasource {
     }
   }
 
-  async annotationQuery(options) {
+  async annotationQuery(options: any) {
     const annotation = options.annotation;
     const queries = [
       {
         refId: 'annotationQuery',
         datasourceId: this.id,
         metricType: this.templateSrv.replace(annotation.target.metricType, options.scopedVars || {}),
-        primaryAggregation: 'REDUCE_NONE',
+        crossSeriesReducer: 'REDUCE_NONE',
         perSeriesAligner: 'ALIGN_NONE',
         title: this.templateSrv.replace(annotation.target.title, options.scopedVars || {}),
         text: this.templateSrv.replace(annotation.target.text, options.scopedVars || {}),
         tags: this.templateSrv.replace(annotation.target.tags, options.scopedVars || {}),
         view: 'FULL',
-        filters: (annotation.target.filters || []).map(f => {
+        filters: (annotation.target.filters || []).map((f: any) => {
           return this.templateSrv.replace(f, options.scopedVars || {});
         }),
         type: 'annotationQuery',
@@ -169,20 +175,20 @@ export default class StackdriverDatasource {
       },
     });
 
-    const results = data.results['annotationQuery'].tables[0].rows.map(v => {
+    const results = data.results['annotationQuery'].tables[0].rows.map((v: any) => {
       return {
         annotation: annotation,
         time: Date.parse(v[0]),
         title: v[1],
         tags: [],
         text: v[3],
-      };
+      } as any;
     });
 
     return results;
   }
 
-  async metricFindQuery(query) {
+  async metricFindQuery(query: string) {
     const stackdriverMetricFindQuery = new StackdriverMetricFindQuery(this);
     return stackdriverMetricFindQuery.execute(query);
   }
@@ -220,7 +226,7 @@ export default class StackdriverDatasource {
     }
   }
 
-  formatStackdriverError(error) {
+  formatStackdriverError(error: any) {
     let message = 'Stackdriver: ';
     message += error.statusText ? error.statusText + ': ' : '';
     if (error.data && error.data.error) {
@@ -262,36 +268,37 @@ export default class StackdriverDatasource {
     }
   }
 
-  async getMetricTypes(projectName: string) {
+  async getMetricTypes(projectName: string): Promise<MetricDescriptor[]> {
     try {
       if (this.metricTypes.length === 0) {
         const metricsApiPath = `v3/projects/${projectName}/metricDescriptors`;
         const { data } = await this.doRequest(`${this.baseUrl}${metricsApiPath}`);
 
-        this.metricTypes = data.metricDescriptors.map(m => {
+        this.metricTypes = data.metricDescriptors.map((m: any) => {
           const [service] = m.type.split('/');
           const [serviceShortName] = service.split('.');
           m.service = service;
           m.serviceShortName = serviceShortName;
           m.displayName = m.displayName || m.type;
+
           return m;
         });
       }
 
       return this.metricTypes;
     } catch (error) {
-      appEvents.emit('ds-request-error', this.formatStackdriverError(error));
+      appEvents.emit(CoreEvents.dsRequestError, { error: { data: { error: this.formatStackdriverError(error) } } });
       return [];
     }
   }
 
-  async doRequest(url, maxRetries = 1) {
+  async doRequest(url: string, maxRetries = 1) {
     return this.backendSrv
       .datasourceRequest({
         url: this.url + url,
         method: 'GET',
       })
-      .catch(error => {
+      .catch((error: any) => {
         if (maxRetries > 0) {
           return this.doRequest(url, maxRetries - 1);
         }

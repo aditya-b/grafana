@@ -1,4 +1,6 @@
+import { PanelPlugin } from '@grafana/data';
+import { GraphPanelEditor } from './GraphPanelEditor';
 import { GraphPanel } from './GraphPanel';
-import { GraphOptions } from './GraphOptions';
+import { Options, defaults } from './types';
 
-export { GraphPanel as Panel, GraphOptions as PanelOptions };
+export const plugin = new PanelPlugin<Options>(GraphPanel).setDefaults(defaults).setEditor(GraphPanelEditor);

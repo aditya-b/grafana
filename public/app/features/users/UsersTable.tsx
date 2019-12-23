@@ -1,4 +1,4 @@
-import React, { SFC } from 'react';
+import React, { FC } from 'react';
 import { OrgUser } from 'app/types';
 
 export interface Props {
@@ -7,7 +7,7 @@ export interface Props {
   onRemoveUser: (user: OrgUser) => void;
 }
 
-const UsersTable: SFC<Props> = props => {
+const UsersTable: FC<Props> = props => {
   const { users, onRoleChange, onRemoveUser } = props;
 
   return (
@@ -17,6 +17,7 @@ const UsersTable: SFC<Props> = props => {
           <th />
           <th>Login</th>
           <th>Email</th>
+          <th>Name</th>
           <th>Seen</th>
           <th>Role</th>
           <th style={{ width: '34px' }} />
@@ -33,6 +34,7 @@ const UsersTable: SFC<Props> = props => {
               <td>
                 <span className="ellipsis">{user.email}</span>
               </td>
+              <td>{user.name}</td>
               <td>{user.lastSeenAtAge}</td>
               <td>
                 <div className="gf-form-select-wrapper width-12">
@@ -52,7 +54,7 @@ const UsersTable: SFC<Props> = props => {
                 </div>
               </td>
               <td>
-                <div onClick={() => onRemoveUser(user)} className="btn btn-danger btn-mini">
+                <div onClick={() => onRemoveUser(user)} className="btn btn-danger btn-small">
                   <i className="fa fa-remove" />
                 </div>
               </td>

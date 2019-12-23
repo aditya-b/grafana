@@ -4,7 +4,7 @@ import (
 	"github.com/grafana/grafana/pkg/api/dtos"
 	"github.com/grafana/grafana/pkg/bus"
 	"github.com/grafana/grafana/pkg/events"
-	"github.com/grafana/grafana/pkg/metrics"
+	"github.com/grafana/grafana/pkg/infra/metrics"
 	m "github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/setting"
 	"github.com/grafana/grafana/pkg/util"
@@ -34,24 +34,30 @@ func SignUp(c *m.ReqContext, form dtos.SignUpForm) Response {
 	cmd.Email = form.Email
 	cmd.Status = m.TmpUserSignUpStarted
 	cmd.InvitedByUserId = c.UserId
-	cmd.Code = util.GetRandomString(20)
+	var err error
+	cmd.Code, err = util.GetRandomString(20)
+	if err != nil {
+		return Error(500, "Failed to generate random string", err)
+	}
 	cmd.RemoteAddr = c.Req.RemoteAddr
 
 	if err := bus.Dispatch(&cmd); err != nil {
 		return Error(500, "Failed to create signup", err)
 	}
 
-	bus.Publish(&events.SignUpStarted{
+	if err := bus.Publish(&events.SignUpStarted{
 		Email: form.Email,
 		Code:  cmd.Code,
-	})
+	}); err != nil {
+		return Error(500, "Failed to publish event", err)
+	}
 
-	metrics.M_Api_User_SignUpStarted.Inc()
+	metrics.MApiUserSignUpStarted.Inc()
 
 	return JSON(200, util.DynMap{"status": "SignUpCreated"})
 }
 
-func SignUpStep2(c *m.ReqContext, form dtos.SignUpStep2Form) Response {
+func (hs *HTTPServer) SignUpStep2(c *m.ReqContext, form dtos.SignUpStep2Form) Response {
 	if !setting.AllowUserSignUp {
 		return Error(401, "User signup is disabled", nil)
 	}
@@ -85,10 +91,12 @@ func SignUpStep2(c *m.ReqContext, form dtos.SignUpStep2Form) Response {
 
 	// publish signup event
 	user := &createUserCmd.Result
-	bus.Publish(&events.SignUpCompleted{
+	if err := bus.Publish(&events.SignUpCompleted{
 		Email: user.Email,
 		Name:  user.NameOrFallback(),
-	})
+	}); err != nil {
+		return Error(500, "Failed to publish event", err)
+	}
 
 	// mark temp user as completed
 	if ok, rsp := updateTempUserStatus(form.Code, m.TmpUserCompleted); !ok {
@@ -109,8 +117,8 @@ func SignUpStep2(c *m.ReqContext, form dtos.SignUpStep2Form) Response {
 		apiResponse["code"] = "redirect-to-select-org"
 	}
 
-	loginUserWithUser(user, c)
-	metrics.M_Api_User_SignUpCompleted.Inc()
+	hs.loginUserWithUser(user, c)
+	metrics.MApiUserSignUpCompleted.Inc()
 
 	return JSON(200, apiResponse)
 }
