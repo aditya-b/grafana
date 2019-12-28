@@ -102,7 +102,6 @@ export function getScaleCalculator(field: Field, theme?: GrafanaTheme): ScaleCal
         const interpolator = interpolateLab(color, color2);
         const delta = nextThreshold.value - threshold.value;
         const interpolationBasis = 1 - (nextThreshold.value - value) / delta;
-        console.log(value, interpolationBasis);
 
         return { threshold, color: interpolator(interpolationBasis) };
       }

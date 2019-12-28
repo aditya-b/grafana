@@ -1,4 +1,5 @@
 import React from 'react';
+import { ThresholdsMode } from '@grafana/data';
 import { Table } from './Table';
 import { withCenteredStory } from '../../utils/storybook/withCenteredStory';
 import { number } from '@storybook/addon-knobs';
@@ -118,29 +119,61 @@ export const BarGaugeCell = () => {
   );
 };
 
-const defaultThresholds = [
-  {
-    color: 'blue',
-    value: -Infinity,
-  },
-  {
-    color: 'green',
-    value: 20,
-  },
-];
+function buildDataNumberMatrix(theme: GrafanaTheme, overrides: ConfigOverrideRule[]): DataFrame {
+  const data = new MutableDataFrame({
+    fields: [
+      { name: 'Server A', type: FieldType.number, values: [] },
+      { name: 'Server B', type: FieldType.number, values: [] },
+      { name: 'Server C', type: FieldType.number, values: [] },
+      { name: 'Server D', type: FieldType.number, values: [] },
+      { name: 'Server E', type: FieldType.number, values: [] },
+      { name: 'Server F', type: FieldType.number, values: [] },
+    ],
+  });
+
+  for (let i = 0; i < 1000; i++) {
+    data.appendRow([
+      (i * 2 + 20) % 100,
+      (i * 2 + 30) % 100,
+      (i * 2 + 50) % 100,
+      (i * 2 + 60) % 100,
+      (i * 2 + 70) % 100,
+      (i * 2 + 80) % 100,
+    ]);
+  }
+
+  return applyFieldOverrides({
+    data: [data],
+    fieldOptions: {
+      overrides,
+      defaults: {},
+    },
+    theme,
+    replaceVariables: (value: string) => value,
+  })[0];
+}
 
 export const ColoredCells = () => {
+  const thresholds = {
+    mode: ThresholdsMode.Absolute,
+    step: [
+      { color: 'blue', value: -Infinity },
+      { color: 'green', value: 0 },
+      { color: 'orange', value: 60 },
+      { color: 'red', value: 80 },
+    ],
+  };
+
   const theme = useTheme();
   const width = number('width', 750, {}, 'Props');
-  const data = buildData(theme, [
+  const data = buildDataNumberMatrix(theme, [
     {
-      matcher: { id: FieldMatcherID.byName, options: 'Progress' },
+      matcher: { id: FieldMatcherID.numeric },
       properties: [
-        { path: 'custom.width', value: '80' },
         { path: 'custom.displayMode', value: 'color-background' },
         { path: 'min', value: '0' },
         { path: 'max', value: '100' },
-        { path: 'thresholds', value: defaultThresholds },
+        { path: 'thresholds', value: thresholds },
       ],
     },
   ]);
