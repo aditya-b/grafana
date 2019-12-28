@@ -26,6 +26,18 @@ export interface BusEventType<T extends BusEvent> {
   new (...args: any[]): T;
 }
 
+export function eventCreator<T>(name?: string): BusEventType<T> {
+  class Event {
+    static type = name || Event.name;
+
+    constructor(payload: T) {
+      Object.assign(this, payload);
+    }
+  }
+
+  return Event as BusEventType<T>;
+}
+
 /*
  * Event callback/handler type
  */

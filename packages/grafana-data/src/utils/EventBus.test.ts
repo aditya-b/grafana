@@ -1,4 +1,4 @@
-import { EventBusSrv, BusEventWithPayload, EventBusGroup } from './EventBus';
+import { EventBusSrv, BusEventWithPayload, EventBusGroup, eventCreator } from './EventBus';
 
 interface LoginEventPayload {
   logins: number;
@@ -16,10 +16,18 @@ class HelloEvent extends BusEventWithPayload<HelloEventPayload> {
   public static type = 'hello-event';
 }
 
+export interface BusEventType<T = {}> {
+  type: string;
+  new (payload: T): T;
+}
+
+const TestEvent = eventCreator<{ counter: number }>('test');
+
 describe('EventBus', () => {
   it('Can subscribe specific event', () => {
     const bus = new EventBusSrv();
     const events: LoginEvent[] = [];
+    console.log('tet', new TestEvent({ counter: 10 }));
 
     bus.on(LoginEvent, event => {
       events.push(event);
