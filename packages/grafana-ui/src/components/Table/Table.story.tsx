@@ -133,7 +133,7 @@ function buildDataNumberMatrix(theme: GrafanaTheme, overrides: ConfigOverrideRul
 
   for (let i = 0; i < 1000; i++) {
     data.appendRow([
-      (i * 2 + 20) % 100,
+      (i * 2 + 1) % 100,
       (i * 2 + 30) % 100,
       (i * 2 + 50) % 100,
       (i * 2 + 60) % 100,
