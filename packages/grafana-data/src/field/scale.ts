@@ -1,7 +1,10 @@
+// Libraries
+import * as d3 from 'd3-scale-chromatic';
+import { interpolateLab } from 'd3-interpolate';
+
 import { Field, Threshold, GrafanaTheme, GrafanaThemeType, ThresholdsMode, FieldColorMode } from '../types';
 import { reduceField, ReducerID } from '../transformations';
 import { getColorFromHexRgbOrName } from '../utils/namedColorsPalette';
-import * as d3 from 'd3-scale-chromatic';
 import isNumber from 'lodash/isNumber';
 
 export interface ScaledValue {
@@ -79,9 +82,34 @@ export function getScaleCalculator(field: Field, theme?: GrafanaTheme): ScaleCal
   if (thresholds) {
     return (value: number) => {
       const threshold = getActiveThreshold(value, thresholds.step);
+
+      if (fixedColor) {
+        return { threshold, color: fixedColor };
+      }
+
+      //if (thresholds.mode === 'thresholds-interpolate') {
+      //j}
+
+      const color = getColorFromHexRgbOrName(threshold.color, themeType);
+
+      // interpolate by finding next threshold color
+      const thresholdIndex = thresholds.step.findIndex(item => item === threshold);
+
+      if (thresholds.step.length - 1 > thresholdIndex) {
+        const nextThreshold = thresholds.step[thresholdIndex + 1];
+
+        const color2 = getColorFromHexRgbOrName(nextThreshold.color, themeType);
+        const interpolator = interpolateLab(color, color2);
+        const delta = nextThreshold.value - threshold.value;
+        const interpolationBasis = 1 - (nextThreshold.value - value) / delta;
+        console.log(value, interpolationBasis);
+
+        return { threshold, color: interpolator(interpolationBasis) };
+      }
+
       return {
         threshold,
-        color: fixedColor ? fixedColor : getColorFromHexRgbOrName(threshold.color, themeType),
+        color: color,
       };
     };
   }
@@ -101,6 +129,7 @@ export function getScaleCalculator(field: Field, theme?: GrafanaTheme): ScaleCal
 
 export function getActiveThreshold(value: number, thresholds: Threshold[]): Threshold {
   let active = thresholds[0];
+
   for (const threshold of thresholds) {
     if (value >= threshold.value) {
       active = threshold;
@@ -108,6 +137,7 @@ export function getActiveThreshold(value: number, thresholds: Threshold[]): Thre
       break;
     }
   }
+
   return active;
 }
 
