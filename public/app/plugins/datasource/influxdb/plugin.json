@@ -7,6 +7,7 @@
   "defaultMatchFormat": "regex values",
   "metrics": true,
   "logs": true,
+  "unified": true,
   "annotations": true,
   "alerting": true,
 

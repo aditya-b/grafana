@@ -21,7 +21,6 @@ export default class InfluxQueryModel {
     this.scopedVars = scopedVars;
 
     target.policy = target.policy || 'default';
-    target.resultFormat = target.resultFormat || 'time_series';
     target.orderByTime = target.orderByTime || 'ASC';
     target.tags = target.tags || [];
     target.groupBy = target.groupBy || [

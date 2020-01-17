@@ -25,7 +25,6 @@ export interface InfluxQueryTag {
 export interface InfluxQuery extends DataQuery {
   policy?: string;
   measurement?: string;
-  resultFormat?: 'time_series' | 'table';
   orderByTime?: string;
   tags?: InfluxQueryTag[];
   groupBy?: InfluxQueryPart[];
@@ -36,4 +35,31 @@ export interface InfluxQuery extends DataQuery {
   fill?: string;
   rawQuery?: boolean;
   query?: string;
+  alias?: string;
+}
+
+export interface InfluxRow {
+  name?: string;
+  tags?: Record<string, string>;
+  columns?: string[];
+  values?: Array<Array<string | number | boolean | null>>;
+  partial?: boolean;
+}
+
+export interface InfluxMessage {
+  level: string;
+  text: string;
+}
+
+export interface InfluxResult {
+  statement_id: number;
+  series?: InfluxRow[];
+  messages?: InfluxMessage[];
+  partial?: boolean;
+  err?: string;
+}
+
+export interface InfluxResponse {
+  results?: InfluxResult[];
+  err?: string;
 }

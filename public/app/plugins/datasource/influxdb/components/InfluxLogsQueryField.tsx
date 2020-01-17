@@ -107,7 +107,6 @@ export class InfluxLogsQueryField extends React.PureComponent<Props, State> {
     const queryModel = new InfluxQueryModel(
       {
         ...query,
-        resultFormat: 'table',
         groupBy: [],
         select: [[{ type: 'field', params: [field] }]],
         tags: pairs,

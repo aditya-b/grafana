@@ -287,7 +287,6 @@ export class Explore extends React.PureComponent<ExploreProps> {
     const styles = getStyles();
     const StartPage = datasourceInstance?.components?.ExploreStartPage;
     const showStartPage = !queryResponse || queryResponse.state === LoadingState.NotStarted;
-    const timeSeriesResult = !!tableResult || !!graphResult;
 
     return (
       <div className={exploreClass} ref={this.getRef}>
@@ -328,7 +327,7 @@ export class Explore extends React.PureComponent<ExploreProps> {
                       )}
                       {!showStartPage && (
                         <>
-                          {timeSeriesResult && (
+                          {graphResult && (
                             <ExploreGraphPanel
                               series={graphResult}
                               width={width}
@@ -345,10 +344,10 @@ export class Explore extends React.PureComponent<ExploreProps> {
                               showLines={true}
                             />
                           )}
-                          {timeSeriesResult && (
+                          {tableResult && (!logsResult || graphResult) && (
                             <TableContainer width={width} exploreId={exploreId} onClickCell={this.onClickFilterLabel} />
                           )}
-                          {logsResult && (
+                          {logsResult && !graphResult && (
                             <LogsContainer
                               width={width}
                               exploreId={exploreId}

@@ -1,13 +1,18 @@
 import _ from 'lodash';
 import TableModel from 'app/core/table_model';
-import { FieldType } from '@grafana/data';
+import { FieldType, DataFrame, ArrayVector, guessFieldTypeFromValue, AnnotationQueryRequest } from '@grafana/data';
+import { InfluxRow, InfluxQuery } from './types';
 
 export default class InfluxSeries {
-  series: any;
-  alias: any;
-  annotation: any;
+  series: InfluxRow[];
+  alias: string;
+  annotation: AnnotationQueryRequest<InfluxQuery>['annotation'];
 
-  constructor(options: { series: any; alias?: any; annotation?: any }) {
+  constructor(options: {
+    series: InfluxRow[];
+    alias?: any;
+    annotation?: AnnotationQueryRequest<InfluxQuery>['annotation'];
+  }) {
     this.series = options.series;
     this.alias = options.alias;
     this.annotation = options.annotation;
@@ -21,23 +26,21 @@ export default class InfluxSeries {
       return output;
     }
 
-    _.each(this.series, series => {
+    this.series.forEach(series => {
       const columns = series.columns.length;
-      const tags = _.map(series.tags, (value, key) => {
-        return key + ': ' + value;
-      });
+      const tags = Object.entries(series.tags ?? {}).map((key, value) => `${key}: ${value}`);
 
       for (j = 1; j < columns; j++) {
         let seriesName = series.name;
         const columnName = series.columns[j];
         if (columnName !== 'value') {
-          seriesName = seriesName + '.' + columnName;
+          seriesName = `${seriesName}.${columnName}`;
         }
 
         if (this.alias) {
           seriesName = this._getSeriesName(series, j);
         } else if (series.tags) {
-          seriesName = seriesName + ' {' + tags.join(', ') + '}';
+          seriesName = `${seriesName} {${tags.join(', ')}}`;
         }
 
         const datapoints = [];
@@ -47,7 +50,7 @@ export default class InfluxSeries {
           }
         }
 
-        output.push({ target: seriesName, datapoints: datapoints });
+        output.push({ target: seriesName, datapoints });
       }
     });
 
@@ -65,12 +68,15 @@ export default class InfluxSeries {
       if (group === 'm' || group === 'measurement') {
         return series.name;
       }
+
       if (group === 'col') {
         return series.columns[index];
       }
+
       if (!isNaN(segIndex)) {
         return segments[segIndex];
       }
+
       if (group.indexOf('tag_') !== 0) {
         return match;
       }
@@ -79,6 +85,7 @@ export default class InfluxSeries {
       if (!series.tags) {
         return match;
       }
+
       return series.tags[tag];
     });
   }
@@ -86,53 +93,55 @@ export default class InfluxSeries {
   getAnnotations() {
     const list: any[] = [];
 
-    _.each(this.series, series => {
-      let titleCol: any = null;
-      let timeCol: any = null;
-      const tagsCol: any = [];
+    this.series.forEach(series => {
+      let titleCol: number = null;
+      let timeCol: number = null;
+      const tagsCol: number[] = [];
       let textCol: any = null;
 
-      _.each(series.columns, (column, index) => {
+      series.columns.forEach((column, index) => {
         if (column === 'time') {
           timeCol = index;
           return;
         }
+
         if (column === 'sequence_number') {
           return;
         }
+
         if (column === this.annotation.titleColumn) {
           titleCol = index;
           return;
         }
-        if (_.includes((this.annotation.tagsColumn || '').replace(' ', '').split(','), column)) {
+
+        if (
+          (this.annotation.tagsColumn || '')
+            .replace(' ', '')
+            .split(',')
+            .includes(column)
+        ) {
           tagsCol.push(index);
           return;
         }
+
         if (column === this.annotation.textColumn) {
           textCol = index;
           return;
         }
+
         // legacy case
         if (!titleCol && textCol !== index) {
           titleCol = index;
         }
       });
 
-      _.each(series.values, value => {
+      series.values.forEach(value => {
         const data = {
           annotation: this.annotation,
-          time: +new Date(value[timeCol]),
+          time: +new Date(value[timeCol] as string),
           title: value[titleCol],
           // Remove empty values, then split in different tags for comma separated values
-          tags: _.flatten(
-            tagsCol
-              .filter((t: any) => {
-                return value[t];
-              })
-              .map((t: any) => {
-                return value[t].split(',');
-              })
-          ),
+          tags: _.flatten(tagsCol.filter((t: any) => value[t]).map((t: any) => (value[t] as string).split(','))),
           text: value[textCol],
         };
 
@@ -145,48 +154,62 @@ export default class InfluxSeries {
 
   getTable() {
     const table = new TableModel();
-    let i, j;
 
     if (this.series.length === 0) {
       return table;
     }
 
-    _.each(this.series, (series: any, seriesIndex: number) => {
-      if (seriesIndex === 0) {
-        j = 0;
-        // Check that the first column is indeed 'time'
-        if (series.columns[0] === 'time') {
-          // Push this now before the tags and with the right type
-          table.columns.push({ text: 'Time', type: FieldType.time });
-          j++;
-        }
-        _.each(_.keys(series.tags), key => {
-          table.columns.push({ text: key });
-        });
-        for (; j < series.columns.length; j++) {
-          table.columns.push({ text: series.columns[j] });
-        }
-      }
+    const hasTimeColumn = this.series[0].columns[0] === 'time';
+    if (hasTimeColumn) {
+      table.columns = [{ text: 'Time', type: FieldType.time }];
+    }
 
-      if (series.values) {
-        for (i = 0; i < series.values.length; i++) {
-          const values = series.values[i];
-          const reordered = [values[0]];
-          if (series.tags) {
-            for (const key in series.tags) {
-              if (series.tags.hasOwnProperty(key)) {
-                reordered.push(series.tags[key]);
-              }
-            }
-          }
-          for (j = 1; j < values.length; j++) {
-            reordered.push(values[j]);
-          }
-          table.rows.push(reordered);
-        }
-      }
+    table.columns.push(
+      ...Object.keys(this.series[0].tags ?? {}).map(key => ({ text: key })),
+      ...this.series[0].columns.slice(hasTimeColumn ? 1 : 0).map(column => ({ text: column }))
+    );
+
+    this.series.forEach(row => {
+      table.rows.push(...row.values.map(values => [values[0], ...Object.values(row.tags ?? {}), ...values.slice(1)]));
     });
-
     return table;
+  }
+
+  toDataFrame(): DataFrame {
+    const allValues: ArrayVector[] = [];
+    for (let i = 0; i < this.series[0].columns.length; i++) {
+      allValues.push(new ArrayVector([]));
+    }
+
+    for (const row of this.series[0].values) {
+      for (let i = 0; i < row.length; i++) {
+        allValues[i].add(row[i]);
+      }
+    }
+
+    const fields = [];
+    const hasTimeColumn = this.series[0].columns[0] === 'time';
+    if (hasTimeColumn) {
+      fields.push({
+        name: 'ts',
+        type: FieldType.time,
+        config: { title: 'Time' },
+        values: allValues[0],
+      });
+    }
+
+    fields.push(
+      ...this.series[0].columns.slice(hasTimeColumn ? 1 : 0).map((colName, i) => ({
+        name: colName,
+        type: guessFieldTypeFromValue(allValues.slice(hasTimeColumn ? 1 : 0)[i].get(0)),
+        config: {},
+        values: allValues.slice(hasTimeColumn ? 1 : 0)[i],
+      }))
+    );
+
+    return {
+      name: fields,
+      length: allValues[0].length,
+    };
   }
 }

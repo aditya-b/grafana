@@ -233,10 +233,9 @@ function separateLogsAndMetrics(dataFrame: DataFrame[]) {
   for (const series of dataFrame) {
     if (isLogsData(series)) {
       logSeries.push(series);
-      continue;
+    } else {
+      metricSeries.push(series);
     }
-
-    metricSeries.push(series);
   }
 
   return { logSeries, metricSeries };

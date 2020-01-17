@@ -100,11 +100,15 @@ export class ResultProcessor {
 }
 
 export function isTimeSeries(frame: DataFrame): boolean {
-  if (frame.fields.length === 2) {
-    if (frame.fields[1].type === FieldType.time) {
-      return true;
+  let hasTimeField = false;
+  let hasNumberField = false;
+  for (const field of frame.fields) {
+    hasTimeField = hasTimeField || field.type === FieldType.time;
+    hasNumberField = hasNumberField || field.type === FieldType.number;
+    if (hasTimeField && hasNumberField) {
+      break;
     }
   }
 
-  return false;
+  return hasTimeField && hasNumberField;
 }
