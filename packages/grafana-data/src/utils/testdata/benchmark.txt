@@ -1,0 +1,489 @@
+goos: linux
+goarch: amd64
+pkg: github.com/grafana/metrictank/api
+BenchmarkFix1M-8                             	      20	   6102334 ns/op	1966.46 MB/s
+BenchmarkFix1M-8                             	      12	  14692906 ns/op	 816.72 MB/s
+BenchmarkFix1M-8                             	      12	   9220625 ns/op	1301.43 MB/s
+BenchmarkFix1M-8                             	      18	   6680900 ns/op	1796.17 MB/s
+BenchmarkFix1M-8                             	      19	   7429987 ns/op	1615.08 MB/s
+BenchmarkFix1M-8                             	      27	   4396393 ns/op	2729.51 MB/s
+BenchmarkFix1M-8                             	      28	   5022749 ns/op	2389.13 MB/s
+BenchmarkFix1M-8                             	      26	   4323122 ns/op	2775.77 MB/s
+BenchmarkFix1M-8                             	      26	   4474632 ns/op	2681.78 MB/s
+BenchmarkFix1M-8                             	      27	   5028214 ns/op	2386.53 MB/s
+BenchmarkDivide1M-8                          	      24	   4395598 ns/op	2730.00 MB/s
+BenchmarkDivide1M-8                          	      22	   4545927 ns/op	2639.73 MB/s
+BenchmarkDivide1M-8                          	      27	   4557165 ns/op	2633.22 MB/s
+BenchmarkDivide1M-8                          	      25	   4311337 ns/op	2783.36 MB/s
+BenchmarkDivide1M-8                          	      27	   4411696 ns/op	2720.04 MB/s
+BenchmarkDivide1M-8                          	      27	   4355678 ns/op	2755.02 MB/s
+BenchmarkDivide1M-8                          	      25	   4191714 ns/op	2862.79 MB/s
+BenchmarkDivide1M-8                          	      28	   4408064 ns/op	2722.28 MB/s
+BenchmarkDivide1M-8                          	      27	   4429184 ns/op	2709.30 MB/s
+BenchmarkDivide1M-8                          	      24	   4522097 ns/op	2653.64 MB/s
+BenchmarkPlanRequestsSamePNGroupNoLimits-8   	  109888	      1174 ns/op
+BenchmarkPlanRequestsSamePNGroupNoLimits-8   	  122971	      1215 ns/op
+BenchmarkPlanRequestsSamePNGroupNoLimits-8   	   98865	      1035 ns/op
+BenchmarkPlanRequestsSamePNGroupNoLimits-8   	  116484	       995 ns/op
+BenchmarkPlanRequestsSamePNGroupNoLimits-8   	  120026	       989 ns/op
+BenchmarkPlanRequestsSamePNGroupNoLimits-8   	  120667	      1042 ns/op
+BenchmarkPlanRequestsSamePNGroupNoLimits-8   	  110250	      1156 ns/op
+BenchmarkPlanRequestsSamePNGroupNoLimits-8   	  100688	      1046 ns/op
+BenchmarkPlanRequestsSamePNGroupNoLimits-8   	  102739	      1132 ns/op
+BenchmarkPlanRequestsSamePNGroupNoLimits-8   	  111092	      1010 ns/op
+PASS
+ok  	github.com/grafana/metrictank/api	7.917s
+?   	github.com/grafana/metrictank/api/middleware	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/grafana/metrictank/api/models
+BenchmarkMarshalMsgGetDataRespV0-8              	 3575173	        33.6 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV0-8              	 3309907	        32.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV0-8              	 3624411	        33.1 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV0-8              	 3602875	        32.3 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV0-8              	 3384541	        33.6 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV0-8              	 3595003	        32.3 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV0-8              	 3551312	        34.4 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV0-8              	 3362023	        34.3 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV0-8              	 3457406	        36.8 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV0-8              	 3714224	        31.9 ns/op	      16 B/op	       1 allocs/op
+BenchmarkAppendMsgGetDataRespV0-8               	11919622	         9.73 ns/op	 925.14 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV0-8               	12469155	         9.45 ns/op	 952.69 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV0-8               	13071368	         9.78 ns/op	 920.62 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV0-8               	12819340	         9.56 ns/op	 941.29 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV0-8               	10519335	         9.84 ns/op	 914.97 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV0-8               	10195965	        11.0 ns/op	 818.90 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV0-8               	12702560	         9.65 ns/op	 932.47 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV0-8               	12398266	         9.50 ns/op	 947.25 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV0-8               	11989734	         9.59 ns/op	 938.72 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV0-8               	11049961	        11.3 ns/op	 796.83 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV0-8               	 4517391	        24.3 ns/op	 370.37 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV0-8               	 4701981	        25.4 ns/op	 354.74 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV0-8               	 4719403	        25.4 ns/op	 354.50 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV0-8               	 4862950	        26.2 ns/op	 343.61 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV0-8               	 4863345	        24.7 ns/op	 364.30 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV0-8               	 4522777	        25.7 ns/op	 350.06 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV0-8               	 4689080	        28.0 ns/op	 321.82 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV0-8               	 4699016	        24.7 ns/op	 364.44 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV0-8               	 4674112	        25.7 ns/op	 350.29 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV0-8               	 4438992	        24.8 ns/op	 363.43 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV0-8                  	 5801968	        17.4 ns/op	 516.98 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV0-8                  	 7555281	        15.4 ns/op	 583.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV0-8                  	 7225908	        23.3 ns/op	 386.65 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV0-8                  	 7715390	        16.6 ns/op	 543.79 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV0-8                  	 7017519	        16.2 ns/op	 554.63 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV0-8                  	 7495027	        15.4 ns/op	 582.76 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV0-8                  	 7274680	        18.4 ns/op	 487.91 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV0-8                  	 7762416	        15.6 ns/op	 576.36 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV0-8                  	 7587316	        16.2 ns/op	 555.65 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV0-8                  	 7307386	        15.8 ns/op	 570.39 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV0-8                  	 2515606	        50.1 ns/op	 179.51 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV0-8                  	 2368173	        48.5 ns/op	 185.50 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV0-8                  	 2594266	        48.5 ns/op	 185.65 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV0-8                  	 2573623	        47.7 ns/op	 188.70 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV0-8                  	 2447420	        48.3 ns/op	 186.21 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV0-8                  	 2540235	        50.1 ns/op	 179.65 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV0-8                  	 2398203	        47.7 ns/op	 188.58 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV0-8                  	 2408772	        46.2 ns/op	 194.98 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV0-8                  	 2446610	        50.3 ns/op	 178.96 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV0-8                  	 2533203	        49.5 ns/op	 181.80 MB/s	       0 B/op	       0 allocs/op
+BenchmarkMarshalMsgGetDataRespV1-8              	 1000000	       104 ns/op	     144 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV1-8              	 1000000	       111 ns/op	     144 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV1-8              	 1000000	       111 ns/op	     144 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV1-8              	  934490	       111 ns/op	     144 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV1-8              	 1000000	       109 ns/op	     144 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV1-8              	 1000000	       110 ns/op	     144 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV1-8              	 1000000	       128 ns/op	     144 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV1-8              	 1000000	       105 ns/op	     144 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV1-8              	 1000000	       111 ns/op	     144 B/op	       1 allocs/op
+BenchmarkMarshalMsgGetDataRespV1-8              	 1000000	       111 ns/op	     144 B/op	       1 allocs/op
+BenchmarkAppendMsgGetDataRespV1-8               	 2603960	        41.6 ns/op	2500.14 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV1-8               	 2791290	        40.6 ns/op	2560.09 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV1-8               	 3035246	        43.0 ns/op	2418.19 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV1-8               	 2928560	        40.8 ns/op	2550.82 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV1-8               	 2878306	        43.0 ns/op	2421.29 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV1-8               	 2765305	        41.0 ns/op	2534.15 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV1-8               	 2925105	        40.6 ns/op	2560.16 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV1-8               	 2871694	        40.3 ns/op	2583.71 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV1-8               	 2755338	        42.3 ns/op	2460.73 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgGetDataRespV1-8               	 2970510	        41.2 ns/op	2522.81 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV1-8               	  732513	       177 ns/op	 587.63 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV1-8               	  731331	       173 ns/op	 602.27 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV1-8               	  678397	       224 ns/op	 465.27 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV1-8               	  676698	       178 ns/op	 584.98 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV1-8               	  621544	       172 ns/op	 604.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV1-8               	  723146	       213 ns/op	 488.92 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV1-8               	  700689	       181 ns/op	 573.24 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV1-8               	  728608	       170 ns/op	 613.14 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV1-8               	  555488	       214 ns/op	 485.46 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalGetDataRespV1-8               	  729672	       174 ns/op	 597.12 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV1-8                  	 1000000	       110 ns/op	 943.29 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV1-8                  	 1000000	       111 ns/op	 936.05 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV1-8                  	 1000000	       116 ns/op	 900.23 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV1-8                  	 1069680	       115 ns/op	 903.06 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV1-8                  	 1000000	       130 ns/op	 801.94 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV1-8                  	 1000000	       107 ns/op	 968.73 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV1-8                  	 1000000	       112 ns/op	 926.56 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV1-8                  	 1000000	       109 ns/op	 951.56 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV1-8                  	 1000000	       126 ns/op	 828.59 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeGetDataRespV1-8                  	 1000000	       111 ns/op	 935.09 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV1-8                  	  363848	       344 ns/op	 302.25 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV1-8                  	  344937	       325 ns/op	 319.82 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV1-8                  	  385795	       330 ns/op	 315.50 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV1-8                  	  371953	       329 ns/op	 315.81 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV1-8                  	  345004	       310 ns/op	 335.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV1-8                  	  373639	       361 ns/op	 287.80 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV1-8                  	  328297	       326 ns/op	 318.69 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV1-8                  	  407139	       315 ns/op	 330.19 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV1-8                  	  360368	       317 ns/op	 328.21 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeGetDataRespV1-8                  	  389431	       313 ns/op	 332.07 MB/s	       0 B/op	       0 allocs/op
+BenchmarkMarshalMsgIndexFindByTagResp-8         	 3353040	        35.8 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindByTagResp-8         	 2858320	        44.1 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindByTagResp-8         	 3281137	        38.2 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindByTagResp-8         	 3411591	        38.8 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindByTagResp-8         	 3748192	        33.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindByTagResp-8         	 3230413	        35.5 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindByTagResp-8         	 3416696	        35.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindByTagResp-8         	 3633798	        34.8 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindByTagResp-8         	 3212911	        36.5 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindByTagResp-8         	 3266532	        35.3 ns/op	      16 B/op	       1 allocs/op
+BenchmarkAppendMsgIndexFindByTagResp-8          	11910507	        10.0 ns/op	 997.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindByTagResp-8          	10238902	        12.9 ns/op	 773.11 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindByTagResp-8          	12259501	         9.99 ns/op	1001.32 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindByTagResp-8          	11161770	        10.1 ns/op	 987.22 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindByTagResp-8          	11913517	        10.3 ns/op	 970.99 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindByTagResp-8          	12383420	         9.77 ns/op	1023.90 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindByTagResp-8          	10641236	         9.60 ns/op	1042.03 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindByTagResp-8          	12742296	        10.2 ns/op	 981.49 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindByTagResp-8          	11784895	         9.89 ns/op	1011.49 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindByTagResp-8          	11311084	         9.75 ns/op	1025.95 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindByTagResp-8          	 4175377	        24.7 ns/op	 404.35 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindByTagResp-8          	 4876582	        25.1 ns/op	 398.89 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindByTagResp-8          	 4781246	        25.3 ns/op	 395.60 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindByTagResp-8          	 4707610	        24.6 ns/op	 405.99 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindByTagResp-8          	 4525528	        25.4 ns/op	 393.99 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindByTagResp-8          	 4473556	        25.3 ns/op	 395.16 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindByTagResp-8          	 4734566	        24.9 ns/op	 401.50 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindByTagResp-8          	 4362762	        24.6 ns/op	 406.08 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindByTagResp-8          	 4644013	        24.9 ns/op	 401.59 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindByTagResp-8          	 4558651	        26.1 ns/op	 382.73 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindByTagResp-8             	 6272744	        17.4 ns/op	 574.22 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindByTagResp-8             	 6507084	        17.7 ns/op	 563.62 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindByTagResp-8             	 6847045	        16.8 ns/op	 594.73 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindByTagResp-8             	 7059318	        17.3 ns/op	 579.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindByTagResp-8             	 7090754	        17.9 ns/op	 559.10 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindByTagResp-8             	 6994936	        17.1 ns/op	 586.18 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindByTagResp-8             	 6525088	        17.5 ns/op	 572.63 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindByTagResp-8             	 6968254	        16.9 ns/op	 591.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindByTagResp-8             	 6721190	        17.0 ns/op	 588.15 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindByTagResp-8             	 7091670	        17.4 ns/op	 573.23 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindByTagResp-8             	 2465178	        48.9 ns/op	 204.40 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindByTagResp-8             	 2483499	        51.1 ns/op	 195.63 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindByTagResp-8             	 2481416	        48.0 ns/op	 208.45 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindByTagResp-8             	 2452017	        48.9 ns/op	 204.42 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindByTagResp-8             	 2464351	        48.4 ns/op	 206.47 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindByTagResp-8             	 2485315	        49.1 ns/op	 203.69 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindByTagResp-8             	 2495622	        48.3 ns/op	 206.94 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindByTagResp-8             	 2326880	        52.7 ns/op	 189.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindByTagResp-8             	 2532601	        48.8 ns/op	 205.01 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindByTagResp-8             	 2418026	        50.4 ns/op	 198.26 MB/s	       0 B/op	       0 allocs/op
+BenchmarkMarshalMsgIndexFindResp-8              	 3002889	        43.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindResp-8              	 3123466	        38.7 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindResp-8              	 3290818	        37.2 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindResp-8              	 3227714	        38.4 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindResp-8              	 3031498	        38.4 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindResp-8              	 2560236	        48.7 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindResp-8              	 2973460	        45.1 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindResp-8              	 2828439	        41.1 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindResp-8              	 3009762	        40.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexFindResp-8              	 3098290	        39.8 ns/op	      16 B/op	       1 allocs/op
+BenchmarkAppendMsgIndexFindResp-8               	 8271561	        15.1 ns/op	 531.53 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindResp-8               	 7364509	        14.8 ns/op	 542.13 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindResp-8               	 6862232	        16.6 ns/op	 480.99 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindResp-8               	 8029143	        15.8 ns/op	 507.64 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindResp-8               	 8170582	        15.0 ns/op	 534.34 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindResp-8               	 7451960	        14.5 ns/op	 552.07 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindResp-8               	 8170201	        14.4 ns/op	 556.44 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindResp-8               	 7048580	        15.2 ns/op	 526.45 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindResp-8               	 7818871	        14.2 ns/op	 562.09 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexFindResp-8               	 8636926	        15.2 ns/op	 527.81 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindResp-8               	 4712606	        25.7 ns/op	 311.11 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindResp-8               	 4733943	        25.4 ns/op	 315.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindResp-8               	 4617356	        27.8 ns/op	 287.58 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindResp-8               	 4299408	        27.1 ns/op	 294.77 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindResp-8               	 3808284	        28.2 ns/op	 283.45 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindResp-8               	 4320243	        27.2 ns/op	 293.90 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindResp-8               	 4463719	        26.2 ns/op	 304.90 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindResp-8               	 4669494	        25.5 ns/op	 313.51 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindResp-8               	 4474863	        25.7 ns/op	 311.24 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexFindResp-8               	 4737196	        26.4 ns/op	 302.83 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindResp-8                  	 5785480	        19.6 ns/op	 408.51 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindResp-8                  	 5280076	        19.8 ns/op	 403.45 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindResp-8                  	 6061467	        19.5 ns/op	 410.88 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindResp-8                  	 6137504	        25.3 ns/op	 316.10 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindResp-8                  	 5819794	        19.9 ns/op	 401.04 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindResp-8                  	 5906893	        22.1 ns/op	 361.40 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindResp-8                  	 5497066	        20.1 ns/op	 398.04 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindResp-8                  	 6094111	        20.4 ns/op	 392.66 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindResp-8                  	 6197281	        19.3 ns/op	 414.88 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexFindResp-8                  	 6080367	        19.2 ns/op	 415.64 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindResp-8                  	 2417815	        47.1 ns/op	 169.95 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindResp-8                  	 2525356	        47.4 ns/op	 168.77 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindResp-8                  	 2349582	        47.8 ns/op	 167.37 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindResp-8                  	 2464488	        46.0 ns/op	 173.73 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindResp-8                  	 2495104	        47.7 ns/op	 167.58 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindResp-8                  	 2499769	        47.3 ns/op	 169.04 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindResp-8                  	 2535782	        45.7 ns/op	 175.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindResp-8                  	 2556386	        48.0 ns/op	 166.60 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindResp-8                  	 2519648	        47.6 ns/op	 168.23 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexFindResp-8                  	 2451626	        47.1 ns/op	 169.89 MB/s	       0 B/op	       0 allocs/op
+BenchmarkMarshalMsgIndexTagDelSeriesResp-8      	 3651004	        32.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDelSeriesResp-8      	 3798411	        32.7 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDelSeriesResp-8      	 3685994	        31.6 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDelSeriesResp-8      	 3770814	        33.2 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDelSeriesResp-8      	 3515505	        33.9 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDelSeriesResp-8      	 3645722	        33.7 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDelSeriesResp-8      	 3292144	        33.6 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDelSeriesResp-8      	 4018754	        36.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDelSeriesResp-8      	 3494502	        33.9 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDelSeriesResp-8      	 3794299	        32.8 ns/op	      16 B/op	       1 allocs/op
+BenchmarkAppendMsgIndexTagDelSeriesResp-8       	13497835	         8.00 ns/op	1000.22 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDelSeriesResp-8       	14409826	         7.60 ns/op	1052.15 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDelSeriesResp-8       	15731714	         7.75 ns/op	1032.71 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDelSeriesResp-8       	14368155	         7.63 ns/op	1048.92 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDelSeriesResp-8       	14862915	         7.52 ns/op	1063.65 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDelSeriesResp-8       	15848659	         7.58 ns/op	1055.36 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDelSeriesResp-8       	16068432	         7.51 ns/op	1065.09 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDelSeriesResp-8       	16320637	         7.51 ns/op	1065.53 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDelSeriesResp-8       	15951553	         7.77 ns/op	1029.57 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDelSeriesResp-8       	16342938	         7.55 ns/op	1059.16 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDelSeriesResp-8       	 4499352	        25.0 ns/op	 319.77 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDelSeriesResp-8       	 4599348	        24.5 ns/op	 326.93 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDelSeriesResp-8       	 5038204	        25.2 ns/op	 318.08 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDelSeriesResp-8       	 4966881	        25.3 ns/op	 315.71 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDelSeriesResp-8       	 5018690	        25.3 ns/op	 315.76 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDelSeriesResp-8       	 4388038	        24.0 ns/op	 332.86 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDelSeriesResp-8       	 4988355	        24.5 ns/op	 326.03 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDelSeriesResp-8       	 4766377	        24.2 ns/op	 330.65 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDelSeriesResp-8       	 4938741	        24.4 ns/op	 328.34 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDelSeriesResp-8       	 4877581	        24.8 ns/op	 322.32 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDelSeriesResp-8          	 7220785	        16.4 ns/op	 487.31 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDelSeriesResp-8          	 6863595	        15.8 ns/op	 506.52 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDelSeriesResp-8          	 7681700	        16.3 ns/op	 491.59 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDelSeriesResp-8          	 7617970	        16.0 ns/op	 498.67 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDelSeriesResp-8          	 7379660	        16.5 ns/op	 486.00 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDelSeriesResp-8          	 7735790	        15.6 ns/op	 511.74 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDelSeriesResp-8          	 6447069	        16.0 ns/op	 500.25 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDelSeriesResp-8          	 6981098	        16.0 ns/op	 500.27 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDelSeriesResp-8          	 6700305	        16.0 ns/op	 500.42 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDelSeriesResp-8          	 6758916	        16.2 ns/op	 492.86 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDelSeriesResp-8          	 2668316	        45.3 ns/op	 176.72 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDelSeriesResp-8          	 2588793	        45.7 ns/op	 174.93 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDelSeriesResp-8          	 2505526	        46.0 ns/op	 173.79 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDelSeriesResp-8          	 2674275	        48.3 ns/op	 165.69 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDelSeriesResp-8          	 2625603	        46.5 ns/op	 172.00 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDelSeriesResp-8          	 2629030	        46.4 ns/op	 172.27 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDelSeriesResp-8          	 2517628	        45.3 ns/op	 176.59 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDelSeriesResp-8          	 2594860	        49.6 ns/op	 161.22 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDelSeriesResp-8          	 2365413	        46.5 ns/op	 171.97 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDelSeriesResp-8          	 2534318	        46.8 ns/op	 170.89 MB/s	       0 B/op	       0 allocs/op
+BenchmarkMarshalMsgIndexTagDetailsResp-8        	 3184674	        38.1 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDetailsResp-8        	 3475450	        38.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDetailsResp-8        	 2747250	        41.4 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDetailsResp-8        	 3391731	        38.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDetailsResp-8        	 3150117	        38.7 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDetailsResp-8        	 2796664	        37.2 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDetailsResp-8        	 3226832	        40.2 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDetailsResp-8        	 3271629	        37.9 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDetailsResp-8        	 3024331	        47.7 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagDetailsResp-8        	 3265171	        38.8 ns/op	      16 B/op	       1 allocs/op
+BenchmarkAppendMsgIndexTagDetailsResp-8         	 7796179	        13.8 ns/op	 653.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDetailsResp-8         	 8123366	        13.7 ns/op	 659.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDetailsResp-8         	 8813190	        13.9 ns/op	 649.64 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDetailsResp-8         	 9021459	        13.5 ns/op	 665.96 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDetailsResp-8         	 9071125	        13.6 ns/op	 659.58 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDetailsResp-8         	 8440281	        13.3 ns/op	 675.95 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDetailsResp-8         	 8827746	        13.4 ns/op	 670.83 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDetailsResp-8         	 8727168	        13.4 ns/op	 671.31 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDetailsResp-8         	 8094192	        13.5 ns/op	 666.55 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagDetailsResp-8         	 8834619	        13.6 ns/op	 662.11 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDetailsResp-8         	 4777617	        25.0 ns/op	 359.83 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDetailsResp-8         	 4833456	        26.1 ns/op	 344.29 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDetailsResp-8         	 4391161	        25.0 ns/op	 360.52 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDetailsResp-8         	 4468189	        25.5 ns/op	 353.18 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDetailsResp-8         	 4830742	        25.6 ns/op	 351.54 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDetailsResp-8         	 4653675	        26.6 ns/op	 338.72 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDetailsResp-8         	 4387167	        26.0 ns/op	 345.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDetailsResp-8         	 4451886	        25.1 ns/op	 358.20 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDetailsResp-8         	 4762854	        26.0 ns/op	 346.04 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagDetailsResp-8         	 4814826	        25.2 ns/op	 356.89 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDetailsResp-8            	 5598266	        20.0 ns/op	 449.98 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDetailsResp-8            	 6147286	        20.1 ns/op	 447.56 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDetailsResp-8            	 5976495	        19.6 ns/op	 460.30 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDetailsResp-8            	 6182623	        19.6 ns/op	 459.80 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDetailsResp-8            	 5995339	        19.5 ns/op	 461.55 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDetailsResp-8            	 5412354	        19.9 ns/op	 452.62 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDetailsResp-8            	 6211917	        19.7 ns/op	 457.38 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDetailsResp-8            	 5990346	        20.2 ns/op	 444.92 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDetailsResp-8            	 5916962	        19.8 ns/op	 453.56 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagDetailsResp-8            	 5551617	        20.1 ns/op	 447.18 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDetailsResp-8            	 2386896	        47.8 ns/op	 188.12 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDetailsResp-8            	 2479600	        49.7 ns/op	 180.91 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDetailsResp-8            	 2473260	        49.6 ns/op	 181.36 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDetailsResp-8            	 2563600	        48.7 ns/op	 184.84 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDetailsResp-8            	 2450360	        48.2 ns/op	 186.76 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDetailsResp-8            	 2536555	        46.8 ns/op	 192.22 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDetailsResp-8            	 2469789	        48.1 ns/op	 186.97 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDetailsResp-8            	 2381535	        48.9 ns/op	 184.22 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDetailsResp-8            	 2504253	        50.1 ns/op	 179.63 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagDetailsResp-8            	 2502790	        46.0 ns/op	 195.74 MB/s	       0 B/op	       0 allocs/op
+BenchmarkMarshalMsgIndexTagsResp-8              	 3431654	        33.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagsResp-8              	 3221023	        32.6 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagsResp-8              	 3164502	        34.5 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagsResp-8              	 3891759	        33.0 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagsResp-8              	 3644928	        35.7 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagsResp-8              	 3646875	        35.3 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagsResp-8              	 3649225	        32.8 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagsResp-8              	 3444226	        34.4 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagsResp-8              	 3346543	        36.6 ns/op	      16 B/op	       1 allocs/op
+BenchmarkMarshalMsgIndexTagsResp-8              	 3884418	        32.7 ns/op	      16 B/op	       1 allocs/op
+BenchmarkAppendMsgIndexTagsResp-8               	12762122	         9.15 ns/op	 765.17 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagsResp-8               	13295965	         9.36 ns/op	 747.59 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagsResp-8               	13046024	         8.92 ns/op	 784.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagsResp-8               	12956236	         9.13 ns/op	 766.29 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagsResp-8               	13585227	         9.03 ns/op	 775.46 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagsResp-8               	13179109	         9.02 ns/op	 776.36 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagsResp-8               	13455181	         9.05 ns/op	 773.53 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagsResp-8               	12027640	         8.91 ns/op	 785.24 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagsResp-8               	13193120	         8.78 ns/op	 797.22 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgIndexTagsResp-8               	13653036	         9.14 ns/op	 766.15 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagsResp-8               	 4441442	        25.7 ns/op	 272.12 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagsResp-8               	 4227313	        25.2 ns/op	 277.74 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagsResp-8               	 4327996	        25.1 ns/op	 278.85 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagsResp-8               	 4161918	        24.8 ns/op	 282.35 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagsResp-8               	 4947771	        25.8 ns/op	 271.11 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagsResp-8               	 4524592	        25.3 ns/op	 276.95 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagsResp-8               	 4908693	        25.8 ns/op	 271.04 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagsResp-8               	 4605498	        25.8 ns/op	 271.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagsResp-8               	 4770193	        24.9 ns/op	 281.46 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalIndexTagsResp-8               	 4429164	        24.9 ns/op	 280.84 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagsResp-8                  	 6144614	        17.9 ns/op	 390.84 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagsResp-8                  	 7132246	        17.0 ns/op	 412.62 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagsResp-8                  	 6674767	        17.0 ns/op	 412.62 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagsResp-8                  	 7252965	        16.8 ns/op	 415.88 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagsResp-8                  	 7388870	        16.5 ns/op	 424.79 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagsResp-8                  	 7024408	        17.0 ns/op	 412.00 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagsResp-8                  	 6742606	        16.6 ns/op	 420.67 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagsResp-8                  	 7222648	        17.7 ns/op	 394.37 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagsResp-8                  	 6867100	        17.2 ns/op	 406.43 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeIndexTagsResp-8                  	 6727910	        17.2 ns/op	 407.30 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagsResp-8                  	 2642436	        47.3 ns/op	 148.11 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagsResp-8                  	 2478460	        47.0 ns/op	 149.05 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagsResp-8                  	 2564233	        57.0 ns/op	 122.77 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagsResp-8                  	 2536628	        47.3 ns/op	 147.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagsResp-8                  	 2459241	        46.0 ns/op	 152.07 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagsResp-8                  	 2600400	        48.0 ns/op	 145.95 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagsResp-8                  	 2552728	        49.2 ns/op	 142.14 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagsResp-8                  	 2579086	        47.1 ns/op	 148.53 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagsResp-8                  	 2541132	        48.3 ns/op	 144.95 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeIndexTagsResp-8                  	 2453352	        47.2 ns/op	 148.40 MB/s	       0 B/op	       0 allocs/op
+BenchmarkMarshalMsgMetricsDeleteResp-8          	 2754544	        37.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkMarshalMsgMetricsDeleteResp-8          	 3195970	        42.1 ns/op	      32 B/op	       1 allocs/op
+BenchmarkMarshalMsgMetricsDeleteResp-8          	 2642248	        39.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkMarshalMsgMetricsDeleteResp-8          	 2767284	        39.5 ns/op	      32 B/op	       1 allocs/op
+BenchmarkMarshalMsgMetricsDeleteResp-8          	 2834415	        39.2 ns/op	      32 B/op	       1 allocs/op
+BenchmarkMarshalMsgMetricsDeleteResp-8          	 2585108	        40.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkMarshalMsgMetricsDeleteResp-8          	 2758550	        42.5 ns/op	      32 B/op	       1 allocs/op
+BenchmarkMarshalMsgMetricsDeleteResp-8          	 2910033	        43.3 ns/op	      32 B/op	       1 allocs/op
+BenchmarkMarshalMsgMetricsDeleteResp-8          	 2785040	        40.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkMarshalMsgMetricsDeleteResp-8          	 2987952	        41.4 ns/op	      32 B/op	       1 allocs/op
+BenchmarkAppendMsgMetricsDeleteResp-8           	16242490	         7.60 ns/op	1842.25 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgMetricsDeleteResp-8           	16180500	         7.50 ns/op	1867.45 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgMetricsDeleteResp-8           	15709495	         7.59 ns/op	1844.50 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgMetricsDeleteResp-8           	15900346	         7.72 ns/op	1813.95 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgMetricsDeleteResp-8           	15227616	         7.82 ns/op	1791.42 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgMetricsDeleteResp-8           	15549007	         7.65 ns/op	1830.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgMetricsDeleteResp-8           	15124282	         7.64 ns/op	1831.47 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgMetricsDeleteResp-8           	15827461	         7.61 ns/op	1839.73 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgMetricsDeleteResp-8           	16152063	         7.61 ns/op	1839.23 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgMetricsDeleteResp-8           	15348724	         7.84 ns/op	1785.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalMetricsDeleteResp-8           	 4299024	        24.3 ns/op	 576.42 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalMetricsDeleteResp-8           	 4841802	        23.9 ns/op	 585.56 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalMetricsDeleteResp-8           	 4779231	        25.9 ns/op	 539.61 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalMetricsDeleteResp-8           	 4992013	        24.7 ns/op	 566.99 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalMetricsDeleteResp-8           	 4991420	        24.2 ns/op	 577.40 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalMetricsDeleteResp-8           	 5056538	        24.0 ns/op	 583.42 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalMetricsDeleteResp-8           	 4857514	        26.4 ns/op	 530.55 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalMetricsDeleteResp-8           	 4166246	        26.1 ns/op	 536.34 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalMetricsDeleteResp-8           	 4694814	        24.9 ns/op	 563.17 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalMetricsDeleteResp-8           	 4862684	        24.2 ns/op	 577.68 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeMetricsDeleteResp-8              	 6691894	        18.2 ns/op	 768.66 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeMetricsDeleteResp-8              	 7497968	        16.1 ns/op	 871.25 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeMetricsDeleteResp-8              	 7415934	        16.4 ns/op	 854.39 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeMetricsDeleteResp-8              	 7265218	        16.6 ns/op	 844.47 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeMetricsDeleteResp-8              	 7482633	        17.5 ns/op	 801.68 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeMetricsDeleteResp-8              	 6701991	        16.0 ns/op	 877.03 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeMetricsDeleteResp-8              	 6585681	        15.9 ns/op	 881.66 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeMetricsDeleteResp-8              	 7550444	        17.5 ns/op	 800.96 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeMetricsDeleteResp-8              	 7320662	        16.3 ns/op	 860.06 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeMetricsDeleteResp-8              	 6587815	        17.0 ns/op	 822.32 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeMetricsDeleteResp-8              	 2508752	        48.6 ns/op	 288.22 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeMetricsDeleteResp-8              	 2391276	        49.5 ns/op	 282.83 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeMetricsDeleteResp-8              	 2375619	        50.1 ns/op	 279.17 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeMetricsDeleteResp-8              	 2383543	        48.9 ns/op	 286.44 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeMetricsDeleteResp-8              	 2514368	        46.2 ns/op	 302.99 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeMetricsDeleteResp-8              	 2489120	        48.1 ns/op	 290.93 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeMetricsDeleteResp-8              	 2437161	        47.3 ns/op	 296.08 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeMetricsDeleteResp-8              	 2554670	        46.9 ns/op	 298.37 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeMetricsDeleteResp-8              	 2407347	        46.3 ns/op	 302.49 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeMetricsDeleteResp-8              	 2459996	        48.1 ns/op	 290.79 MB/s	       0 B/op	       0 allocs/op
+BenchmarkMarshalMsgStringList-8                 	 5162671	        23.9 ns/op	       5 B/op	       1 allocs/op
+BenchmarkMarshalMsgStringList-8                 	 5132971	        23.7 ns/op	       5 B/op	       1 allocs/op
+BenchmarkMarshalMsgStringList-8                 	 4800186	        23.8 ns/op	       5 B/op	       1 allocs/op
+BenchmarkMarshalMsgStringList-8                 	 4603534	        24.1 ns/op	       5 B/op	       1 allocs/op
+BenchmarkMarshalMsgStringList-8                 	 4695184	        24.7 ns/op	       5 B/op	       1 allocs/op
+BenchmarkMarshalMsgStringList-8                 	 5105074	        24.5 ns/op	       5 B/op	       1 allocs/op
+BenchmarkMarshalMsgStringList-8                 	 5330383	        23.8 ns/op	       5 B/op	       1 allocs/op
+BenchmarkMarshalMsgStringList-8                 	 5069025	        24.6 ns/op	       5 B/op	       1 allocs/op
+BenchmarkMarshalMsgStringList-8                 	 5031135	        23.6 ns/op	       5 B/op	       1 allocs/op
+BenchmarkMarshalMsgStringList-8                 	 4978076	        23.7 ns/op	       5 B/op	       1 allocs/op
+BenchmarkAppendMsgStringList-8                  	13227190	         8.56 ns/op	 116.76 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgStringList-8                  	13751877	         8.82 ns/op	 113.40 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgStringList-8                  	13738472	         8.63 ns/op	 115.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgStringList-8                  	13225831	         8.57 ns/op	 116.74 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgStringList-8                  	13636284	        11.0 ns/op	  90.90 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgStringList-8                  	14332498	         8.60 ns/op	 116.23 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgStringList-8                  	13816957	         9.69 ns/op	 103.21 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgStringList-8                  	12967585	         8.92 ns/op	 112.11 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgStringList-8                  	13081580	         8.51 ns/op	 117.54 MB/s	       0 B/op	       0 allocs/op
+BenchmarkAppendMsgStringList-8                  	14199754	         8.64 ns/op	 115.68 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalStringList-8                  	13454811	         8.90 ns/op	 112.34 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalStringList-8                  	13260516	         9.04 ns/op	 110.58 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalStringList-8                  	13282737	         8.95 ns/op	 111.70 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalStringList-8                  	13907964	         9.03 ns/op	 110.76 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalStringList-8                  	14226044	         8.69 ns/op	 115.06 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalStringList-8                  	14110395	         8.52 ns/op	 117.39 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalStringList-8                  	13563100	         8.73 ns/op	 114.50 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalStringList-8                  	14164884	         8.70 ns/op	 114.99 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalStringList-8                  	14151078	         9.04 ns/op	 110.65 MB/s	       0 B/op	       0 allocs/op
+BenchmarkUnmarshalStringList-8                  	14188047	         8.71 ns/op	 114.80 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeStringList-8                     	13127991	         9.09 ns/op	 110.00 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeStringList-8                     	13057581	         8.94 ns/op	 111.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeStringList-8                     	12039205	         9.05 ns/op	 110.44 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeStringList-8                     	12788317	         9.26 ns/op	 108.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeStringList-8                     	13059979	         8.92 ns/op	 112.13 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeStringList-8                     	13873908	         8.85 ns/op	 113.03 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeStringList-8                     	13110495	         8.94 ns/op	 111.86 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeStringList-8                     	13472134	         8.74 ns/op	 114.36 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeStringList-8                     	13256253	         8.77 ns/op	 114.07 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncodeStringList-8                     	13313450	         8.94 ns/op	 111.86 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeStringList-8                     	 8138124	        14.8 ns/op	  67.56 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeStringList-8                     	 7944754	        15.0 ns/op	  66.88 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeStringList-8                     	 8305588	        14.7 ns/op	  68.25 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeStringList-8                     	 7802808	        14.9 ns/op	  67.32 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeStringList-8                     	 7482244	        14.9 ns/op	  67.23 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeStringList-8                     	 7825570	        14.7 ns/op	  68.11 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeStringList-8                     	 7634996	        14.5 ns/op	  68.91 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeStringList-8                     	 7801537	        15.1 ns/op	  66.16 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeStringList-8                     	 7424877	        14.6 ns/op	  68.70 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecodeStringList-8                     	 8089294	        14.8 ns/op	  67.37 MB/s	       0 B/op	       0 allocs/op
