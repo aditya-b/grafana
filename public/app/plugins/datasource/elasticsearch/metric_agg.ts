@@ -109,6 +109,10 @@ export class ElasticMetricAggCtrl {
           $scope.target.bucketAggs = [];
           break;
         }
+        case 'logs': {
+          $scope.target.bucketAggs = [];
+          break;
+        }
       }
       if ($scope.aggDef.supportsInlineScript) {
         // I know this stores the inline script twice
@@ -164,7 +168,7 @@ export class ElasticMetricAggCtrl {
       $scope.showOptions = false;
 
       // reset back to metric/group by query
-      if ($scope.target.bucketAggs.length === 0 && $scope.agg.type !== 'raw_document') {
+      if ($scope.target.bucketAggs.length === 0 && !['raw_document', 'logs'].includes($scope.agg.type)) {
         $scope.target.bucketAggs = [queryDef.defaultBucketAgg()];
       }
 

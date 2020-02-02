@@ -120,9 +120,25 @@ export const getGraphSeriesModel = (
           },
         });
 
+        console.log(graphOptions);
         graphs.push({
+          stack: true,
           label: field.name,
           data: points,
+          bars: {
+            show: graphOptions.showBars ?? false,
+            fill: 1,
+            // Dividig the width by 1.5 to make the bars not touch each other
+            barWidth: 2,
+            zero: false,
+            lineWidth: 5,
+          },
+          points: {
+            show: graphOptions.showPoints ?? false,
+          },
+          lines: {
+            show: graphOptions.showLines ?? false,
+          },
           color: field.config.color?.fixedColor,
           info: statsDisplayValues,
           isVisible: true,

@@ -208,7 +208,7 @@ export class ElasticQueryBuilder {
     // handle document query
     if (target.bucketAggs.length === 0) {
       metric = target.metrics[0];
-      if (!metric || metric.type !== 'raw_document') {
+      if (!metric || !['raw_document', 'logs'].includes(metric.type)) {
         throw { message: 'Invalid query' };
       }
 

@@ -513,16 +513,23 @@ export const processQueryResponse = (
   const latency = request.endTime ? request.endTime - request.startTime : 0;
   const processor = new ResultProcessor(state, series, request.intervalMs, request.timezone as TimeZone);
   //const hasTimeSeries = series.filter(isTimeSeries).length;
+  //console.log(series);
 
-  const graphResult = processor.getGraphResult();
-  let tableResult = null;
-  let logsResult = null;
-
+  let graphResult = processor.getGraphResult();
+  const tableResult: null = null;
+  const logsResult = processor.getLogsResult();
   if (graphResult) {
-    tableResult = processor.getTableResult();
+    graphResult.push(...logsResult.series);
   } else {
-    logsResult = processor.getLogsResult();
+    graphResult = logsResult.series;
+    console.log(graphResult);
   }
+
+  // if (graphResult) {
+  //   tableResult = processor.getTableResult();
+  // } else {
+  //   logsResult = processor.getLogsResult();
+  // }
 
   // Send legacy data to Angular editors
   if (state.datasourceInstance.components.QueryCtrl) {

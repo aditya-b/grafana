@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import TableModel from 'app/core/table_model';
-import { FieldType, DataFrame, ArrayVector, guessFieldTypeFromValue, AnnotationQueryRequest } from '@grafana/data';
+import { FieldType, DataFrame, ArrayVector, AnnotationQueryRequest } from '@grafana/data';
 import { InfluxRow, InfluxQuery } from './types';
 
 export default class InfluxSeries {
@@ -201,14 +201,14 @@ export default class InfluxSeries {
     fields.push(
       ...this.series[0].columns.slice(hasTimeColumn ? 1 : 0).map((colName, i) => ({
         name: colName,
-        type: guessFieldTypeFromValue(allValues.slice(hasTimeColumn ? 1 : 0)[i].get(0)),
+        type: FieldType.other,
         config: {},
         values: allValues.slice(hasTimeColumn ? 1 : 0)[i],
       }))
     );
 
     return {
-      name: fields,
+      fields,
       length: allValues[0].length,
     };
   }

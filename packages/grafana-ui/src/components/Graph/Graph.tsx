@@ -355,6 +355,7 @@ export class Graph extends PureComponent<GraphProps, GraphState> {
       },
     };
 
+    console.log(series);
     try {
       $.plot(
         this.element,

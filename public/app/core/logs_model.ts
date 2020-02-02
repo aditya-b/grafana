@@ -161,10 +161,22 @@ export function makeSeriesForLogs(rows: LogRowModel[], intervalMs: number, timeZ
     };
 
     const graphSeries: GraphSeriesXY = {
+      stack: true,
       color: series.color,
       label: series.alias,
       data: points,
       isVisible: true,
+      bars: {
+        show: true,
+        fill: 1,
+        // Dividig the width by 1.5 to make the bars not touch each other
+        barWidth: 2,
+        zero: false,
+        lineWidth: 5,
+      },
+      lines: {
+        show: false,
+      },
       yAxis: {
         index: 1,
         min: 0,

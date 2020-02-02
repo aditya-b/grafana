@@ -33,7 +33,7 @@ export class ElasticQueryCtrl extends QueryCtrl {
 
     if (this.target.bucketAggs.length === 0) {
       const metric = this.target.metrics[0];
-      if (!metric || metric.type !== 'raw_document') {
+      if (!metric || !['raw_document', 'logs'].includes(metric.type)) {
         this.target.bucketAggs = [queryDef.defaultBucketAgg()];
       }
       this.refresh();

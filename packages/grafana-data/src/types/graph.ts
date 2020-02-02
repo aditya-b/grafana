@@ -22,6 +22,9 @@ export interface GraphSeriesXY {
   valueField: Field;
   seriesIndex: number;
   timeStep: number;
+  bars?: any;
+  points?: any;
+  lines?: any;
 
   info?: DisplayValue[]; // Legend info
 }

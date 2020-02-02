@@ -319,6 +319,7 @@ export class ElasticDatasource extends DataSourceApi<ElasticsearchQuery, Elastic
   }
 
   query(options: DataQueryRequest<ElasticsearchQuery>): Promise<DataQueryResponse> {
+    console.log(options);
     let payload = '';
     const targets = _.cloneDeep(options.targets);
     const sentTargets: ElasticsearchQuery[] = [];
@@ -339,8 +340,7 @@ export class ElasticDatasource extends DataSourceApi<ElasticsearchQuery, Elastic
 
       let queryObj;
       if (target.isLogsQuery || queryDef.hasMetricOfType(target, 'logs')) {
-        target.bucketAggs = [queryDef.defaultBucketAgg()];
-        target.metrics = [queryDef.defaultMetricAgg()];
+        target.bucketAggs = [];
         // Setting this for metrics queries that are typed as logs
         target.isLogsQuery = true;
         queryObj = this.queryBuilder.getLogsQuery(target, adhocFilters, queryString);
