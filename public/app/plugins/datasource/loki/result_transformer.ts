@@ -197,6 +197,9 @@ function lokiMatrixToTimeSeries(matrixResult: LokiMatrixResult, options: Transfo
     target: createMetricLabel(matrixResult.metric, options),
     datapoints: lokiPointsToTimeseriesPoints(matrixResult.values, options),
     tags: matrixResult.metric,
+    meta: {
+      responseType: 'Metrics',
+    },
   };
 }
 
@@ -326,6 +329,7 @@ export function lokiStreamsToDataframes(
       meta: {
         searchWords: getHighlighterExpressionsFromQuery(formatQuery(target.expr, target.regexp)),
         limit,
+        responseType: 'Logs',
       },
     };
   });

@@ -44,8 +44,8 @@ interface Props extends Themeable {
   absoluteRange: AbsoluteTimeRange;
   loading?: boolean;
   showPanel: boolean;
-  showBars: boolean;
-  showLines: boolean;
+  showBars?: boolean;
+  showLines?: boolean;
   isStacked: boolean;
   showingGraph?: boolean;
   showingTable?: boolean;
@@ -113,7 +113,7 @@ class UnThemedExploreGraphPanel extends PureComponent<Props, State> {
       },
     };
     const height = showPanel === false ? 100 : showingGraph && showingTable ? 200 : 400;
-    const lineWidth = showLines ? 1 : 5;
+    const lineWidth = 2;
     const seriesToShow = showAllTimeSeries ? series : series.slice(0, MAX_NUMBER_OF_TIME_SERIES);
 
     return (
@@ -138,8 +138,7 @@ class UnThemedExploreGraphPanel extends PureComponent<Props, State> {
               onSeriesToggle={onSeriesToggle}
               onHorizontalRegionSelected={this.onChangeTime}
             >
-              {/* For logs we are using mulit mode until we refactor logs histogram to use barWidth instead of lineWidth to render bars */}
-              <Chart.Tooltip mode={showBars ? 'multi' : 'single'} />
+              <Chart.Tooltip mode="single" />
             </GraphWithLegend>
           );
         }}

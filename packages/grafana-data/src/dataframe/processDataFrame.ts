@@ -10,10 +10,10 @@ import {
   FieldType,
   TableData,
   Column,
-  GraphSeriesXY,
   TimeSeriesValue,
   FieldDTO,
   DataFrameDTO,
+  FlotSeries,
 } from '../types/index';
 import { isDateTime } from '../datetime/moment_wrapper';
 import { deprecationWarning } from '../utils/deprecationWarning';
@@ -97,7 +97,7 @@ function convertTimeSeriesToDataFrame(timeSeries: TimeSeries): DataFrame {
  * This is added temporarily while we convert the LogsModel
  * to DataFrame.  See: https://github.com/grafana/grafana/issues/18528
  */
-function convertGraphSeriesToDataFrame(graphSeries: GraphSeriesXY): DataFrame {
+function convertGraphSeriesToDataFrame(graphSeries: FlotSeries): DataFrame {
   const x = new ArrayVector();
   const y = new ArrayVector();
 

@@ -16,6 +16,10 @@ export interface Props {
 }
 
 export const Table = ({ data, height, onCellClick, width }: Props) => {
+  if (!data) {
+    return <></>;
+  }
+
   const theme = useTheme();
   const tableStyles = getTableStyles(theme);
 
@@ -48,6 +52,8 @@ export const Table = ({ data, height, onCellClick, width }: Props) => {
     },
     [prepareRow, rows]
   );
+
+  console.log(data);
 
   return (
     <div {...getTableProps()} className={tableStyles.table}>

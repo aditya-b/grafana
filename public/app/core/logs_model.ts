@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { colors, ansicolor } from '@grafana/ui';
+import tinycolor from 'tinycolor2';
 
 import {
   Labels,
@@ -98,6 +99,7 @@ export function makeSeriesForLogs(rows: LogRowModel[], intervalMs: number, timeZ
   const bucketSize = intervalMs * 10;
   const seriesList: any[] = [];
 
+  console.log(bucketSize / 1000);
   const sortedRows = rows.sort(sortInAscendingOrder);
   for (const row of sortedRows) {
     let series = seriesByLevel[row.logLevel];
@@ -161,7 +163,6 @@ export function makeSeriesForLogs(rows: LogRowModel[], intervalMs: number, timeZ
     };
 
     const graphSeries: GraphSeriesXY = {
-      stack: true,
       color: series.color,
       label: series.alias,
       data: points,
@@ -169,25 +170,33 @@ export function makeSeriesForLogs(rows: LogRowModel[], intervalMs: number, timeZ
       bars: {
         show: true,
         fill: 1,
-        // Dividig the width by 1.5 to make the bars not touch each other
-        barWidth: 2,
+        barWidth: bucketSize,
+        lineWidth: 0,
+        fillColor: series.color,
         zero: false,
-        lineWidth: 5,
       },
       lines: {
         show: false,
       },
+      points: {
+        show: false,
+      },
+      stack: true,
       yAxis: {
         index: 1,
         min: 0,
         tickDecimals: 0,
       },
+      yaxis: 1,
       seriesIndex: i,
       timeField,
       valueField,
       // for now setting the time step to be 0,
       // and handle the bar width by setting lineWidth instead of barWidth in flot options
       timeStep: 0,
+      highlightColor: tinycolor(series.color)
+        .darken(15)
+        .toString(),
     };
 
     return graphSeries;
@@ -204,28 +213,40 @@ function isLogsData(series: DataFrame) {
  * @param dataFrame
  * @param intervalMs In case there are no metrics series, we use this for computing it from log rows.
  */
-export function dataFrameToLogsModel(dataFrame: DataFrame[], intervalMs: number, timeZone: TimeZone): LogsModel {
-  const { logSeries, metricSeries } = separateLogsAndMetrics(dataFrame);
+export function dataFrameToLogsModel(dataFrames: DataFrame[], intervalMs: number, timeZone: TimeZone): LogsModel {
+  const logSeries = dataFrames.filter(dataFrame => dataFrame.meta.responseType === 'Logs');
   const logsModel = logSeriesToLogsModel(logSeries);
 
   if (logsModel) {
-    if (metricSeries.length === 0) {
-      // Create metrics from logs
-      logsModel.series = makeSeriesForLogs(logsModel.rows, intervalMs, timeZone);
-    } else {
-      // We got metrics in the dataFrame so process those
-      logsModel.series = getGraphSeriesModel(
-        metricSeries,
-        timeZone,
-        {},
-        { showBars: true, showLines: false, showPoints: false },
-        {
-          asTable: false,
-          isVisible: true,
-          placement: 'under',
-        }
-      );
-    }
+    logsModel.series = makeSeriesForLogs(logsModel.rows, intervalMs, timeZone);
+    // if (metricSeries.length === 0) {
+    //   // Create metrics from logs
+    //   logsModel.series = makeSeriesForLogs(logsModel.rows, intervalMs, timeZone);
+    // } else {
+    //   // We got metrics in the dataFrame so process those
+    //   logsModel.series = getGraphSeriesModel(
+    //     metricSeries,
+    //     timeZone,
+    //     {},
+    //     {
+    //       lines: {
+    //         show: false,
+    //       },
+    //       points: {
+    //         show: false,
+    //       },
+    //       bars: {
+    //         show: true,
+    //       },
+    //       stack: true,
+    //     },
+    //     {
+    //       asTable: false,
+    //       isVisible: true,
+    //       placement: 'under',
+    //     }
+    //   );
+    // }
 
     return logsModel;
   }

@@ -513,17 +513,17 @@ export const processQueryResponse = (
   const latency = request.endTime ? request.endTime - request.startTime : 0;
   const processor = new ResultProcessor(state, series, request.intervalMs, request.timezone as TimeZone);
   //const hasTimeSeries = series.filter(isTimeSeries).length;
-  //console.log(series);
 
   let graphResult = processor.getGraphResult();
-  const tableResult: null = null;
+  const tableResult = processor.getTableResult();
   const logsResult = processor.getLogsResult();
   if (graphResult) {
     graphResult.push(...logsResult.series);
   } else {
     graphResult = logsResult.series;
-    console.log(graphResult);
   }
+
+  //console.log(logsResult);
 
   // if (graphResult) {
   //   tableResult = processor.getTableResult();

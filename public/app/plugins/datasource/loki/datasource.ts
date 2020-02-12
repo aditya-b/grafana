@@ -132,7 +132,7 @@ export class LokiDatasource extends DataSourceApi<LokiQuery, LokiOptions> {
 
     filteredTargets.forEach(target =>
       subQueries.push(
-        this.runInstantQuery(target, options, filteredTargets.length),
+        //this.runInstantQuery(target, options, filteredTargets.length),
         this.runRangeQueryWithFallback(target, options, filteredTargets.length)
       )
     );

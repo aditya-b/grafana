@@ -17,16 +17,17 @@ import {
   DEFAULT_DATE_TIME_FORMAT,
   FieldColor,
   FieldColorMode,
+  FlotSeries,
 } from '@grafana/data';
 
-import { SeriesOptions, GraphOptions } from './types';
+import { SeriesOptions } from './types';
 import { GraphLegendEditorLegendOptions } from './GraphLegendEditor';
 
 export const getGraphSeriesModel = (
   dataFrames: DataFrame[],
   timeZone: TimeZone,
   seriesOptions: SeriesOptions,
-  graphOptions: GraphOptions,
+  graphOptions: Partial<FlotSeries>,
   legendOptions: GraphLegendEditorLegendOptions,
   fieldOptions?: FieldDisplayOptions
 ) => {
@@ -90,7 +91,7 @@ export const getGraphSeriesModel = (
         } else {
           color = {
             mode: FieldColorMode.Fixed,
-            fixedColor: colors[graphs.length % colors.length],
+            fixedColor: colors[(graphs.length + 2) % colors.length],
           };
         }
 
@@ -120,36 +121,19 @@ export const getGraphSeriesModel = (
           },
         });
 
-        console.log(graphOptions);
         graphs.push({
-          stack: true,
           label: field.name,
           data: points,
-          bars: {
-            show: graphOptions.showBars ?? false,
-            fill: 1,
-            // Dividig the width by 1.5 to make the bars not touch each other
-            barWidth: 2,
-            zero: false,
-            lineWidth: 5,
-          },
-          points: {
-            show: graphOptions.showPoints ?? false,
-          },
-          lines: {
-            show: graphOptions.showLines ?? false,
-          },
           color: field.config.color?.fixedColor,
           info: statsDisplayValues,
           isVisible: true,
-          yAxis: {
-            index: (seriesOptions[field.name] && seriesOptions[field.name].yAxis) || 1,
-          },
+          yAxis: (seriesOptions[field.name] && seriesOptions[field.name].yAxis) || 1,
           // This index is used later on to retrieve appropriate series/time for X and Y axes
           seriesIndex: fieldColumnIndex,
           timeField: { ...timeField },
           valueField: { ...field },
           timeStep,
+          ...graphOptions,
         });
       }
     }

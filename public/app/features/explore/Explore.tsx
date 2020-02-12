@@ -8,11 +8,11 @@ import memoizeOne from 'memoize-one';
 
 // Services & Utils
 import store from 'app/core/store';
+
 // Components
 import { ErrorBoundaryAlert } from '@grafana/ui';
-import LogsContainer from './LogsContainer';
 import QueryRows from './QueryRows';
-import TableContainer from './TableContainer';
+
 // Actions
 import {
   changeSize,
@@ -38,6 +38,7 @@ import {
   LoadingState,
   LogsModel,
   DataFrame,
+  LogLevel,
 } from '@grafana/data';
 
 import {
@@ -62,8 +63,9 @@ import { ExploreToolbar } from './ExploreToolbar';
 import { NoDataSourceCallToAction } from './NoDataSourceCallToAction';
 import { getTimeZone } from '../profile/state/selectors';
 import { ErrorContainer } from './ErrorContainer';
-import { scanStopAction } from './state/actionTypes';
+import { scanStopAction, toggleLogLevelAction } from './state/actionTypes';
 import { ExploreGraphPanel } from './ExploreGraphPanel';
+import ResultsContainer from './ResultsContainer';
 
 const getStyles = memoizeOne(() => {
   return {
@@ -112,6 +114,7 @@ interface ExploreProps {
   showingTable?: boolean;
   timeZone?: TimeZone;
   onHiddenSeriesChanged?: (hiddenSeries: string[]) => void;
+  toggleLogLevelAction: typeof toggleLogLevelAction;
   toggleGraph: typeof toggleGraph;
   queryResponse: PanelData;
   originPanelId: number;
@@ -242,6 +245,16 @@ export class Explore extends React.PureComponent<ExploreProps> {
     toggleGraph(exploreId, showingGraph);
   };
 
+  onToggleLogLevel = (hiddenRawLevels: string[]) => {
+    const { exploreId } = this.props;
+    const hiddenLogLevels: LogLevel[] = hiddenRawLevels.map(level => LogLevel[level as LogLevel]);
+
+    this.props.toggleLogLevelAction({
+      exploreId,
+      hiddenLogLevels,
+    });
+  };
+
   onUpdateTimeRange = (absoluteRange: AbsoluteTimeRange) => {
     const { exploreId, updateTimeRange } = this.props;
     updateTimeRange({ exploreId, absoluteRange });
@@ -272,7 +285,6 @@ export class Explore extends React.PureComponent<ExploreProps> {
       queryKeys,
       mode,
       graphResult,
-      tableResult,
       logsResult,
       loading,
       absoluteRange,
@@ -330,7 +342,7 @@ export class Explore extends React.PureComponent<ExploreProps> {
                           {graphResult && (
                             <ExploreGraphPanel
                               series={graphResult}
-                              width={width}
+                              width={width - 20}
                               loading={loading}
                               absoluteRange={absoluteRange}
                               isStacked={false}
@@ -340,15 +352,11 @@ export class Explore extends React.PureComponent<ExploreProps> {
                               timeZone={timeZone}
                               onToggleGraph={this.onToggleGraph}
                               onUpdateTimeRange={this.onUpdateTimeRange}
-                              showBars={false}
-                              showLines={true}
+                              onHiddenSeriesChanged={this.onToggleLogLevel}
                             />
                           )}
-                          {tableResult && (!logsResult || graphResult) && (
-                            <TableContainer width={width} exploreId={exploreId} onClickCell={this.onClickFilterLabel} />
-                          )}
-                          {logsResult && !graphResult && (
-                            <LogsContainer
+                          {logsResult && (
+                            <ResultsContainer
                               width={width}
                               exploreId={exploreId}
                               syncedTimes={syncedTimes}
@@ -356,6 +364,7 @@ export class Explore extends React.PureComponent<ExploreProps> {
                               onClickFilterOutLabel={this.onClickFilterOutLabel}
                               onStartScanning={this.onStartScanning}
                               onStopScanning={this.onStopScanning}
+                              onClickCell={this.onClickFilterLabel}
                             />
                           )}
                         </>
@@ -465,6 +474,7 @@ const mapDispatchToProps: Partial<ExploreProps> = {
   updateTimeRange,
   toggleGraph,
   addQueryRow,
+  toggleLogLevelAction,
 };
 
 export default hot(module)(

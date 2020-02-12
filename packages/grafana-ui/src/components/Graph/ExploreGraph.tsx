@@ -1,7 +1,6 @@
 // Libraries
 import $ from 'jquery';
 import React, { PureComponent } from 'react';
-import uniqBy from 'lodash/uniqBy';
 // Types
 import {
   TimeRange,
@@ -12,7 +11,6 @@ import {
   dateTime,
   FlotPlotOptions,
   GraphSeriesXY,
-  FlotAxis,
 } from '@grafana/data';
 import _ from 'lodash';
 import { FlotPosition, FlotItem } from './types';
@@ -45,7 +43,7 @@ interface GraphState {
   contextItem?: FlotItem<GraphSeriesXY>;
 }
 
-export class Graph extends PureComponent<GraphProps, GraphState> {
+export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
   static defaultProps = {
     showLines: true,
     showPoints: false,
@@ -105,28 +103,6 @@ export class Graph extends PureComponent<GraphProps, GraphState> {
       contextPos,
     });
   };
-
-  getYAxes(series: GraphSeriesXY[]): FlotAxis[] {
-    if (series.length === 0) {
-      return [{ show: true, min: -1, max: 1 }];
-    }
-
-    return uniqBy(
-      series.map(s => {
-        const index = s.yAxis ? s.yAxis.index : 1;
-        const min = s.yAxis && !isNaN(s.yAxis.min as number) ? s.yAxis.min : null;
-        const tickDecimals = s.yAxis && !isNaN(s.yAxis.tickDecimals as number) ? s.yAxis.tickDecimals : null;
-        return {
-          show: true,
-          index,
-          position: index === 1 ? 'left' : 'right',
-          min,
-          tickDecimals,
-        };
-      }),
-      yAxisConfig => yAxisConfig.index
-    );
-  }
 
   renderTooltip = () => {
     const { children, series } = this.props;
@@ -297,7 +273,6 @@ export class Graph extends PureComponent<GraphProps, GraphState> {
     const ticks = width / 100;
     const min = timeRange.from.valueOf();
     const max = timeRange.to.valueOf();
-    const yaxes = this.getYAxes(series);
 
     const flotOptions: FlotPlotOptions = {
       legend: {
@@ -319,10 +294,7 @@ export class Graph extends PureComponent<GraphProps, GraphState> {
         bars: {
           show: showBars,
           fill: 1,
-          // Dividing the width by 1.5 to make the bars not touch each other
-          barWidth: showBars ? this.getBarWidth() / 1.5 : 1,
           zero: false,
-          lineWidth: lineWidth,
         },
         shadowSize: 0,
       },
@@ -335,7 +307,17 @@ export class Graph extends PureComponent<GraphProps, GraphState> {
         timeformat: timeFormat(ticks, min, max),
         timezone: timeZone ?? DefaultTimeZone,
       },
-      yaxes,
+      yaxis: {
+        show: true,
+        position: 'left',
+      },
+      yaxes: [
+        {
+          show: true,
+          position: 'left',
+        },
+        { show: true, position: 'right', alignTicksWithAxis: 1 },
+      ],
       grid: {
         minBorderMargin: 0,
         markings: [],
@@ -354,9 +336,24 @@ export class Graph extends PureComponent<GraphProps, GraphState> {
       crosshair: {
         mode: 'x',
       },
+      // hooks: {
+      //   drawSeries: (plot, ctx, series) => {
+      //     const barLeft: number = series.datapoints.points[0];
+      //     const barRight = barLeft + series.bars!.barWidth!;
+      //     const barLeftCanvas = series.xaxis.p2c(barLeft);
+      //     const barRightCanvas = series.xaxis.p2c(barRight);
+      //     const pixelWidth = barRightCanvas - barLeftCanvas;
+      //     if (pixelWidth < 5) {
+      //       const newBarRight = barLeftCanvas + 5;
+      //       const newBarPlotRight = series.xaxis.c2p(newBarRight);
+      //       const newBarWidth = newBarPlotRight - barLeft;
+      //       console.log(newBarWidth);
+      //       series.bars.barWidth = newBarWidth;
+      //     }
+      //   },
+      // },
     };
 
-    console.log(series);
     try {
       $.plot(
         this.element,
@@ -418,4 +415,4 @@ function timeFormat(ticks: number, min: number, max: number): string {
   return '%H:%M';
 }
 
-export default Graph;
+export default ExploreGraph;

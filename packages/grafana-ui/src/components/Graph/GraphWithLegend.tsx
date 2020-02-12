@@ -4,11 +4,12 @@ import React from 'react';
 import { css } from 'emotion';
 import { GraphSeriesValue } from '@grafana/data';
 
-import { Graph, GraphProps } from './Graph';
+import { GraphProps } from './Graph';
 import { LegendRenderOptions, LegendItem, LegendDisplayMode } from '../Legend/Legend';
 import { GraphLegend } from './GraphLegend';
 import { CustomScrollbar } from '../CustomScrollbar/CustomScrollbar';
 import { stylesFactory } from '../../themes';
+import ExploreGraph from './ExploreGraph';
 
 export type SeriesOptionChangeHandler<TOption> = (label: string, option: TOption) => void;
 export type SeriesColorChangeHandler = SeriesOptionChangeHandler<string>;
@@ -93,7 +94,7 @@ export const GraphWithLegend: React.FunctionComponent<GraphWithLegendProps> = (p
   return (
     <div className={wrapper}>
       <div className={graphContainer}>
-        <Graph
+        <ExploreGraph
           series={series}
           timeRange={timeRange}
           timeZone={timeZone}
@@ -108,7 +109,7 @@ export const GraphWithLegend: React.FunctionComponent<GraphWithLegendProps> = (p
           onHorizontalRegionSelected={onHorizontalRegionSelected}
         >
           {children}
-        </Graph>
+        </ExploreGraph>
       </div>
 
       {isLegendVisible && (

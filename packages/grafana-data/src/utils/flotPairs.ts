@@ -11,7 +11,11 @@ export interface FlotPairsOptions {
   nullValueMode?: NullValueMode;
 }
 
-export function getFlotPairs({ xField, yField, nullValueMode }: FlotPairsOptions): GraphSeriesValue[][] {
+export function getFlotPairs({
+  xField,
+  yField,
+  nullValueMode,
+}: FlotPairsOptions): Array<[GraphSeriesValue, GraphSeriesValue]> {
   const vX = xField.values;
   const vY = yField.values;
   const length = vX.length;
@@ -22,7 +26,7 @@ export function getFlotPairs({ xField, yField, nullValueMode }: FlotPairsOptions
   const ignoreNulls = nullValueMode === NullValueMode.Ignore;
   const nullAsZero = nullValueMode === NullValueMode.AsZero;
 
-  const pairs: any[][] = [];
+  const pairs: Array<[any, any]> = [];
 
   for (let i = 0; i < length; i++) {
     const x = vX.get(i);

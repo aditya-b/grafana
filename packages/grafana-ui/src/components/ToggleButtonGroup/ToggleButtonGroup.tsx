@@ -5,14 +5,15 @@ interface ToggleButtonGroupProps {
   label?: string;
   children: JSX.Element[];
   transparent?: boolean;
+  className?: string;
 }
 
 export class ToggleButtonGroup extends PureComponent<ToggleButtonGroupProps> {
   render() {
-    const { children, label, transparent } = this.props;
+    const { children, label, transparent, className } = this.props;
 
     return (
-      <div className="gf-form gf-form--align-center">
+      <div className={`gf-form gf-form--align-center ${className ?? ''}`}>
         {label && <label className={`gf-form-label ${transparent ? 'gf-form-label--transparent' : ''}`}>{label}</label>}
         <div className={`toggle-button-group ${transparent ? 'toggle-button-group--transparent' : ''}`}>{children}</div>
       </div>

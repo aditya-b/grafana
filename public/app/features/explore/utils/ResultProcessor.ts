@@ -2,7 +2,7 @@ import {
   LogsModel,
   GraphSeriesXY,
   DataFrame,
-  FieldType,
+  //FieldType,
   TimeZone,
   toDataFrame,
   getDisplayProcessor,
@@ -33,7 +33,18 @@ export class ResultProcessor {
       onlyTimeSeries,
       this.timeZone,
       {},
-      { showBars: false, showLines: true, showPoints: false },
+      {
+        lines: {
+          show: true,
+        },
+        points: {
+          show: false,
+        },
+        bars: {
+          show: false,
+        },
+        yaxis: 2,
+      },
       { asTable: false, isVisible: true, placement: 'under' }
     );
   }
@@ -42,7 +53,7 @@ export class ResultProcessor {
     // For now ignore time series
     // We can change this later, just need to figure out how to
     // Ignore time series only for prometheus
-    const onlyTables = this.dataFrames.filter(frame => !isTimeSeries(frame));
+    const onlyTables = this.dataFrames.filter(dataFrame => dataFrame.meta.responseType === 'Logs');
 
     if (onlyTables.length === 0) {
       return null;
@@ -100,15 +111,16 @@ export class ResultProcessor {
 }
 
 export function isTimeSeries(frame: DataFrame): boolean {
-  let hasTimeField = false;
-  let hasNumberField = false;
-  for (const field of frame.fields) {
-    hasTimeField = hasTimeField || field.type === FieldType.time;
-    hasNumberField = hasNumberField || field.type === FieldType.number;
-    if (hasTimeField && hasNumberField) {
-      break;
-    }
-  }
+  return frame.meta.responseType === 'Metrics';
+  // let hasTimeField = false;
+  // let hasNumberField = false;
+  // for (const field of frame.fields) {
+  //   hasTimeField = hasTimeField || field.type === FieldType.time;
+  //   hasNumberField = hasNumberField || field.type === FieldType.number;
+  //   if (hasTimeField && hasNumberField) {
+  //     break;
+  //   }
+  // }
 
-  return hasTimeField && hasNumberField;
+  // return hasTimeField && hasNumberField;
 }
