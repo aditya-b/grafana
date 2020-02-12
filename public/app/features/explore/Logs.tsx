@@ -15,7 +15,8 @@ import {
 } from '@grafana/data';
 import { LogLabels, LogRows } from '@grafana/ui';
 import store from 'app/core/store';
-import { ExploreItemState, StoreState } from 'app/types';
+
+import { MetaInfoText } from './MetaInfoText';
 
 const SETTINGS_KEYS = {
   showLabels: 'grafana.explore.logs.showLabels',
@@ -117,14 +118,14 @@ export class Logs extends PureComponent<Props> {
     return (
       <>
         {hasData && meta && (
-          <div className="logs-panel-meta">
-            {meta.map(item => (
-              <div className="logs-panel-meta__item" key={item.label}>
-                <span className="logs-panel-meta__label">{item.label}:</span>
-                <span className="logs-panel-meta__value">{renderMetaItem(item.value, item.kind)}</span>
-              </div>
-            ))}
-          </div>
+          <MetaInfoText
+            metaItems={meta.map(item => {
+              return {
+                label: item.label,
+                value: renderMetaItem(item.value, item.kind),
+              };
+            })}
+          />
         )}
 
         <LogRows
@@ -164,40 +165,3 @@ export class Logs extends PureComponent<Props> {
     );
   }
 }
-
-function mapStateToProps(state: StoreState, { exploreId }: { exploreId: string }) {
-  const explore = state.;
-  const item: ExploreItemState = explore[exploreId];
-  const {
-    showLabels,
-    showTime,
-    wrapLogMessage
-  } = item.;
-  const dedupedRows = deduplicatedRowsSelector(item);
-  const timeZone = getTimeZone(state.user);
-
-  return {
-    loading,
-    logsHighlighterExpressions,
-    logRows: logsResult && logsResult.rows,
-    logsMeta: logsResult && logsResult.meta,
-    logsSeries: logsResult && logsResult.series,
-    scanning,
-    timeZone,
-    dedupStrategy,
-    dedupedRows,
-    datasourceInstance,
-    isLive,
-    isPaused,
-    range,
-    absoluteRange,
-  };
-}
-
-const mapDispatchToProps = {
-  changeDedupStrategy,
-  toggleLogLevelAction,
-  updateTimeRange,
-};
-
-export default hot(module)(connect(mapStateToProps, mapDispatchToProps)(LogsContainer));

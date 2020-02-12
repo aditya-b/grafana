@@ -6,6 +6,7 @@ import {
   TimeZone,
   toDataFrame,
   getDisplayProcessor,
+  ExploreMode,
 } from '@grafana/data';
 import { ExploreItemState } from 'app/types/explore';
 import TableModel, { mergeTablesIntoModel } from 'app/core/table_model';

@@ -7,6 +7,7 @@ import {
   DataQueryResponse,
   DataQueryRequest,
   AnnotationQueryRequest,
+  ScopedVars,
 } from '@grafana/data';
 import InfluxSeries from './influx_series';
 import InfluxQueryModel from './influx_query_model';
@@ -145,30 +146,27 @@ export default class InfluxDatasource extends DataSourceApi<InfluxQuery, InfluxO
     return !!target.tags.find(tag => templateSrv.variableExists(tag.value));
   }
 
-  interpolateVariablesInQueries(queries: InfluxQuery[]): InfluxQuery[] {
+  interpolateVariablesInQueries(queries: InfluxQuery[], scopedVars: ScopedVars): InfluxQuery[] {
     if (!queries || queries.length === 0) {
       return [];
     }
 
-    const expandedQueries = queries.map(query => {
-      const expandedQuery = {
-        ...query,
-        datasource: this.name,
-        measurement: templateSrv.replace(query.measurement, null, 'regex'),
-      };
+    let expandedQueries = queries;
+    if (queries && queries.length > 0) {
+      expandedQueries = queries.map(query => {
+        const expandedQuery = {
+          ...query,
+          datasource: this.name,
+          measurement: templateSrv.replace(query.measurement, scopedVars, 'regex'),
+        };
 
-      if (query.rawQuery) {
-        expandedQuery.query = templateSrv.replace(query.query, null, 'regex');
-      }
+        if (query.rawQuery) {
+          expandedQuery.query = templateSrv.replace(query.query, scopedVars, 'regex');
+        }
 
-      if (query.tags) {
-        expandedQuery.tags = query.tags.map(tag => ({
-          ...tag,
-          value: templateSrv.replace(tag.value, null, 'regex'),
-        }));
-      }
-      return expandedQuery;
-    });
+        return expandedQuery;
+      });
+    }
 
     return expandedQueries;
   }
@@ -293,7 +291,7 @@ export default class InfluxDatasource extends DataSourceApi<InfluxQuery, InfluxO
       const result = await getBackendSrv().datasourceRequest(req);
       return result.data as InfluxResponse;
     } catch (err) {
-      if (err.status !== 0 || err.status >= 300) {
+      if ((Number.isInteger(err.status) && err.status !== 0) || err.status >= 300) {
         if (err.data?.error) {
           throw {
             message: `InfluxDB Error: ${err.data.error}`,

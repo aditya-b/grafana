@@ -39,16 +39,10 @@ import {
   LogsModel,
   DataFrame,
   LogLevel,
+  ExploreMode,
 } from '@grafana/data';
 
-import {
-  ExploreItemState,
-  ExploreUrlState,
-  ExploreId,
-  ExploreUpdateState,
-  ExploreUIState,
-  ExploreMode,
-} from 'app/types/explore';
+import { ExploreItemState, ExploreUrlState, ExploreId, ExploreUpdateState, ExploreUIState } from 'app/types/explore';
 import { StoreState } from 'app/types';
 import {
   ensureQueries,
