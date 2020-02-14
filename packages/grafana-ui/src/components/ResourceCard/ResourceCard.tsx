@@ -1,6 +1,6 @@
-import React, { FunctionComponent, ReactNode, FC } from 'react';
+import React, { FC, ReactNode } from 'react';
 import { css } from 'emotion';
-import { stylesFactory, useTheme } from '../../themes';
+import { stylesFactory, useTheme, selectThemeVariant } from '../../themes';
 import { GrafanaTheme } from '@grafana/data';
 
 export interface Props {
@@ -17,14 +17,22 @@ export const Card: FC<Props> = (props: Props) => {
   const theme = useTheme();
   const styles = getStyles(theme);
 
+  const infoElements = infoItems && (
+    <div className={styles.infoItems}>
+      {React.Children.map(infoItems, item => (
+        <div className={styles.infoItem}>{item}</div>
+      ))}
+    </div>
+  );
+
   return (
     <div className={styles.card}>
       {figure}
-      <div className="resource-card-text-wrapper">
+      <div className={styles.rows}>
         {name}
-        {description}
-        {infoItems}
-        {children}
+        {description && <div className={styles.rowItem}>{description}</div>}
+        {infoElements && <div className={styles.rowItem}>{infoElements}</div>}
+        {children && <div className={styles.rowItem}>{children}</div>}
       </div>
       {actions && <ResourceCardActions actions={actions} />}
     </div>
@@ -35,7 +43,7 @@ export interface ResourceCardNameProps {
   value: string;
 }
 
-export const ResourceCardName: FunctionComponent<ResourceCardNameProps> = ({ value }) => {
+export const ResourceCardName: FC<ResourceCardNameProps> = ({ value }) => {
   return <span className="resource-card-text">{value}</span>;
 };
 
@@ -43,7 +51,7 @@ export interface ResourceCardDescriptionProps {
   value: string;
 }
 
-export const ResourceCardDescription: FunctionComponent<ResourceCardDescriptionProps> = ({ value }) => {
+export const ResourceCardDescription: FC<ResourceCardDescriptionProps> = ({ value }) => {
   return <span className="resource-card-desc">{value}</span>;
 };
 
@@ -52,7 +60,7 @@ export interface ResourceCardFigureProps {
   alt: string;
 }
 
-export const ResourceCardFigure: FunctionComponent<ResourceCardFigureProps> = ({ src, alt }) => {
+export const ResourceCardFigure: FC<ResourceCardFigureProps> = ({ src, alt }) => {
   return <img className="resource-card-logo" src={src} alt={alt} />;
 };
 
@@ -61,7 +69,7 @@ export interface ResourceCardInfoItemProps {
   value: string;
 }
 
-export const ResourceCardInfoItem: FunctionComponent<ResourceCardInfoItemProps> = ({ keyName, value }) => {
+export const ResourceCardInfoItem: FC<ResourceCardInfoItemProps> = ({ keyName, value }) => {
   return keyName && value ? (
     <span className="resource-card-desc">
       {keyName}: {value}
@@ -73,7 +81,7 @@ export interface ResourceCardActionsProps {
   actions: JSX.Element[];
 }
 
-export const ResourceCardActions: FunctionComponent<ResourceCardActionsProps> = ({ actions }) => {
+export const ResourceCardActions: FC<ResourceCardActionsProps> = ({ actions }) => {
   return <div className="resource-card-actions">{React.Children.map(actions, (action: JSX.Element) => action)}</div>;
 };
 
@@ -87,6 +95,9 @@ export const ResourceCard = {
 };
 
 const getStyles = stylesFactory((theme: GrafanaTheme) => {
+  const hoverBgColor = `#0d2333`;
+  const hoverBorderColor = theme.colors.blueLight;
+
   return {
     card: css`
       width: 100%;
@@ -97,6 +108,24 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
       display: flex;
       align-items: center;
       margin-bottom: ${theme.spacing.sm};
+
+      &:hover {
+        background: ${hoverBgColor};
+        border-color: ${hoverBorderColor};
+        box-shadow: 0 0 4px ${hoverBorderColor};
+        transition: all 400ms ease-in-out;
+      }
+    `,
+    rows: css`
+      display: flex;
+      flex-direction: column;
+    `,
+    rowItem: css``,
+    infoItem: css`
+      padding-right: ${theme.spacing.md};
+    `,
+    infoItems: css`
+      display: flex;
     `,
   };
 });
