@@ -56,7 +56,7 @@ const DataSourcesListItem: FunctionComponent<Props> = ({ dataSource, deleteDataS
   }
 
   return (
-    <ResourceCard
+    <ResourceCard.Card
       name={<ResourceCard.Name value={dataSource.name} />}
       figure={<ResourceCard.Figure src={dataSource.typeLogoUrl} alt={dataSource.name} />}
       infoItems={[

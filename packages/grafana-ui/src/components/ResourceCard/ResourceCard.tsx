@@ -1,4 +1,35 @@
-import React, { PureComponent, FunctionComponent, ReactNode } from 'react';
+import React, { FunctionComponent, ReactNode, FC } from 'react';
+import { css } from 'emotion';
+import { stylesFactory, useTheme } from '../../themes';
+import { GrafanaTheme } from '@grafana/data';
+
+export interface Props {
+  name: JSX.Element;
+  description?: JSX.Element;
+  figure?: JSX.Element;
+  infoItems?: JSX.Element[];
+  actions?: JSX.Element[];
+  children?: ReactNode;
+}
+
+export const Card: FC<Props> = (props: Props) => {
+  const { name, description, figure, infoItems, actions, children } = props;
+  const theme = useTheme();
+  const styles = getStyles(theme);
+
+  return (
+    <div className={styles.card}>
+      {figure}
+      <div className="resource-card-text-wrapper">
+        {name}
+        {description}
+        {infoItems}
+        {children}
+      </div>
+      {actions && <ResourceCardActions actions={actions} />}
+    </div>
+  );
+};
 
 export interface ResourceCardNameProps {
   value: string;
@@ -46,36 +77,26 @@ export const ResourceCardActions: FunctionComponent<ResourceCardActionsProps> = 
   return <div className="resource-card-actions">{React.Children.map(actions, (action: JSX.Element) => action)}</div>;
 };
 
-export interface Props {
-  name: JSX.Element;
-  description?: JSX.Element;
-  figure?: JSX.Element;
-  infoItems?: JSX.Element[];
-  actions?: JSX.Element[];
-  children?: ReactNode;
-}
+export const ResourceCard = {
+  Card: Card,
+  Name: ResourceCardName,
+  Description: ResourceCardDescription,
+  Figure: ResourceCardFigure,
+  InfoItem: ResourceCardInfoItem,
+  Actions: ResourceCardActions,
+};
 
-export class ResourceCard extends PureComponent<Props> {
-  static Name = ResourceCardName;
-  static Description = ResourceCardDescription;
-  static Figure = ResourceCardFigure;
-  static InfoItem = ResourceCardInfoItem;
-  static Actions = ResourceCardActions;
-
-  render() {
-    const { name, description, figure, infoItems, actions, children } = this.props;
-
-    return (
-      <div className="resource-card">
-        {figure}
-        <div className="resource-card-text-wrapper">
-          {name}
-          {description}
-          {infoItems}
-          {children}
-        </div>
-        {actions && <ResourceCardActions actions={actions} />}
-      </div>
-    );
-  }
-}
+const getStyles = stylesFactory((theme: GrafanaTheme) => {
+  return {
+    card: css`
+      width: 100%;
+      padding: ${theme.spacing.md};
+      background: ${theme.colors.formInputBg};
+      border: 1px solid ${theme.colors.formInputBorder};
+      border-radius: ${theme.border.radius.md};
+      display: flex;
+      align-items: center;
+      margin-bottom: ${theme.spacing.sm};
+    `,
+  };
+});

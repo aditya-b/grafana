@@ -7,7 +7,6 @@ export { Portal } from './Portal/Portal';
 export { CustomScrollbar } from './CustomScrollbar/CustomScrollbar';
 
 export * from './Button/Button';
-export * from './ResourceCard/ResourceCard';
 
 // Select
 export { Select, AsyncSelect } from './Select/Select';
@@ -44,6 +43,7 @@ export { TagsInput } from './TagsInput/TagsInput';
 export { Modal } from './Modal/Modal';
 export { ConfirmModal } from './ConfirmModal/ConfirmModal';
 export { QueryField } from './QueryField/QueryField';
+export { ResourceCard } from './ResourceCard/ResourceCard';
 
 // Renderless
 export { SetInterval } from './SetInterval/SetInterval';
@@ -90,6 +90,7 @@ export { LogLabels } from './Logs/LogLabels';
 export { LogRows } from './Logs/LogRows';
 export { getLogRowStyles } from './Logs/getLogRowStyles';
 export { ToggleButtonGroup, ToggleButton } from './ToggleButtonGroup/ToggleButtonGroup';
+
 // Panel editors
 export { ThresholdsEditor } from './ThresholdsEditor/ThresholdsEditor';
 export { ClickOutsideWrapper } from './ClickOutsideWrapper/ClickOutsideWrapper';
