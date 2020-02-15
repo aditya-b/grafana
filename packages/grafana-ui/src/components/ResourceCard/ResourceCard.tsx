@@ -113,7 +113,11 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
         background: ${hoverBgColor};
         border-color: ${hoverBorderColor};
         box-shadow: 0 0 4px ${hoverBorderColor};
-        transition: all 400ms ease-in-out;
+
+        .resource-card-actions {
+          opacity: 1;
+          transition: 0.15s opacity ease-in-out;
+        }
       }
     `,
     rows: css`
