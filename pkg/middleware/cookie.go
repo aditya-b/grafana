@@ -22,6 +22,10 @@ func newCookieOptions() CookieOptions {
 	}
 }
 
+func (o CookieOptions) apply() CookieOptions {
+	return o
+}
+
 type GetCookieOptionsFunc func() CookieOptions
 
 func DeleteCookie(w http.ResponseWriter, name string, getCookieOptionsFunc GetCookieOptionsFunc) {

@@ -267,7 +267,9 @@ func WriteSessionCookie(ctx *models.ReqContext, value string, maxLifetimeDays in
 		maxAge = int(maxAgeHours.Seconds())
 	}
 
-	WriteCookie(ctx.Resp, setting.LoginCookieName, url.QueryEscape(value), maxAge, newCookieOptions)
+	options := newCookieOptions()
+	options.Path = setting.AppSubUrl // oerwrite path; remove trailing slash
+	WriteCookie(ctx.Resp, setting.LoginCookieName, url.QueryEscape(value), maxAge, options.apply)
 }
 
 func AddDefaultResponseHeaders() macaron.Handler {
