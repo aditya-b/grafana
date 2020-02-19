@@ -25,6 +25,7 @@ export interface FieldProps {
   /** Indicates horizontal layout of the field */
   horizontal?: boolean;
   className?: string;
+  labelClassName?: string;
 }
 
 export const getFieldStyles = stylesFactory((theme: GrafanaTheme) => {
@@ -38,6 +39,7 @@ export const getFieldStyles = stylesFactory((theme: GrafanaTheme) => {
       flex-direction: row;
       justify-content: space-between;
       flex-wrap: wrap;
+      margin-bottom: 0px;
     `,
     fieldValidationWrapper: css`
       margin-top: ${theme.spacing.formSpacingBase / 2}px;
@@ -59,6 +61,7 @@ export const Field: React.FC<FieldProps> = ({
   error,
   children,
   className,
+  labelClassName,
 }) => {
   const theme = useTheme();
   let inputId;
@@ -75,7 +78,7 @@ export const Field: React.FC<FieldProps> = ({
   return (
     <div className={cx(styles.field, horizontal && styles.fieldHorizontal, className)}>
       {label && (
-        <Label htmlFor={inputId} description={description}>
+        <Label htmlFor={inputId} description={description} className={cx(labelClassName)}>
           {`${label}${required ? ' *' : ''}`}
         </Label>
       )}

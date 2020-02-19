@@ -10,6 +10,7 @@ export interface SeriesOptions {
   yAxis?: YAxis;
   [key: string]: any;
 }
+
 export interface GraphOptions {
   showBars: boolean;
   showLines: boolean;

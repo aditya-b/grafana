@@ -106,7 +106,7 @@ export default class InfluxDatasource extends DataSourceApi<InfluxQuery, InfluxO
         alias: alias,
       });
 
-      dataFrames.push(influxSeries.toDataFrame());
+      dataFrames.push(...influxSeries.toDataFrames());
     }
 
     return { data: dataFrames };

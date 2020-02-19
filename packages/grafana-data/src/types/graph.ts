@@ -260,13 +260,20 @@ interface FlotLegend {
     | ((a: { label: string; color: string }, b: { label: string; color: string }) => number);
 }
 
+export interface YAxis {
+  index: number;
+  min?: number;
+  tickDecimals?: number;
+}
+
 /** View model projection of a series */
 export interface GraphSeriesXY {
   color?: string | number;
+  highlightColor?: string | number;
   data: GraphSeriesValue[][]; // [x,y][]
   isVisible: boolean;
   label: string;
-  yAxis: any;
+  yAxis: YAxis;
   // Field with series' time values
   timeField: Field;
   // Field with series' values
@@ -279,6 +286,7 @@ export interface GraphSeriesXY {
   bars?: FlotBarOptions;
   points?: FlotPointOptions;
   stack?: null | boolean | number | string;
+  yaxis?: number;
 }
 
 export interface CreatePlotOverlay {

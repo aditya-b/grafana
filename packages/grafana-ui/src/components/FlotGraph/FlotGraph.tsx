@@ -1,6 +1,6 @@
 // Libraries
 import $ from 'jquery';
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ReactChildren } from 'react';
 // Types
 import { FlotPlotOptions, FlotSeries } from '@grafana/data';
 import _ from 'lodash';
@@ -9,6 +9,7 @@ export interface GraphProps extends FlotPlotOptions {
   data: Array<Array<[number, number]> | FlotSeries>;
   width: number;
   height: number;
+  children?: ReactChildren;
 }
 
 export class FlotGraph extends PureComponent<GraphProps> {
@@ -47,12 +48,13 @@ export class FlotGraph extends PureComponent<GraphProps> {
   }
 
   render() {
-    const { data, width, height } = this.props;
+    const { data, width, height, children } = this.props;
     const noDataToBeDisplayed = data.length === 0;
     return (
       <div className="graph-panel">
         <div className="graph-panel__chart" ref={e => (this.element = e)} style={{ width, height }} />
         {noDataToBeDisplayed && <div className="datapoints-warning">No data</div>}
+        {children}
       </div>
     );
   }

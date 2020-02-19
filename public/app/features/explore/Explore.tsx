@@ -60,6 +60,8 @@ import { ErrorContainer } from './ErrorContainer';
 import { scanStopAction, toggleLogLevelAction } from './state/actionTypes';
 import { ExploreGraphPanel } from './ExploreGraphPanel';
 import ResultsContainer from './ResultsContainer';
+import TableContainer from './TableContainer';
+import LogsContainer from './LogsContainer';
 
 const getStyles = memoizeOne(() => {
   return {
@@ -270,6 +272,53 @@ export class Explore extends React.PureComponent<ExploreProps> {
     );
   };
 
+  renderUnifiedExplore = (width: number) => {
+    const {
+      exploreId,
+      graphResult,
+      logsResult,
+      loading,
+      absoluteRange,
+      showingGraph,
+      showingTable,
+      timeZone,
+      syncedTimes,
+    } = this.props;
+
+    return (
+      <>
+        {graphResult && (
+          <ExploreGraphPanel
+            series={graphResult}
+            width={width - 20}
+            loading={loading}
+            absoluteRange={absoluteRange}
+            isStacked={false}
+            showPanel={true}
+            showingGraph={showingGraph}
+            showingTable={showingTable}
+            timeZone={timeZone}
+            onToggleGraph={this.onToggleGraph}
+            onUpdateTimeRange={this.onUpdateTimeRange}
+            onHiddenSeriesChanged={this.onToggleLogLevel}
+          />
+        )}
+        {logsResult && (
+          <ResultsContainer
+            width={width - 20}
+            exploreId={exploreId}
+            syncedTimes={syncedTimes}
+            onClickFilterLabel={this.onClickFilterLabel}
+            onClickFilterOutLabel={this.onClickFilterOutLabel}
+            onStartScanning={this.onStartScanning}
+            onStopScanning={this.onStopScanning}
+            onClickCell={this.onClickFilterLabel}
+          />
+        )}
+      </>
+    );
+  };
+
   render() {
     const {
       datasourceInstance,
@@ -279,7 +328,6 @@ export class Explore extends React.PureComponent<ExploreProps> {
       queryKeys,
       mode,
       graphResult,
-      logsResult,
       loading,
       absoluteRange,
       showingGraph,
@@ -293,6 +341,7 @@ export class Explore extends React.PureComponent<ExploreProps> {
     const styles = getStyles();
     const StartPage = datasourceInstance?.components?.ExploreStartPage;
     const showStartPage = !queryResponse || queryResponse.state === LoadingState.NotStarted;
+    const isUnifiedDatasource = datasourceInstance?.meta?.unified;
 
     return (
       <div className={exploreClass} ref={this.getRef}>
@@ -331,38 +380,48 @@ export class Explore extends React.PureComponent<ExploreProps> {
                           />
                         </div>
                       )}
-                      {!showStartPage && (
-                        <>
-                          {graphResult && (
-                            <ExploreGraphPanel
-                              series={graphResult}
-                              width={width - 20}
-                              loading={loading}
-                              absoluteRange={absoluteRange}
-                              isStacked={false}
-                              showPanel={true}
-                              showingGraph={showingGraph}
-                              showingTable={showingTable}
-                              timeZone={timeZone}
-                              onToggleGraph={this.onToggleGraph}
-                              onUpdateTimeRange={this.onUpdateTimeRange}
-                              onHiddenSeriesChanged={this.onToggleLogLevel}
-                            />
-                          )}
-                          {logsResult && (
-                            <ResultsContainer
-                              width={width}
-                              exploreId={exploreId}
-                              syncedTimes={syncedTimes}
-                              onClickFilterLabel={this.onClickFilterLabel}
-                              onClickFilterOutLabel={this.onClickFilterOutLabel}
-                              onStartScanning={this.onStartScanning}
-                              onStopScanning={this.onStopScanning}
-                              onClickCell={this.onClickFilterLabel}
-                            />
-                          )}
-                        </>
-                      )}
+                      {!showStartPage &&
+                        (isUnifiedDatasource ? (
+                          this.renderUnifiedExplore(width)
+                        ) : (
+                          <>
+                            {mode === ExploreMode.Metrics && (
+                              <ExploreGraphPanel
+                                series={graphResult}
+                                width={width}
+                                loading={loading}
+                                absoluteRange={absoluteRange}
+                                isStacked={false}
+                                showPanel={true}
+                                showingGraph={showingGraph}
+                                showingTable={showingTable}
+                                timeZone={timeZone}
+                                onToggleGraph={this.onToggleGraph}
+                                onUpdateTimeRange={this.onUpdateTimeRange}
+                                showBars={false}
+                                showLines={true}
+                              />
+                            )}
+                            {mode === ExploreMode.Metrics && (
+                              <TableContainer
+                                width={width}
+                                exploreId={exploreId}
+                                onClickCell={this.onClickFilterLabel}
+                              />
+                            )}
+                            {mode === ExploreMode.Logs && (
+                              <LogsContainer
+                                width={width}
+                                exploreId={exploreId}
+                                syncedTimes={syncedTimes}
+                                onClickFilterLabel={this.onClickFilterLabel}
+                                onClickFilterOutLabel={this.onClickFilterOutLabel}
+                                onStartScanning={this.onStartScanning}
+                                onStopScanning={this.onStopScanning}
+                              />
+                            )}
+                          </>
+                        ))}
                     </ErrorBoundaryAlert>
                   </main>
                 );

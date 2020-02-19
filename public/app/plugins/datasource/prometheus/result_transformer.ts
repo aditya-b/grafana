@@ -11,12 +11,7 @@ export class ResultTransformer {
 
     if (options.format === 'table') {
       return [
-        this.transformMetricDataToTable(
-          prometheusResult,
-          options.responseListLength,
-          options.refId,
-          options.valueWithRefId
-        ),
+        this.transformMetricDataToTable(response, options.responseListLength, options.refId, options.valueWithRefId),
       ];
     } else if (prometheusResult && options.format === 'heatmap') {
       let seriesList = [];
@@ -81,9 +76,23 @@ export class ResultTransformer {
     };
   }
 
-  transformMetricDataToTable(md: any, resultCount: number, refId: string, valueWithRefId?: boolean): TableModel {
+  transformMetricDataToTable(
+    promResponse: any,
+    resultCount: number,
+    refId: string,
+    valueWithRefId?: boolean
+  ): TableModel {
+    const md = promResponse.data.data.result;
     const table = new TableModel();
     table.refId = refId;
+
+    if (promResponse.data.data.resultType === 'vector') {
+      // instant query
+      table.meta = {
+        ...table.meta,
+        instant: true,
+      };
+    }
 
     let i: number, j: number;
     const metricLabels: { [key: string]: number } = {};
@@ -144,7 +153,7 @@ export class ResultTransformer {
     let metricLabel = null;
     metricLabel = this.createMetricLabel(md.metric, options);
     dps.push([parseFloat(md.value[1]), md.value[0] * 1000]);
-    return { target: metricLabel, datapoints: dps, tags: md.metric, refId: options.refId };
+    return { target: metricLabel, datapoints: dps, tags: md.metric, refId: options.refId, meta: { instant: true } };
   }
 
   createMetricLabel(labelData: { [key: string]: string }, options: any) {

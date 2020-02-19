@@ -42,7 +42,17 @@ export class GraphPanelController extends React.Component<GraphPanelControllerPr
         props.data.series,
         props.timeZone,
         props.options.series,
-        props.options.graph,
+        {
+          bars: {
+            show: props.options.graph.showBars,
+          },
+          points: {
+            show: props.options.graph.showPoints,
+          },
+          lines: {
+            show: props.options.graph.showLines,
+          },
+        },
         props.options.legend,
         props.options.fieldOptions
       ),
@@ -56,7 +66,17 @@ export class GraphPanelController extends React.Component<GraphPanelControllerPr
         props.data.series,
         props.timeZone,
         props.options.series,
-        props.options.graph,
+        {
+          bars: {
+            show: props.options.graph.showBars,
+          },
+          points: {
+            show: props.options.graph.showPoints,
+          },
+          lines: {
+            show: props.options.graph.showLines,
+          },
+        },
         props.options.legend,
         props.options.fieldOptions
       ),

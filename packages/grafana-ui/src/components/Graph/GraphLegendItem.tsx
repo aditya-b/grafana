@@ -29,7 +29,7 @@ export const GraphLegendListItem: React.FunctionComponent<GraphLegendItemProps> 
     <>
       <LegendSeriesIcon
         disabled={!onSeriesColorChange}
-        color={item.color}
+        color={item.color.toString()}
         onColorChange={color => {
           if (onSeriesColorChange) {
             onSeriesColorChange(item.label, color);
@@ -99,7 +99,7 @@ export const GraphLegendTableRow: React.FunctionComponent<GraphLegendItemProps> 
         <span className={styles.itemWrapper}>
           <LegendSeriesIcon
             disabled={!!onSeriesColorChange}
-            color={item.color}
+            color={item.color.toString()}
             onColorChange={color => {
               if (onSeriesColorChange) {
                 onSeriesColorChange(item.label, color);

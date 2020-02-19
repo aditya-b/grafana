@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import TableModel from 'app/core/table_model';
-import { FieldType, DataFrame, ArrayVector, AnnotationQueryRequest } from '@grafana/data';
+import { FieldType, DataFrame, ArrayVector, AnnotationQueryRequest, Field } from '@grafana/data';
 import { InfluxRow, InfluxQuery } from './types';
 
 export default class InfluxSeries {
@@ -175,41 +175,70 @@ export default class InfluxSeries {
     return table;
   }
 
-  toDataFrame(): DataFrame {
-    const allValues: ArrayVector[] = [];
-    for (let i = 0; i < this.series[0].columns.length; i++) {
-      allValues.push(new ArrayVector([]));
+  getSeriesName(influxRow: InfluxRow, columnIndex: number) {
+    let seriesName = influxRow.name;
+    const columnName = influxRow.columns[columnIndex];
+    if (columnName !== 'value') {
+      seriesName = `${columnName}`;
     }
 
-    for (const row of this.series[0].values) {
+    if (this.alias) {
+      seriesName = this._getSeriesName(influxRow, columnIndex);
+    } else if (this.series[0].tags) {
+      const tags = Object.entries(influxRow.tags ?? {}).map((key, value) => `${key}: ${value}`);
+      seriesName = `${seriesName} {${tags.join(', ')}}`;
+    }
+
+    return seriesName;
+  }
+
+  influxRowToDataFrame(influxRow: InfluxRow): DataFrame {
+    // Instantiate array vectors
+    const rowValues: ArrayVector[] = [];
+    for (const _col of influxRow.columns) {
+      rowValues.push(new ArrayVector([]));
+    }
+
+    for (const row of influxRow.values) {
       for (let i = 0; i < row.length; i++) {
-        allValues[i].add(row[i]);
+        rowValues[i].add(row[i]);
       }
     }
 
-    const fields = [];
-    const hasTimeColumn = this.series[0].columns[0] === 'time';
-    if (hasTimeColumn) {
+    const fields: Field[] = [];
+
+    // Add time field
+    const timeColumnIndex = influxRow.columns.findIndex(col => col === 'time');
+    if (timeColumnIndex !== -1) {
       fields.push({
-        name: 'ts',
+        name: 'time',
         type: FieldType.time,
         config: { title: 'Time' },
-        values: allValues[0],
+        values: rowValues[timeColumnIndex],
       });
     }
 
-    fields.push(
-      ...this.series[0].columns.slice(hasTimeColumn ? 1 : 0).map((colName, i) => ({
-        name: colName,
+    for (let i = 0; i < influxRow.columns.length; i++) {
+      if (i === timeColumnIndex) {
+        continue;
+      }
+
+      fields.push({
+        name: this.getSeriesName(influxRow, i),
         type: FieldType.other,
         config: {},
-        values: allValues.slice(hasTimeColumn ? 1 : 0)[i],
-      }))
-    );
+        values: rowValues[i],
+      });
+    }
 
     return {
       fields,
-      length: allValues[0].length,
+      length: rowValues[0].length,
     };
+  }
+
+  toDataFrames(): DataFrame[] {
+    const dataFrames: DataFrame[] = this.series.map(influxRow => this.influxRowToDataFrame(influxRow));
+    return dataFrames;
   }
 }

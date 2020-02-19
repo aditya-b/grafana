@@ -107,18 +107,19 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
   renderTooltip = () => {
     const { children, series } = this.props;
     const { pos, activeItem, isTooltipVisible } = this.state;
-    let tooltipElement: React.ReactElement<TooltipProps> | null = null;
 
     if (!isTooltipVisible || !pos || series.length === 0) {
       return null;
     }
 
     // Find children that indicate tooltip to be rendered
+    let tooltipElement: React.ReactElement<TooltipProps> | null = null;
     React.Children.forEach(children, c => {
       // We have already found tooltip
       if (tooltipElement) {
         return;
       }
+
       // @ts-ignore
       const childType = c && c.type && (c.type.displayName || c.type.name);
 
@@ -126,13 +127,14 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
         tooltipElement = c as React.ReactElement<TooltipProps>;
       }
     });
+
     // If no tooltip provided, skip rendering
     if (!tooltipElement) {
       return null;
     }
-    const tooltipElementProps = (tooltipElement as React.ReactElement<TooltipProps>).props;
 
-    const tooltipMode = tooltipElementProps.mode || 'single';
+    const tooltipElementProps = (tooltipElement as React.ReactElement<TooltipProps>).props;
+    const tooltipMode = tooltipElementProps.mode ?? 'single';
 
     // If mode is single series and user is not hovering over item, skip rendering
     if (!activeItem && tooltipMode === 'single') {
@@ -142,9 +144,9 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
     // Check if tooltip needs to be rendered with custom tooltip component, otherwise default to GraphTooltip
     const tooltipContentRenderer = tooltipElementProps.tooltipComponent || GraphTooltip;
     // Indicates column(field) index in y-axis dimension
-    const seriesIndex = activeItem ? activeItem.series.seriesIndex : 0;
+    const seriesIndex = activeItem?.seriesIndex ?? 0;
     // Indicates row index in active field values
-    const rowIndex = activeItem ? activeItem.dataIndex : undefined;
+    const rowIndex = activeItem?.dataIndex;
 
     const activeDimensions: ActiveDimensions<GraphDimensions> = {
       // Described x-axis active item
@@ -152,7 +154,7 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
       // Tooltip itself needs to figure out correct datapoint display information based on pos passed to it
       xAxis: [seriesIndex, rowIndex],
       // Describes y-axis active item
-      yAxis: activeItem ? [activeItem.series.seriesIndex, activeItem.dataIndex] : null,
+      yAxis: activeItem ? [activeItem.seriesIndex, activeItem.dataIndex] : null,
     };
 
     const tooltipContentProps: TooltipContentProps<GraphDimensions> = {
@@ -190,15 +192,15 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
     }
 
     // Indicates column(field) index in y-axis dimension
-    const seriesIndex = contextItem ? contextItem.series.seriesIndex : 0;
+    const seriesIndex = contextItem.series.seriesIndex ?? 0;
     // Indicates row index in context field values
-    const rowIndex = contextItem ? contextItem.dataIndex : undefined;
+    const rowIndex = contextItem.dataIndex;
 
     const contextDimensions: ContextDimensions<GraphDimensions> = {
-      // Described x-axis context item
+      // Describes x-axis context item
       xAxis: [seriesIndex, rowIndex],
       // Describes y-axis context item
-      yAxis: contextItem ? [contextItem.series.seriesIndex, contextItem.dataIndex] : null,
+      yAxis: [contextItem.series.seriesIndex, contextItem.dataIndex],
     };
 
     const dimensions: GraphDimensions = {
@@ -213,22 +215,18 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
       ),
     };
 
-    const formatDate = (date: DateTimeInput, format?: string) => {
-      return dateTime(date)?.format(format);
-    };
+    const formatDate = (date: DateTimeInput, format?: string) => dateTime(date)?.format(format);
 
     const closeContext = () => this.setState({ isContextVisible: false });
 
-    const getContextMenuSource = () => {
-      return {
-        datapoint: contextItem.datapoint,
-        dataIndex: contextItem.dataIndex,
-        series: contextItem.series,
-        seriesIndex: contextItem.series.seriesIndex,
-        pageX: contextPos.pageX,
-        pageY: contextPos.pageY,
-      };
-    };
+    const getContextMenuSource = () => ({
+      datapoint: contextItem.datapoint,
+      dataIndex: contextItem.dataIndex,
+      series: contextItem.series,
+      seriesIndex: contextItem.series.seriesIndex,
+      pageX: contextPos.pageX,
+      pageY: contextPos.pageY,
+    });
 
     const contextContentProps: GraphContextMenuProps = {
       x: contextPos.pageX,
@@ -273,6 +271,8 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
     const ticks = width / 100;
     const min = timeRange.from.valueOf();
     const max = timeRange.to.valueOf();
+    const showLeftYAxis = series.some(s => s.yaxis === 1);
+    const showRightYAxis = series.some(s => s.yaxis === 2);
 
     const flotOptions: FlotPlotOptions = {
       legend: {
@@ -295,6 +295,7 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
           show: showBars,
           fill: 1,
           zero: false,
+          lineWidth: 0,
         },
         shadowSize: 0,
       },
@@ -307,16 +308,12 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
         timeformat: timeFormat(ticks, min, max),
         timezone: timeZone ?? DefaultTimeZone,
       },
-      yaxis: {
-        show: true,
-        position: 'left',
-      },
       yaxes: [
         {
-          show: true,
+          show: showLeftYAxis,
           position: 'left',
         },
-        { show: true, position: 'right', alignTicksWithAxis: 1 },
+        { show: showRightYAxis, position: showLeftYAxis ? 'right' : 'left', alignTicksWithAxis: 1 },
       ],
       grid: {
         minBorderMargin: 0,
@@ -327,7 +324,7 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
         clickable: true,
         color: '#a1a1a1',
         margin: { left: 0, right: 0 },
-        mouseActiveRadius: 30,
+        mouseActiveRadius: 15,
       },
       selection: {
         mode: onHorizontalRegionSelected ? 'x' : null,
@@ -336,22 +333,6 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
       crosshair: {
         mode: 'x',
       },
-      // hooks: {
-      //   drawSeries: (plot, ctx, series) => {
-      //     const barLeft: number = series.datapoints.points[0];
-      //     const barRight = barLeft + series.bars!.barWidth!;
-      //     const barLeftCanvas = series.xaxis.p2c(barLeft);
-      //     const barRightCanvas = series.xaxis.p2c(barRight);
-      //     const pixelWidth = barRightCanvas - barLeftCanvas;
-      //     if (pixelWidth < 5) {
-      //       const newBarRight = barLeftCanvas + 5;
-      //       const newBarPlotRight = series.xaxis.c2p(newBarRight);
-      //       const newBarWidth = newBarPlotRight - barLeft;
-      //       console.log(newBarWidth);
-      //       series.bars.barWidth = newBarWidth;
-      //     }
-      //   },
-      // },
     };
 
     try {
@@ -371,6 +352,7 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
     const noDataToBeDisplayed = series.length === 0;
     const tooltip = this.renderTooltip();
     const context = this.renderContextMenu();
+
     return (
       <div className="graph-panel">
         <div
@@ -391,28 +373,32 @@ export class ExploreGraph extends PureComponent<GraphProps, GraphState> {
 
 // Copied from graph.ts
 function timeFormat(ticks: number, min: number, max: number): string {
-  if (min && max && ticks) {
-    const range = max - min;
-    const secPerTick = range / ticks / 1000;
-    const oneDay = 86400000;
-    const oneYear = 31536000000;
-
-    if (secPerTick <= 45) {
-      return '%H:%M:%S';
-    }
-    if (secPerTick <= 7200 || range <= oneDay) {
-      return '%H:%M';
-    }
-    if (secPerTick <= 80000) {
-      return '%m/%d %H:%M';
-    }
-    if (secPerTick <= 2419200 || range <= oneYear) {
-      return '%m/%d';
-    }
-    return '%Y-%m';
+  if (!min || !max || !ticks) {
+    return '%H:%M';
   }
 
-  return '%H:%M';
+  const range = max - min;
+  const secPerTick = range / ticks / 1000;
+  const oneDay = 86400000;
+  const oneYear = 31536000000;
+
+  if (secPerTick <= 45) {
+    return '%H:%M:%S';
+  }
+
+  if (secPerTick <= 7200 || range <= oneDay) {
+    return '%H:%M';
+  }
+
+  if (secPerTick <= 80000) {
+    return '%m/%d %H:%M';
+  }
+
+  if (secPerTick <= 2419200 || range <= oneYear) {
+    return '%m/%d';
+  }
+
+  return '%Y-%m';
 }
 
 export default ExploreGraph;

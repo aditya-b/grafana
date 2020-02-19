@@ -14,15 +14,8 @@ import {
   Field,
 } from '@grafana/data';
 import { LogLabels, LogRows } from '@grafana/ui';
-import store from 'app/core/store';
 
 import { MetaInfoText } from './MetaInfoText';
-
-const SETTINGS_KEYS = {
-  showLabels: 'grafana.explore.logs.showLabels',
-  showTime: 'grafana.explore.logs.showTime',
-  wrapLogMessage: 'grafana.explore.logs.wrapLogMessage',
-};
 
 function renderMetaItem(value: any, kind: LogsMetaKind) {
   if (kind === LogsMetaKind.LabelsMap) {
@@ -49,6 +42,9 @@ interface Props {
   scanning?: boolean;
   scanRange?: RawTimeRange;
   dedupStrategy: LogsDedupStrategy;
+  showLabels: boolean;
+  showTime: boolean;
+  wrapLogMessage: boolean;
   onClickFilterLabel?: (key: string, value: string) => void;
   onClickFilterOutLabel?: (key: string, value: string) => void;
   onStartScanning?: () => void;
@@ -58,12 +54,6 @@ interface Props {
 }
 
 export class Logs extends PureComponent<Props> {
-  getStoreState = () => ({
-    showLabels: store.getBool(SETTINGS_KEYS.showLabels, false),
-    showTime: store.getBool(SETTINGS_KEYS.showTime, true),
-    wrapLogMessage: store.getBool(SETTINGS_KEYS.wrapLogMessage, true),
-  });
-
   onClickScan = (event: React.SyntheticEvent) => {
     event.preventDefault();
     if (this.props.onStartScanning) {
@@ -91,13 +81,15 @@ export class Logs extends PureComponent<Props> {
       scanRange,
       dedupedRows,
       getFieldLinks,
+      showLabels,
+      showTime,
+      wrapLogMessage,
     } = this.props;
 
     if (!logRows) {
       return null;
     }
 
-    const { showLabels, showTime, wrapLogMessage } = this.getStoreState();
     const { dedupStrategy } = this.props;
     const hasData = logRows && logRows.length > 0;
     const dedupCount = dedupedRows

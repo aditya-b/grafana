@@ -55,8 +55,6 @@ export const Table = ({ data, height, onCellClick, width }: Props) => {
     [prepareRow, rows]
   );
 
-  console.log(data);
-
   return (
     <div {...getTableProps()} className={tableStyles.table}>
       <div>

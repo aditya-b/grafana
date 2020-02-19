@@ -8,7 +8,6 @@ import { TableRow, TableFieldOptions, TableCellDisplayMode } from './types';
 
 export function getTableRows(data: DataFrame): TableRow[] {
   const tableData = [];
-
   for (let i = 0; i < data.length; i++) {
     const row: { [key: string]: string | number } = {};
     for (let j = 0; j < data.fields.length; j++) {

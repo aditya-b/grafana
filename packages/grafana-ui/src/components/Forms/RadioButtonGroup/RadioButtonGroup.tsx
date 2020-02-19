@@ -72,7 +72,7 @@ export function RadioButtonGroup<T>({
             active={value === o.value}
             key={o.label}
             onChange={handleOnChange(o)}
-            id={`option-${i}`}
+            id={`option-${groupName.current}-${i}`}
             name={groupName.current}
           >
             {o.label}

@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { hot } from 'react-hot-loader';
 import { connect } from 'react-redux';
-import { Collapse, ToggleButtonGroup, ToggleButton, Table } from '@grafana/ui';
+import { Collapse, Table, Forms } from '@grafana/ui';
 
 import {
   DataSourceApi,
@@ -29,11 +29,12 @@ import { LogsCrossFadeTransition } from './utils/LogsCrossFadeTransition';
 import { LiveTailControls } from './useLiveTailControls';
 import { getLinksFromLogsField } from '../panel/panellinks/linkSuppliers';
 import store from 'app/core/store';
-import { LogsControls } from './LogsControls';
+import { LogsControls, fieldClass, labelClass } from './LogsControls';
+import { cx, css } from 'emotion';
 
 enum DisplayFormat {
-  'Logs',
-  'Table',
+  Logs = 'Logs',
+  Table = 'Table',
 }
 
 interface ResultsContainerProps {
@@ -82,12 +83,16 @@ const SETTINGS_KEYS = {
   displayFormat: 'grafana.explore.logs.displayFormat',
 };
 
+const marginRightZero = css`
+  margin-right: 0px;
+`;
+
 export class ResultsContainer extends PureComponent<ResultsContainerProps, ResultsContainerState> {
   state = {
     showLabels: store.getBool(SETTINGS_KEYS.showLabels, false),
     showTime: store.getBool(SETTINGS_KEYS.showTime, true),
     wrapLogMessage: store.getBool(SETTINGS_KEYS.wrapLogMessage, true),
-    displayFormat: store.getObject(SETTINGS_KEYS.displayFormat, DisplayFormat.Logs),
+    displayFormat: store.get(SETTINGS_KEYS.displayFormat) ?? DisplayFormat.Logs,
   };
 
   onChangeFormat = (displayFormat: DisplayFormat) => {
@@ -100,6 +105,27 @@ export class ResultsContainer extends PureComponent<ResultsContainerProps, Resul
 
   handleDedupStrategyChange = (dedupStrategy: LogsDedupStrategy) => {
     return this.props.changeDedupStrategy(this.props.exploreId, dedupStrategy);
+  };
+
+  handleLabelsChange = (showLabels: boolean) => {
+    this.setState({
+      showLabels,
+    });
+    store.set(SETTINGS_KEYS.showLabels, showLabels);
+  };
+
+  handleTimeChange = (showTime: boolean) => {
+    this.setState({
+      showTime,
+    });
+    store.set(SETTINGS_KEYS.showTime, showTime);
+  };
+
+  handleWrapLogMessageChange = (wrapLogMessage: boolean) => {
+    this.setState({
+      wrapLogMessage,
+    });
+    store.set(SETTINGS_KEYS.wrapLogMessage, wrapLogMessage);
   };
 
   getLogRowContext = async (row: LogRowModel, options?: any): Promise<any> => {
@@ -144,9 +170,10 @@ export class ResultsContainer extends PureComponent<ResultsContainerProps, Resul
       width,
       isLive,
       exploreId,
+      dedupStrategy,
     } = this.props;
 
-    const { displayFormat } = this.state;
+    const { displayFormat, showLabels, showTime, wrapLogMessage } = this.state;
 
     return (
       <>
@@ -172,24 +199,39 @@ export class ResultsContainer extends PureComponent<ResultsContainerProps, Resul
               <div className="results-panel-options">
                 <div className="results-panel-controls">
                   {displayFormat === DisplayFormat.Logs && (
-                    <LogsControls logRows={logRows} onDedupStrategyChange={this.handleDedupStrategyChange} />
+                    <LogsControls
+                      logRows={logRows}
+                      showLabels={showLabels}
+                      showTime={showTime}
+                      wrapLogMessage={wrapLogMessage}
+                      dedupStrategy={dedupStrategy}
+                      onLabelsChange={this.handleLabelsChange}
+                      onTimeChange={this.handleTimeChange}
+                      onWrapLogMessageChange={this.handleWrapLogMessageChange}
+                      onDedupStrategyChange={this.handleDedupStrategyChange}
+                    />
                   )}
-                  <ToggleButtonGroup label="Format as" transparent={true} className="align-right">
-                    <ToggleButton
-                      value={DisplayFormat.Logs}
+                  <Forms.Field
+                    label="Format as"
+                    horizontal
+                    className={cx(fieldClass, marginRightZero)}
+                    labelClassName={cx(labelClass)}
+                  >
+                    <Forms.RadioButtonGroup
+                      options={[
+                        {
+                          label: DisplayFormat.Logs,
+                          value: DisplayFormat.Logs,
+                        },
+                        {
+                          label: DisplayFormat.Table,
+                          value: DisplayFormat.Table,
+                        },
+                      ]}
+                      value={displayFormat}
                       onChange={this.onChangeFormat}
-                      selected={displayFormat === DisplayFormat.Logs}
-                    >
-                      Logs
-                    </ToggleButton>
-                    <ToggleButton
-                      value={DisplayFormat.Table}
-                      onChange={this.onChangeFormat}
-                      selected={displayFormat === DisplayFormat.Table}
-                    >
-                      Table
-                    </ToggleButton>
-                  </ToggleButtonGroup>
+                    />
+                  </Forms.Field>
                 </div>
               </div>
               {displayFormat === DisplayFormat.Logs ? (
@@ -199,8 +241,11 @@ export class ResultsContainer extends PureComponent<ResultsContainerProps, Resul
                   logsMeta={logsMeta}
                   logsSeries={logsSeries}
                   dedupedRows={dedupedRows}
+                  showTime={showTime}
+                  showLabels={showLabels}
                   highlighterExpressions={logsHighlighterExpressions}
                   loading={loading}
+                  wrapLogMessage={wrapLogMessage}
                   onClickFilterLabel={onClickFilterLabel}
                   onClickFilterOutLabel={onClickFilterOutLabel}
                   onStartScanning={onStartScanning}

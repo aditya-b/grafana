@@ -77,6 +77,7 @@ export const GraphWithLegend: React.FunctionComponent<GraphWithLegendProps> = (p
   } = props;
   const { graphContainer, wrapper, legendContainer } = getGraphWithLegendStyles(props);
 
+  const logsYAxisVisible = series.some(s => s.yaxis === 1);
   const legendItems = series.reduce<LegendItem[]>((acc, s) => {
     return shouldHideLegendItem(s.data, hideEmpty, hideZero)
       ? acc
@@ -85,7 +86,7 @@ export const GraphWithLegend: React.FunctionComponent<GraphWithLegendProps> = (p
             label: s.label,
             color: s.color,
             isVisible: s.isVisible,
-            yAxis: s.yAxis.index,
+            yAxis: logsYAxisVisible ? s.yaxis : 1,
             displayValues: s.info || [],
           },
         ]);

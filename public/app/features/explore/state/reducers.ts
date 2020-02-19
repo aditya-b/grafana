@@ -518,19 +518,11 @@ export const processQueryResponse = (
   let graphResult = processor.getGraphResult();
   const tableResult = processor.getTableResult();
   const logsResult = processor.getLogsResult();
-  if (graphResult) {
-    graphResult.push(...logsResult.series);
-  } else {
+  if (graphResult && logsResult) {
+    graphResult.unshift(...logsResult.series);
+  } else if (!graphResult && logsResult) {
     graphResult = logsResult.series;
   }
-
-  //console.log(logsResult);
-
-  // if (graphResult) {
-  //   tableResult = processor.getTableResult();
-  // } else {
-  //   logsResult = processor.getLogsResult();
-  // }
 
   // Send legacy data to Angular editors
   if (state.datasourceInstance.components.QueryCtrl) {

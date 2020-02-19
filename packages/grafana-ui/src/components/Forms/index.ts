@@ -6,6 +6,8 @@ import { ButtonSelect } from './Select/ButtonSelect';
 import { Form } from './Form';
 import { Field } from './Field';
 import { Button, LinkButton } from './Button';
+import { RadioButtonGroup } from './RadioButtonGroup/RadioButtonGroup';
+import { Switch } from './Switch';
 import { Controller as InputControl } from 'react-hook-form';
 
 const Forms = {
@@ -19,6 +21,8 @@ const Forms = {
   Select,
   ButtonSelect,
   InputControl,
+  RadioButtonGroup,
+  Switch,
 };
 
 export default Forms;

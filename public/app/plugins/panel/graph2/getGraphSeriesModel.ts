@@ -79,13 +79,13 @@ export const getGraphSeriesModel = (
         }
 
         let color: FieldColor;
-        if (seriesOptions[field.name] && seriesOptions[field.name].color) {
+        if (seriesOptions[field.name]?.color) {
           // Case when panel has settings provided via SeriesOptions, i.e. graph panel
           color = {
             mode: FieldColorMode.Fixed,
             fixedColor: seriesOptions[field.name].color,
           };
-        } else if (field.config && field.config.color) {
+        } else if (field.config?.color) {
           // Case when color settings are set on field, i.e. Explore logs histogram (see makeSeriesForLogs)
           color = field.config.color;
         } else {

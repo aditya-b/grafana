@@ -6,6 +6,7 @@ import {
   TimeZone,
   toDataFrame,
   getDisplayProcessor,
+  FieldType,
   ExploreMode,
 } from '@grafana/data';
 import { ExploreItemState } from 'app/types/explore';
@@ -24,6 +25,10 @@ export class ResultProcessor {
   ) {}
 
   getGraphResult(): GraphSeriesXY[] | null {
+    if (this.state.mode !== ExploreMode.Metrics && !this.state.datasourceInstance.meta.unified) {
+      return null;
+    }
+
     const onlyTimeSeries = this.dataFrames.filter(isTimeSeries);
 
     if (onlyTimeSeries.length === 0) {
@@ -51,10 +56,14 @@ export class ResultProcessor {
   }
 
   getTableResult(): DataFrame | null {
-    // For now ignore time series
-    // We can change this later, just need to figure out how to
-    // Ignore time series only for prometheus
-    const onlyTables = this.dataFrames.filter(dataFrame => dataFrame.meta.responseType === 'Logs');
+    if (this.state.mode !== ExploreMode.Metrics && !this.state.datasourceInstance.meta.unified) {
+      return null;
+    }
+
+    const onlyTables =
+      this.state.datasourceInstance.meta.id === 'prometheus'
+        ? this.dataFrames.filter(dataFrame => !isTimeSeries(dataFrame))
+        : this.dataFrames;
 
     if (onlyTables.length === 0) {
       return null;
@@ -102,6 +111,10 @@ export class ResultProcessor {
   }
 
   getLogsResult(): LogsModel | null {
+    if (this.state.mode !== ExploreMode.Logs && !this.state.datasourceInstance.meta.unified) {
+      return null;
+    }
+
     const newResults = dataFrameToLogsModel(this.dataFrames, this.intervalMs, this.timeZone);
     const sortOrder = refreshIntervalToSortOrder(this.state.refreshInterval);
     const sortedNewResults = sortLogsResult(newResults, sortOrder);
@@ -112,16 +125,16 @@ export class ResultProcessor {
 }
 
 export function isTimeSeries(frame: DataFrame): boolean {
-  return frame.meta.responseType === 'Metrics';
-  // let hasTimeField = false;
-  // let hasNumberField = false;
-  // for (const field of frame.fields) {
-  //   hasTimeField = hasTimeField || field.type === FieldType.time;
-  //   hasNumberField = hasNumberField || field.type === FieldType.number;
-  //   if (hasTimeField && hasNumberField) {
-  //     break;
-  //   }
-  // }
+  if (frame.meta?.responseType) {
+    return frame.meta.responseType === 'Metrics';
+  }
 
-  // return hasTimeField && hasNumberField;
+  if (frame.meta?.instant) {
+    return false;
+  }
+
+  return (
+    frame.fields.some(field => field.type === FieldType.time) &&
+    frame.fields.some(field => field.type === FieldType.number)
+  );
 }

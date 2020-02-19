@@ -24,7 +24,7 @@ export interface LegendOptions extends LegendBasicOptions, LegendRenderOptions {
 
 export interface LegendItem {
   label: string;
-  color: string;
+  color: string | number;
   isVisible: boolean;
   yAxis: number;
   displayValues?: DisplayValue[];

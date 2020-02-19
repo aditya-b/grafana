@@ -26,11 +26,12 @@ import {
   getFlotPairs,
   TimeZone,
   getDisplayProcessor,
+  FieldColorMode,
 } from '@grafana/data';
 import { getThemeColor } from 'app/core/utils/colors';
 import { hasAnsiCodes } from 'app/core/utils/text';
 import { sortInAscendingOrder, deduplicateLogRowsById } from 'app/core/utils/explore';
-import { getGraphSeriesModel } from 'app/plugins/panel/graph2/getGraphSeriesModel';
+import { isTimeSeries } from 'app/features/explore/utils/ResultProcessor';
 
 export const LogLevelColor = {
   [LogLevel.critical]: colors[7],
@@ -83,9 +84,7 @@ export function filterLogLevels(logRows: LogRowModel[], hiddenLogLevels: Set<Log
     return logRows;
   }
 
-  return logRows.filter((row: LogRowModel) => {
-    return !hiddenLogLevels.has(row.logLevel);
-  });
+  return logRows.filter((row: LogRowModel) => !hiddenLogLevels.has(row.logLevel));
 }
 
 export function makeSeriesForLogs(rows: LogRowModel[], intervalMs: number, timeZone: TimeZone): GraphSeriesXY[] {
@@ -99,7 +98,6 @@ export function makeSeriesForLogs(rows: LogRowModel[], intervalMs: number, timeZ
   const bucketSize = intervalMs * 10;
   const seriesList: any[] = [];
 
-  console.log(bucketSize / 1000);
   const sortedRows = rows.sort(sortInAscendingOrder);
   for (const row of sortedRows) {
     let series = seriesByLevel[row.logLevel];
@@ -159,8 +157,12 @@ export function makeSeriesForLogs(rows: LogRowModel[], intervalMs: number, timeZ
     const valueField = data.fields[0];
     valueField.config = {
       ...valueField.config,
-      color: series.color,
+      color: {
+        mode: FieldColorMode.Fixed,
+        fixedColor: series.color,
+      },
     };
+    valueField.display = getDisplayProcessor({ field: valueField });
 
     const graphSeries: GraphSeriesXY = {
       color: series.color,
@@ -171,7 +173,6 @@ export function makeSeriesForLogs(rows: LogRowModel[], intervalMs: number, timeZ
         show: true,
         fill: 1,
         barWidth: bucketSize,
-        lineWidth: 0,
         fillColor: series.color,
         zero: false,
       },
@@ -203,10 +204,6 @@ export function makeSeriesForLogs(rows: LogRowModel[], intervalMs: number, timeZ
   });
 }
 
-function isLogsData(series: DataFrame) {
-  return series.fields.some(f => f.type === FieldType.time) && series.fields.some(f => f.type === FieldType.string);
-}
-
 /**
  * Convert dataFrame into LogsModel which consists of creating separate array of log rows and metrics series. Metrics
  * series can be either already included in the dataFrame or will be computed from the log rows.
@@ -214,7 +211,7 @@ function isLogsData(series: DataFrame) {
  * @param intervalMs In case there are no metrics series, we use this for computing it from log rows.
  */
 export function dataFrameToLogsModel(dataFrames: DataFrame[], intervalMs: number, timeZone: TimeZone): LogsModel {
-  const logSeries = dataFrames.filter(dataFrame => dataFrame.meta.responseType === 'Logs');
+  const logSeries = dataFrames.filter(dataFrame => !isTimeSeries(dataFrame));
   const logsModel = logSeriesToLogsModel(logSeries);
 
   if (logsModel) {
@@ -257,21 +254,6 @@ export function dataFrameToLogsModel(dataFrames: DataFrame[], intervalMs: number
     meta: [],
     series: [],
   };
-}
-
-function separateLogsAndMetrics(dataFrame: DataFrame[]) {
-  const metricSeries: DataFrame[] = [];
-  const logSeries: DataFrame[] = [];
-
-  for (const series of dataFrame) {
-    if (isLogsData(series)) {
-      logSeries.push(series);
-    } else {
-      metricSeries.push(series);
-    }
-  }
-
-  return { logSeries, metricSeries };
 }
 
 const logTimeFormat = 'YYYY-MM-DD HH:mm:ss';

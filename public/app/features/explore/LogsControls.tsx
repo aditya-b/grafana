@@ -1,103 +1,65 @@
 import React, { PureComponent } from 'react';
 
-import { LogsMetaKind, LogsDedupStrategy, LogRowModel, LogsDedupDescription, LogsMetaItem } from '@grafana/data';
-import { Switch, ToggleButtonGroup, ToggleButton } from '@grafana/ui';
-import store from 'app/core/store';
+import { LogsMetaKind, LogsDedupStrategy, LogRowModel, LogsMetaItem } from '@grafana/data';
+import { Forms } from '@grafana/ui';
+import { cx, css } from 'emotion';
 
-enum DisplayFormat {
-  'Logs',
-  'Table',
-}
+export const fieldClass = css`
+  margin-right: 28px;
+  align-items: center;
+  height: 35px;
+`;
 
-const SETTINGS_KEYS = {
-  showLabels: 'grafana.explore.logs.showLabels',
-  showTime: 'grafana.explore.logs.showTime',
-  wrapLogMessage: 'grafana.explore.logs.wrapLogMessage',
-  displayFormat: 'grafana.explore.logs.displayFormat',
-  dedupStrategy: 'grafana.explore.logs.dedupStrategy',
-};
+export const labelClass = css`
+  margin-right: 12px;
+  margin-bottom: 0px;
+`;
+
+export const pushRight = css`
+  margin-right: auto;
+`;
 
 interface Props {
   logRows?: LogRowModel[];
   logsMeta?: LogsMetaItem[];
   dedupedRows?: LogRowModel[];
-  onDedupStrategyChange: (dedupStrategy: LogsDedupStrategy) => void;
-}
-
-interface State {
   showLabels: boolean;
   showTime: boolean;
   wrapLogMessage: boolean;
-  displayFormat: DisplayFormat;
   dedupStrategy: LogsDedupStrategy;
+  onDedupStrategyChange: (dedupStrategy: LogsDedupStrategy) => void;
+  onLabelsChange: (showLabels: boolean) => void;
+  onTimeChange: (showTime: boolean) => void;
+  onWrapLogMessageChange: (wrapLogMessage: boolean) => void;
 }
 
 export class LogsControls extends PureComponent<Props> {
-  getStoreState = () =>
-    ({
-      showLabels: store.getBool(SETTINGS_KEYS.showLabels, false),
-      showTime: store.getBool(SETTINGS_KEYS.showTime, true),
-      wrapLogMessage: store.getBool(SETTINGS_KEYS.wrapLogMessage, true),
-      displayFormat: store.getObject(SETTINGS_KEYS.displayFormat, DisplayFormat.Logs),
-      dedupStrategy: store.getObject(SETTINGS_KEYS.dedupStrategy, LogsDedupStrategy.none),
-    } as State);
-
   onChangeDedup = (dedup: LogsDedupStrategy) => {
-    const { dedupStrategy } = this.getStoreState();
-    if (dedupStrategy === dedup) {
-      return this.props.onDedupStrategyChange(LogsDedupStrategy.none);
-    }
     return this.props.onDedupStrategyChange(dedup);
   };
 
   onChangeLabels = (event?: React.SyntheticEvent) => {
     const target = event && (event.target as HTMLInputElement);
-    if (target) {
-      const showLabels = target.checked;
-      this.setState({
-        showLabels,
-      });
-      store.set(SETTINGS_KEYS.showLabels, showLabels);
-    }
+    return this.props.onLabelsChange(target.checked);
   };
 
   onChangeTime = (event?: React.SyntheticEvent) => {
     const target = event && (event.target as HTMLInputElement);
-    if (target) {
-      const showTime = target.checked;
-      this.setState({
-        showTime,
-      });
-      store.set(SETTINGS_KEYS.showTime, showTime);
-    }
-  };
-
-  onChangeFormat = (displayFormat: DisplayFormat) => {
-    this.setState({
-      displayFormat,
-    });
-    store.set(SETTINGS_KEYS.displayFormat, displayFormat);
+    return this.props.onTimeChange(target.checked);
   };
 
   onChangewrapLogMessage = (event?: React.SyntheticEvent) => {
     const target = event && (event.target as HTMLInputElement);
-    if (target) {
-      const wrapLogMessage = target.checked;
-      this.setState({
-        wrapLogMessage,
-      });
-      store.set(SETTINGS_KEYS.wrapLogMessage, wrapLogMessage);
-    }
+    return this.props.onWrapLogMessageChange(target.checked);
   };
 
   render() {
-    const { logRows, logsMeta, dedupedRows } = this.props;
+    const { logRows, logsMeta, dedupedRows, showTime, showLabels, dedupStrategy, wrapLogMessage } = this.props;
 
     if (!logRows) {
       return null;
     }
 
-    const { showLabels, showTime, wrapLogMessage, dedupStrategy } = this.getStoreState();
     const dedupCount = dedupedRows
       ? dedupedRows.reduce((sum, row) => (row.duplicates ? sum + row.duplicates : sum), 0)
       : 0;
@@ -113,23 +75,25 @@ export class LogsControls extends PureComponent<Props> {
 
     return (
       <>
-        <Switch label="Time" checked={showTime} onChange={this.onChangeTime} transparent />
-        <Switch label="Unique labels" checked={showLabels} onChange={this.onChangeLabels} transparent />
-        <Switch label="Wrap lines" checked={wrapLogMessage} onChange={this.onChangewrapLogMessage} transparent />
-        <ToggleButtonGroup label="Dedup" transparent={true}>
-          {Object.keys(LogsDedupStrategy).map((dedupType: string, i) => (
-            <ToggleButton
-              key={i}
-              value={dedupType}
-              onChange={this.onChangeDedup}
-              selected={dedupStrategy === dedupType}
-              // @ts-ignore
-              tooltip={LogsDedupDescription[dedupType]}
-            >
-              {dedupType}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
+        <Forms.Field label="Time" horizontal className={cx(fieldClass)} labelClassName={cx(labelClass)}>
+          <Forms.Switch value={showTime} onChange={this.onChangeTime} />
+        </Forms.Field>
+        <Forms.Field label="Unique labels" horizontal className={cx(fieldClass)} labelClassName={cx(labelClass)}>
+          <Forms.Switch value={showLabels} onChange={this.onChangeLabels} />
+        </Forms.Field>
+        <Forms.Field label="Wrap lines" horizontal className={cx(fieldClass)} labelClassName={cx(labelClass)}>
+          <Forms.Switch value={wrapLogMessage} onChange={this.onChangewrapLogMessage} />
+        </Forms.Field>
+        <Forms.Field label="Dedup" horizontal className={cx(fieldClass, pushRight)} labelClassName={cx(labelClass)}>
+          <Forms.RadioButtonGroup
+            options={Object.keys(LogsDedupStrategy).map((dedupType: string) => ({
+              label: dedupType,
+              value: dedupType,
+            }))}
+            value={dedupStrategy}
+            onChange={this.onChangeDedup}
+          />
+        </Forms.Field>
       </>
     );
   }

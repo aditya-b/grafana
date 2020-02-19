@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Column, TableData } from '@grafana/data';
+import { Column, TableData, QueryResultMeta } from '@grafana/data';
 
 /**
  * Extends the standard Column class with variables that get
@@ -18,6 +18,7 @@ export default class TableModel implements TableData {
   type: string;
   columnMap: any;
   refId: string;
+  meta?: QueryResultMeta;
 
   constructor(table?: any) {
     this.columns = [];
@@ -172,5 +173,8 @@ export function mergeTablesIntoModel(dst?: TableModel, ...tables: TableModel[]):
 
   model.columns = columnsUnion;
   model.rows = compactedRows;
+  // const timeColumnIndex = model.columns.findIndex(col => col.type === FieldType.time);
+  // // sort by time column
+  // model.rows = model.rows.sort((a, b) => a[timeColumnIndex] - b[timeColumnIndex]);
   return model;
 }

@@ -26,13 +26,8 @@ $column-horizontal-spacing: 10px;
   align-items: center;
   flex-wrap: wrap;
 
-  > * {
+  >* {
     margin-right: $spacer * 2;
-  }
-
-  > .align-right {
-    margin-left: auto;
-    margin-right: 0px;
   }
 }
 
@@ -42,18 +37,13 @@ $column-horizontal-spacing: 10px;
   align-items: center;
   flex-wrap: wrap;
 
-  > * {
+  >* {
     margin-right: $spacer * 2;
-  }
-
-  > .align-right {
-    margin-left: auto;
-    margin-right: 0px;
   }
 }
 
 .logs-panel-nodata {
-  > * {
+  >* {
     margin-left: 0.5em;
   }
 }
