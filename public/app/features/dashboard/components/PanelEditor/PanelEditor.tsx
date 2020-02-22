@@ -236,12 +236,9 @@ export class PanelEditorUnconnected extends PureComponent<Props> {
         </div>
         <div className={styles.toolbarLeft}>
           <div className={styles.toolbarItem}>
-            <Forms.Button
-              className={styles.toolbarItem}
-              icon="fa fa-remove"
-              variant="destructive"
-              onClick={this.onDiscard}
-            />
+            <Forms.Button className={styles.toolbarItem} variant="secondary" onClick={this.onDiscard}>
+              Discard changes
+            </Forms.Button>
           </div>
           <div className={styles.toolbarItem}>
             <Forms.Select
