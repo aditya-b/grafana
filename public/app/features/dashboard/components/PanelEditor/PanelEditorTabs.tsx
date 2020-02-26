@@ -53,7 +53,9 @@ const getPanelEditorTabsStyles = stylesFactory(() => {
       flex-direction: column;
       height: 100%;
     `,
-    tabBar: css``,
+    tabBar: css`
+      padding-left: ${theme.spacing.sm};
+    `,
     tabContent: css`
       padding: 0;
       display: flex;
@@ -61,8 +63,6 @@ const getPanelEditorTabsStyles = stylesFactory(() => {
       flex-grow: 1;
       min-height: 0;
       background: ${theme.colors.pageBg};
-      border-right: 1px solid ${theme.colors.pageHeaderBorder};
-      border-left: 1px solid ${theme.colors.pageHeaderBorder};
 
       .toolbar {
         background: transparent;
