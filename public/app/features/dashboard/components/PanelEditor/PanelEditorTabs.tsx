@@ -1,14 +1,15 @@
 import React from 'react';
 import { config } from 'app/core/config';
 import { css } from 'emotion';
-import { TabsBar, Tab, stylesFactory, TabContent, TransformationsEditor } from '@grafana/ui';
-import { DataTransformerConfig, LoadingState, PanelData } from '@grafana/data';
+import { TabsBar, Tab, stylesFactory, TabContent } from '@grafana/ui';
+import { PanelData } from '@grafana/data';
 import { PanelEditorTab, PanelEditorTabId } from './types';
 import { DashboardModel } from '../../state';
 import { QueriesTab } from '../../panel_editor/QueriesTab';
 import { PanelModel } from '../../state/PanelModel';
 import { AlertTab } from 'app/features/alerting/AlertTab';
 import { VisualizationTab } from './VisualizationTab';
+import { TransformationsTab } from './TransformationsTab';
 
 interface PanelEditorTabsProps {
   panel: PanelModel;
@@ -26,10 +27,6 @@ export const PanelEditorTabs: React.FC<PanelEditorTabsProps> = ({ panel, dashboa
     return null;
   }
 
-  const onTransformersChange = (transformers: DataTransformerConfig[]) => {
-    panel.setTransformations(transformers);
-  };
-
   return (
     <div className={styles.wrapper}>
       <TabsBar className={styles.tabBar}>
@@ -41,13 +38,7 @@ export const PanelEditorTabs: React.FC<PanelEditorTabsProps> = ({ panel, dashboa
         {activeTab.id === PanelEditorTabId.Queries && <QueriesTab panel={panel} dashboard={dashboard} />}
         {activeTab.id === PanelEditorTabId.Alert && <AlertTab panel={panel} dashboard={dashboard} />}
         {activeTab.id === PanelEditorTabId.Visualization && <VisualizationTab panel={panel} />}
-        {activeTab.id === PanelEditorTabId.Transform && data.state !== LoadingState.NotStarted && (
-          <TransformationsEditor
-            transformations={panel.transformations || []}
-            onChange={onTransformersChange}
-            dataFrames={data.series}
-          />
-        )}
+        {activeTab.id === PanelEditorTabId.Transform && <TransformationsTab panel={panel} data={data} />}
       </TabContent>
     </div>
   );
