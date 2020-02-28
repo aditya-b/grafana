@@ -1,3 +1,4 @@
+import { ComponentType } from 'react';
 import { DataFrame, Field } from './dataFrame';
 import { RegistryItemWithOptions } from '../utils/Registry';
 
@@ -8,11 +9,21 @@ export type DataTransformer = (data: DataFrame[]) => DataFrame[];
 
 export interface DataTransformerInfo<TOptions = any> extends RegistryItemWithOptions {
   transformer: (options: TOptions) => DataTransformer;
+  editor: ComponentType<DataTransformerItemEditorProps<TOptions>>;
 }
 
 export interface DataTransformerConfig<TOptions = any> {
   id: string;
   options: TOptions;
+}
+
+export interface DataTransformerItemEditorProps<T> {
+  /* Transformer configuration, persisted on panel's model */
+  options: T;
+  /* Pre-transformation DataFrames */
+  input: DataFrame[];
+  /* Called on change to config */
+  onChange: (options: T) => void;
 }
 
 export type FieldMatcher = (field: Field) => boolean;
