@@ -7,7 +7,7 @@ import { backendSrv } from 'app/core/services/backend_srv';
 import { DashboardSearchHit, DashboardDTO } from 'app/types';
 
 export interface Props {
-  onSelected: (dashboard: DashboardDTO) => void;
+  onChange: (dashboard: DashboardDTO) => void;
   currentDashboardId?: SelectableValue<number>;
   size?: FormInputSize;
 }
@@ -51,7 +51,7 @@ export class DashboardPicker extends PureComponent<Props, State> {
   };
 
   render() {
-    const { size, onSelected, currentDashboardId } = this.props;
+    const { size, onChange, currentDashboardId } = this.props;
     const { isLoading } = this.state;
 
     return (
@@ -61,7 +61,7 @@ export class DashboardPicker extends PureComponent<Props, State> {
         isClearable={true}
         defaultOptions={true}
         loadOptions={this.debouncedSearch}
-        onChange={onSelected}
+        onChange={onChange}
         placeholder="Select dashboard"
         noOptionsMessage={'No dashboards found'}
         value={currentDashboardId}
