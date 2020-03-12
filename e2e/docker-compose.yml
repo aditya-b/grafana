@@ -1,0 +1,16 @@
+version: '3'
+services:
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+
+  e2e:
+    build:
+      context: ../
+      dockerfile: ./e2e/cypress/Dockerfile
+    container_name: cypress
+    depends_on:
+      - grafana
+    command: env BASE_URL=http://localhost:3001 yarn e2e-tests
+
