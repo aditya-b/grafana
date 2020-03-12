@@ -10,11 +10,20 @@ mkdir $RUNDIR
 
 echo -e "Copying grafana backend files to temp dir..."
 
-if [ -f dist/grafana-latest.linux-x64.tar.gz ]; then
-  echo "Found built tar file"
-  tar zxf dist/grafana-latest.linux-x64.tar.gz -C $RUNDIR
-  mv $RUNDIR/grafana-*/* $RUNDIR
-else
+startDockerContainer () {
+  echo "Found docker file"
+
+  docker load -i $DOCKER_FILE
+
+  mkdir logs
+
+  docker run -d --rm \
+    -p $PORT:3000  \
+    -v logs:/var/log/grafana \
+    "grafana/grafana:pr-${CIRCLE_SHA1}"
+}
+
+startLocalBinary() {
   echo "Copying local dev files"
 
   cp -r ./bin $RUNDIR
@@ -23,12 +32,17 @@ else
   mkdir $RUNDIR/conf
   cp ./conf/defaults.ini $RUNDIR/conf/defaults.ini
   cp ./conf/sample.ini $RUNDIR/conf/custom.ini
+
+  $RUNDIR/bin/grafana-server \
+    --homepath=$RUNDIR \
+    --pidfile=$RUNDIR/pid \
+    cfg:server.http_port=$PORT \
+    cfg:log.level=debug \
+    2>&1 > $RUNDIR/output.log &
+}
+
+if [ -f $DOCKER_FILE ]; then
+  startDockerContainer
+else
+  startLocalBinary
 fi
-
-$RUNDIR/bin/grafana-server \
-  --homepath=$RUNDIR \
-  --pidfile=$RUNDIR/pid \
-  cfg:server.http_port=$PORT \
-  cfg:log.level=debug \
-  2>&1 > $RUNDIR/output.log &
-
