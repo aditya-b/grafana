@@ -35,6 +35,7 @@ export class InfluxQueryCtrl extends QueryCtrl {
     this.resultFormats = [
       { text: 'Time series', value: 'time_series' },
       { text: 'Table', value: 'table' },
+      { text: 'Data frame', value: 'dataframe' },
     ];
     this.policySegment = uiSegmentSrv.newSegment(this.target.policy);
 

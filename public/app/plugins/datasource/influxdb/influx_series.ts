@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import TableModel from 'app/core/table_model';
-import { FieldType } from '@grafana/data';
+import { FieldType, DataFrame } from '@grafana/data';
 
 export default class InfluxSeries {
   series: any;
@@ -188,5 +188,12 @@ export default class InfluxSeries {
     });
 
     return table;
+  }
+
+  getDataframe(): DataFrame {
+    return {
+      fields: [],
+      length: 0,
+    };
   }
 }

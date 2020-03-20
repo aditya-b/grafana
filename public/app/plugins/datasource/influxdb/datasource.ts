@@ -86,6 +86,10 @@ export default class InfluxDatasource extends DataSourceApi<InfluxQuery, InfluxO
     allQueries = this.templateSrv.replace(allQueries, scopedVars);
 
     return this._seriesQuery(allQueries, options).then((data: any): any => {
+      if (data.hasOwnProperty('data')) {
+        data = data['data'];
+      }
+
       if (!data || !data.results) {
         return [];
       }
@@ -113,12 +117,15 @@ export default class InfluxDatasource extends DataSourceApi<InfluxQuery, InfluxO
             seriesList.push(influxSeries.getTable());
             break;
           }
-          default: {
+          case 'timeseries': {
             const timeSeries = influxSeries.getTimeSeries();
             for (y = 0; y < timeSeries.length; y++) {
               seriesList.push(timeSeries[y]);
             }
             break;
+          }
+          default: {
+            seriesList.push(influxSeries.getDataframe());
           }
         }
       }
@@ -204,7 +211,7 @@ export default class InfluxDatasource extends DataSourceApi<InfluxQuery, InfluxO
   metricFindQuery(query: string, options?: any) {
     const interpolated = this.templateSrv.replace(query, null, 'regex');
 
-    return this._seriesQuery(interpolated, options).then(resp => {
+    return this._seriesQuery(interpolated, options).then((resp: any) => {
       return this.responseParser.parse(query, resp);
     });
   }
@@ -231,7 +238,16 @@ export default class InfluxDatasource extends DataSourceApi<InfluxQuery, InfluxO
       query = query.replace('$timeFilter', timeFilter);
     }
 
-    return this._influxRequest(this.httpMode, '/query', { q: query, epoch: 'ms' }, options);
+    return this._influxV2Request(
+      this.httpMode,
+      '/api/v2/query',
+      {
+        type: 'influxql',
+        query,
+        bucket: 'test',
+      },
+      options
+    );
   }
 
   serializeParams(params: any) {
@@ -341,6 +357,59 @@ export default class InfluxDatasource extends DataSourceApi<InfluxQuery, InfluxO
             }
           } else {
             throw err;
+          }
+        }
+      );
+  }
+
+  _influxV2Request(method: string, url: string, data: any, options?: any) {
+    const currentUrl = this.urls.shift();
+    this.urls.push(currentUrl);
+
+    const req: any = {
+      method: 'POST',
+      url: currentUrl + url,
+      params: {
+        org: 'flux-grafana',
+      },
+      data: JSON.stringify(data),
+      precision: 'ms',
+      inspect: { type: this.type },
+    };
+
+    req.headers = {
+      Authorization: 'Token O1OWqdyZZD7uyWN8iNTDTfcjjAxdbZ3w9cahfHnFm2Gxroap_eYM2b8eZvkjgUDa0TAXIwOYm1UJpFb82mtLmA==',
+      'Content-Type': 'application/json',
+    };
+
+    if (this.basicAuth || this.withCredentials) {
+      req.withCredentials = true;
+    }
+    if (this.basicAuth) {
+      req.headers.Authorization = this.basicAuth;
+    }
+
+    return getBackendSrv()
+      .datasourceRequest(req)
+      .then(
+        result => {
+          return result;
+        },
+        err => {
+          if (err.status !== 0 || err.status >= 300) {
+            if (err.data && err.data.error) {
+              throw {
+                message: 'InfluxDB Error: ' + err.data.error,
+                data: err.data,
+                config: err.config,
+              };
+            } else {
+              throw {
+                message: 'Network Error: ' + err.statusText + '(' + err.status + ')',
+                data: err.data,
+                config: err.config,
+              };
+            }
           }
         }
       );
