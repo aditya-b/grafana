@@ -5,7 +5,7 @@ import {
     toDataFrame,
     transformDataFrame,
   } from '@grafana/data';
-  
+
   import { JoinTimeseriesOptions } from './joinTimeSeries';
   
   const series1 = toDataFrame({
@@ -45,7 +45,7 @@ import {
           name: 'series1',
           type: FieldType.number,
           values: new ArrayVector([2.5, 10.1, null, 12.12, 14.44, null]),
-          config: {},
+          config: {  },
           labels: undefined,
         },
         {

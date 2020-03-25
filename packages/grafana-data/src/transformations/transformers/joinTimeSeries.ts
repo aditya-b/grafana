@@ -139,7 +139,7 @@ export const joinTimeSeriesTransformer: DataTransformerInfo<JoinTimeseriesOption
       // TODO???? SORT???  
 
       // Reset joined values
-      const timeValues = new ArrayVector<number>([]);
+      const timeValues   = new ArrayVector<number>([]);
       fields[0] = {
         name: 'time',
         type: FieldType.time,
