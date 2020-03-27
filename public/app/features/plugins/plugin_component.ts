@@ -131,6 +131,13 @@ function pluginDirectiveLoader(
         const pluginId = scope.ctrl.currentDatasource.meta.id;
 
         return importDataSourcePlugin(scope.ctrl.currentDatasource.meta).then(dsPlugin => {
+          if(!dsPlugin.components.AnnotationsQueryCtrl) {
+            console.log( 'Add the query editor here!!!' );
+            return {
+
+            };
+          }
+
           return {
             baseUrl,
             name: 'annotations-query-ctrl-' + pluginId,
