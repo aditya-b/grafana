@@ -5,18 +5,16 @@ jest.unmock('app/features/plugins/plugin_loader');
   define: jest.fn(),
 };
 
-jest.mock('app/core/core', () => {
-  return {
-    coreModule: {
-      directive: jest.fn(),
-    },
-  };
-});
+jest.mock('app/core/core', () => ({
+  coreModule: {
+    directive: jest.fn(),
+  },
+}));
 
 import { SystemJS } from '@grafana/runtime';
 import { AppPluginMeta, PluginMetaInfo, PluginType, AppPlugin } from '@grafana/data';
 
-// Loaded after the `unmock` abve
+// Loaded after the `unmock` above
 import { importAppPlugin } from './plugin_loader';
 
 class MyCustomApp extends AppPlugin {
@@ -41,7 +39,7 @@ describe('Load App', () => {
     SystemJS.delete(modulePath);
   });
 
-  it('should call init and set meta', async () => {
+  it('calls init and sets meta', async () => {
     const meta: AppPluginMeta = {
       id: 'test-app',
       module: modulePath,
