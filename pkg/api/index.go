@@ -119,12 +119,13 @@ func (hs *HTTPServer) setIndexViewData(c *models.ReqContext) (*dtos.IndexViewDat
 		children = append(children, &dtos.NavLink{Text: "Import", SubTitle: "Import dashboard from file or Grafana.com", Id: "import", Icon: "gicon gicon-dashboard-import", Url: setting.AppSubUrl + "/dashboard/import"})
 
 		data.NavTree = append(data.NavTree, &dtos.NavLink{
-			Text:       "Create",
-			Id:         "create",
-			Icon:       "fa fa-fw fa-plus",
-			Url:        setting.AppSubUrl + "/dashboard/new",
-			Children:   children,
-			SortWeight: dtos.WeightCreate,
+			Text:         "Create",
+			Id:           "create",
+			Icon:         "fa fa-fw fa-plus",
+			HideFromMenu: true,
+			Url:          setting.AppSubUrl + "/dashboard/new",
+			Children:     children,
+			SortWeight:   dtos.WeightCreate,
 		})
 	}
 

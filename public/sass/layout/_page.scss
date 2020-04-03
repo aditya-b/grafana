@@ -1,5 +1,6 @@
 .grafana-app {
   display: flex;
+  flex-direction: column;
   align-items: stretch;
   position: absolute;
   width: 100%;

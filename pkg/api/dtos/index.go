@@ -34,12 +34,12 @@ const (
 	WeightCreate = (iota - 20) * 100
 	WeightDashboard
 	WeightExplore
+	WeightHelp
 	WeightProfile
 	WeightAlerting
 	WeightPlugin
 	WeightConfig
 	WeightAdmin
-	WeightHelp
 )
 
 type NavLink struct {

@@ -71,7 +71,7 @@ export const inputSizes = () => {
       width: ${inputSizesPixels('lg')};
     `,
     auto: css`
-      width: ${inputSizesPixels('auto')};
+      width: 100%;
     `,
   };
 };
