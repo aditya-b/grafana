@@ -15,7 +15,7 @@ import { SystemJS } from '@grafana/runtime';
 import { AppPluginMeta, PluginMetaInfo, PluginType, AppPlugin } from '@grafana/data';
 
 // Loaded after the `unmock` above
-import { importAppPlugin } from './plugin_loader';
+import { importAppPlugin, resolvePluginModulePath } from './plugin_loader';
 
 class MyCustomApp extends AppPlugin {
   initWasCalled = false;
@@ -30,14 +30,10 @@ class MyCustomApp extends AppPlugin {
 describe('Load App', () => {
   const app = new MyCustomApp();
   const modulePath = 'my/custom/plugin/module';
+  const moduleId = SystemJS.resolve(resolvePluginModulePath(modulePath));
 
-  beforeAll(() => {
-    SystemJS.set(modulePath, SystemJS.newModule({ plugin: app }));
-  });
-
-  afterAll(() => {
-    SystemJS.delete(modulePath);
-  });
+  beforeAll(() => SystemJS.set(moduleId, { plugin: app }));
+  afterAll(() => SystemJS.delete(moduleId));
 
   it('calls init and sets meta', async () => {
     const meta: AppPluginMeta = {
