@@ -30,9 +30,13 @@ class MyCustomApp extends AppPlugin {
 describe('Load App', () => {
   const app = new MyCustomApp();
   const modulePath = 'my/custom/plugin/module';
-  const moduleId = SystemJS.resolve(resolvePluginModulePath(modulePath));
+  let moduleId = '';
 
-  beforeAll(() => SystemJS.set(moduleId, { plugin: app }));
+  beforeAll(() => {
+    moduleId = SystemJS.resolve(resolvePluginModulePath(modulePath));
+    SystemJS.set(moduleId, { plugin: app });
+  });
+
   afterAll(() => SystemJS.delete(moduleId));
 
   it('calls init and sets meta', async () => {
