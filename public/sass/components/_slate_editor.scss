@@ -29,7 +29,7 @@
 .slate-typeahead {
   .typeahead {
     position: relative;
-    z-index: auto;
+    z-index: 11;
     border-radius: $border-radius;
     border: $panel-border;
     max-height: calc(66vh);
@@ -146,6 +146,7 @@
   .token.bold {
     font-weight: bold;
   }
+
   .token.italic {
     font-style: italic;
   }

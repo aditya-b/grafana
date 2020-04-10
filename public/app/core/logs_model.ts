@@ -16,7 +16,6 @@ import {
   LogsMetaKind,
   LogsDedupStrategy,
   GraphSeriesXY,
-  dateTime,
   toUtc,
   NullValueMode,
   toDataFrame,
@@ -25,6 +24,7 @@ import {
   getFlotPairs,
   TimeZone,
   getDisplayProcessor,
+  dateTime,
 } from '@grafana/data';
 import { getThemeColor } from 'app/core/utils/colors';
 import { hasAnsiCodes } from 'app/core/utils/text';
@@ -231,17 +231,19 @@ export function dataFrameToLogsModel(
   };
 }
 
-function separateLogsAndMetrics(dataFrame: DataFrame[]) {
+function separateLogsAndMetrics(dataFrames: DataFrame[]) {
   const metricSeries: DataFrame[] = [];
   const logSeries: DataFrame[] = [];
 
-  for (const series of dataFrame) {
-    if (isLogsData(series)) {
-      logSeries.push(series);
+  for (const dataFrame of dataFrames) {
+    if (isLogsData(dataFrame)) {
+      logSeries.push(dataFrame);
       continue;
     }
 
-    metricSeries.push(series);
+    if (dataFrame.length > 0) {
+      metricSeries.push(dataFrame);
+    }
   }
 
   return { logSeries, metricSeries };
@@ -272,9 +274,9 @@ export function logSeriesToLogsModel(logSeries: DataFrame[]): LogsModel | undefi
   const allSeries: LogFields[] = logSeries.map(series => {
     const fieldCache = new FieldCache(series);
 
-    // Assume the first string field in the dataFrame is the message. This was right so far but probably needs some
-    // more explicit checks.
-    const stringField = fieldCache.getFirstFieldOfType(FieldType.string);
+    const stringField = fieldCache.hasFieldNamed('line')
+      ? fieldCache.getFieldByName('line')
+      : fieldCache.getFirstFieldOfType(FieldType.string);
     if (stringField?.labels) {
       allLabels.push(stringField.labels);
     }

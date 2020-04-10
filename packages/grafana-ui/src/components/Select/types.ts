@@ -49,6 +49,8 @@ export interface SelectCommonProps<T> {
   tabSelectsValue?: boolean;
   value?: SelectValue<T>;
   width?: number;
+  closeMenuOnSelect?: boolean;
+  isOptionDisabled?: () => boolean;
 }
 
 export interface SelectAsyncProps<T> {
@@ -56,6 +58,8 @@ export interface SelectAsyncProps<T> {
   defaultOptions?: boolean | Array<SelectableValue<T>>;
   /** Asynchronously load select options */
   loadOptions?: (query: string) => Promise<Array<SelectableValue<T>>>;
+  /** If cacheOptions is true, then the loaded data will be cached. The cache will remain until cacheOptions changes value. */
+  cacheOptions?: boolean;
   /** Message to display when options are loading */
   loadingMessage?: string;
 }

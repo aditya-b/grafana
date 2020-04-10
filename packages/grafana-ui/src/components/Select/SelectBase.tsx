@@ -68,6 +68,9 @@ export function SelectBase<T>({
   allowCustomValue = false,
   autoFocus = false,
   backspaceRemovesValue = true,
+  cacheOptions,
+  className,
+  closeMenuOnSelect = true,
   components,
   defaultOptions,
   defaultValue,
@@ -144,6 +147,7 @@ export function SelectBase<T>({
     autoFocus,
     backspaceRemovesValue,
     captureMenuScroll: false,
+    closeMenuOnSelect,
     defaultValue,
     // Also passing disabled, as this is the new Select API, and I want to use this prop instead of react-select's one
     disabled,
@@ -178,8 +182,8 @@ export function SelectBase<T>({
   };
 
   // width property is deprecated in favor of size or className
-  let widthClass = '';
-  if (width) {
+  let widthClass = className ?? '';
+  if (width && !className) {
     deprecationWarning('Select', 'width property', 'size or className');
     widthClass = 'width-' + width;
   }
@@ -195,6 +199,7 @@ export function SelectBase<T>({
     ReactSelectComponent = allowCustomValue ? AsyncCreatable : ReactAsyncSelect;
     asyncSelectProps = {
       loadOptions,
+      cacheOptions,
       defaultOptions,
     };
   }
@@ -275,6 +280,10 @@ export function SelectBase<T>({
           container: () => ({
             position: 'relative',
             width: inputSizesPixels(size),
+          }),
+          option: (provided: any, state: any) => ({
+            ...provided,
+            opacity: state.isDisabled ? 0.5 : 1,
           }),
         }}
         className={cx('select-container', widthClass)}
