@@ -6,7 +6,7 @@ import { EditorTabBody, EditorToolbarView } from './EditorTabBody';
 import { DataSourcePicker } from 'app/core/components/Select/DataSourcePicker';
 import { QueryInspector } from './QueryInspector';
 import { QueryOptions } from './QueryOptions';
-import { PanelOptionsGroup, CustomScrollbar, Container } from '@grafana/ui';
+import { PanelOptionsGroup, CustomScrollbar, Container, HorizontalGroup, Field, IconButton, Button } from '@grafana/ui';
 import { QueryEditorRows } from './QueryEditorRows';
 // Services
 import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
@@ -21,6 +21,7 @@ import { addQuery } from 'app/core/utils/query';
 import { Unsubscribable } from 'rxjs';
 import { isSharedDashboardQuery, DashboardQueryEditor } from 'app/plugins/datasource/dashboard';
 import { expressionDatasource, ExpressionDatasourceID } from 'app/features/expressions/ExpressionDatasource';
+import { css } from 'emotion';
 
 interface Props {
   panel: PanelModel;
@@ -258,13 +259,29 @@ export class QueriesTab extends PureComponent<Props, State> {
     return (
       <CustomScrollbar autoHeightMin="100%">
         <Container padding="md">
-          <div className="gf-form-inline">
-            <div className="gf-form gf-form--grow">
-              <div className="gf-form-label">Data source</div>
+          <HorizontalGroup>
+            <Field
+              label="Data source"
+              className={css`
+                width: 280px;
+              `}
+            >
               <DataSourcePicker datasources={this.datasources} onChange={this.onChangeDataSource} current={currentDS} />
-              <div className="gf-form-label gf-form-label--grow"></div>
-            </div>
-          </div>
+            </Field>
+            <Field label="Options">
+              <span>
+                Max datapoints = 1000, Interval = 5m <IconButton name="cog" />
+              </span>
+            </Field>
+            <Field label="Inspect">
+              <span>
+                9000 rows returned, time 200ms
+                <Button variant="secondary" size="sm">
+                  Open inspector
+                </Button>
+              </span>
+            </Field>
+          </HorizontalGroup>
 
           {this.renderQueryBody()}
         </Container>
