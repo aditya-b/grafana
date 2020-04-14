@@ -6,7 +6,7 @@ import { EditorTabBody, EditorToolbarView } from './EditorTabBody';
 import { DataSourcePicker } from 'app/core/components/Select/DataSourcePicker';
 import { QueryInspector } from './QueryInspector';
 import { QueryOptions } from './QueryOptions';
-import { PanelOptionsGroup } from '@grafana/ui';
+import { PanelOptionsGroup, CustomScrollbar, Container } from '@grafana/ui';
 import { QueryEditorRows } from './QueryEditorRows';
 // Services
 import { getDatasourceSrv } from 'app/features/plugins/datasource_srv';
@@ -242,28 +242,33 @@ export class QueriesTab extends PureComponent<Props, State> {
   };
 
   render() {
-    const { scrollTop } = this.state;
-    const queryInspector: EditorToolbarView = {
-      title: 'Query Inspector',
-      render: this.renderQueryInspector,
-    };
+    const { currentDS } = this.state;
+    // const { scrollTop } = this.state;
+    // const queryInspector: EditorToolbarView = {
+    //   title: 'Query Inspector',
+    //   render: this.renderQueryInspector,
+    // };
 
-    const dsHelp: EditorToolbarView = {
-      heading: 'Help',
-      icon: 'question-circle',
-      render: this.renderHelp,
-    };
+    // const dsHelp: EditorToolbarView = {
+    //   heading: 'Help',
+    //   icon: 'question-circle',
+    //   render: this.renderHelp,
+    // };
 
     return (
-      <EditorTabBody
-        heading="Query"
-        renderToolbar={this.renderToolbar}
-        toolbarItems={[queryInspector, dsHelp]}
-        setScrollTop={this.setScrollTop}
-        scrollTop={scrollTop}
-      >
-        <>{this.renderQueryBody()}</>
-      </EditorTabBody>
+      <CustomScrollbar autoHeightMin="100%">
+        <Container padding="md">
+          <div className="gf-form-inline">
+            <div className="gf-form gf-form--grow">
+              <div className="gf-form-label">Data source</div>
+              <DataSourcePicker datasources={this.datasources} onChange={this.onChangeDataSource} current={currentDS} />
+              <div className="gf-form-label gf-form-label--grow"></div>
+            </div>
+          </div>
+
+          {this.renderQueryBody()}
+        </Container>
+      </CustomScrollbar>
     );
   }
 }
