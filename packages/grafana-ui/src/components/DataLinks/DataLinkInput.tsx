@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useMemo, useContext, useRef, RefObject, memo, useEffect } from 'react';
 import usePrevious from 'react-use/lib/usePrevious';
 import { DataLinkSuggestions } from './DataLinkSuggestions';

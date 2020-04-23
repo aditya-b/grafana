@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { route } from 'angular';
 
 interface RegisterRoutesHandler {

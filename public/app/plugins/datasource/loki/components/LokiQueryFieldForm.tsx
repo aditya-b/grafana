@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // Libraries
 import React, { ReactNode } from 'react';
 

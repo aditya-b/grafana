@@ -1,3 +1,4 @@
+// @ts-nocheck
 import PluginPrism from 'app/features/explore/slate-plugins/prism';
 import { BracesPlugin, ClearPlugin, RunnerPlugin, NewlinePlugin } from '@grafana/ui';
 import Typeahead from './typeahead';

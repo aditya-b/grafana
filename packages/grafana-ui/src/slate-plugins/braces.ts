@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Plugin } from '@grafana/slate-react';
 import { Editor as CoreEditor, Annotation } from 'slate';
 

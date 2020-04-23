@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Libraries
 import React, { ReactNode } from 'react';
 import intersection from 'lodash/intersection';

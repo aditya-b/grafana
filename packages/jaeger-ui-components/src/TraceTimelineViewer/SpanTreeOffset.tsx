@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @ts-nocheck
 import React from 'react';
 import _get from 'lodash/get';
 import IoChevronRight from 'react-icons/lib/io/chevron-right';
