@@ -10,8 +10,10 @@ export class QueryCtrl {
   error: string;
   isLastQuery: boolean;
 
+  /** @ngInject */
   constructor(public $scope: any, public $injector: auto.IInjectorService) {
-    this.panel = this.panelCtrl.panel;
+    this.panel = this.panelCtrl?.panel ?? this.$scope.ctrl.panelCtrl.panel;
+    this.target = this.panelCtrl?.target ?? this.$scope.ctrl.panelCtrl.target;
     this.isLastQuery = _.indexOf(this.panel.targets, this.target) === this.panel.targets.length - 1;
   }
 
