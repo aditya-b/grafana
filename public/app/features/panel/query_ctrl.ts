@@ -12,8 +12,13 @@ export class QueryCtrl {
 
   /** @ngInject */
   constructor(public $scope: any, public $injector: auto.IInjectorService) {
-    this.panel = this.panelCtrl?.panel ?? this.$scope.ctrl.panelCtrl.panel;
-    this.target = this.panelCtrl?.target ?? this.$scope.ctrl.panelCtrl.target;
+    if (!this.panelCtrl) {
+      console.log('[QueryCtrl] Strangely the panelCtrl is only avaliable in $scope', this);
+      this.panelCtrl = this.$scope.ctrl.panelCtrl;
+    }
+
+    this.panel = this.panelCtrl.panel;
+    this.target = this.panelCtrl.target.target;
     this.isLastQuery = _.indexOf(this.panel.targets, this.target) === this.panel.targets.length - 1;
   }
 

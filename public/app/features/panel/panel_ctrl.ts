@@ -32,6 +32,7 @@ export class PanelCtrl {
     this.$timeout = $injector.get('$timeout');
     this.editorTabs = [];
     if (!this.panel) {
+      console.log('[PanelCtrl] Strangely the ctrl.panel is only avaliable in $scope', this);
       this.panel = this.$scope.ctrl.panel;
     }
     this.events = this.panel.events;
