@@ -4,13 +4,13 @@ import {
   isDataFrame,
   isTableData,
   sortDataFrame,
-  toDataFrame,
   toLegacyResponseData,
 } from './processDataFrame';
 import { DataFrameDTO, FieldType, TableData, TimeSeries } from '../types/index';
 import { dateTime } from '../datetime/moment_wrapper';
 import { MutableDataFrame } from './MutableDataFrame';
 import { ArrayDataFrame } from './ArrayDataFrame';
+import { toDataFrame } from './toDataFrame';
 
 describe('toDataFrame', () => {
   it('converts timeseries to series', () => {

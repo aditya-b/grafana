@@ -24,6 +24,8 @@ export * from './fieldColor';
 export * from './theme';
 export * from './orgs';
 export * from './flot';
+export * from './fieldOverrides';
+export * from './fieldConfig';
 
 import * as AppEvents from './appEvents';
 import { AppEvent } from './appEvents';

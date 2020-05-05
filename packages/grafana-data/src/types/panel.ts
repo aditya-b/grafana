@@ -1,15 +1,12 @@
 import { DataQueryError, DataQueryRequest, DataQueryTimings } from './datasource';
 import { PluginMeta } from './plugin';
-import { ScopedVars } from './ScopedVars';
-import { LoadingState } from './data';
+import { ScopedVars, InterpolateFunction } from './ScopedVars';
 import { DataFrame } from './dataFrame';
 import { AbsoluteTimeRange, TimeRange, TimeZone } from './time';
 import { FieldConfigSource } from './fieldOverrides';
 import { Registry } from '../utils';
 import { StandardEditorProps } from '../field';
 import { OptionsEditorItem } from './OptionsUIRegistryBuilder';
-
-export type InterpolateFunction = (value: string, scopedVars?: ScopedVars, format?: string | Function) => string;
 
 export interface PanelPluginMeta extends PluginMeta {
   /** Indicates that panel does not issue queries */
@@ -18,6 +15,17 @@ export interface PanelPluginMeta extends PluginMeta {
   hideFromList?: boolean;
   /** Sort order */
   sort: number;
+}
+
+/**
+ * Represent panel data loading state.
+ */
+export enum LoadingState {
+  NotStarted = 'NotStarted',
+  Loading = 'Loading',
+  Streaming = 'Streaming',
+  Done = 'Done',
+  Error = 'Error',
 }
 
 export interface PanelData {

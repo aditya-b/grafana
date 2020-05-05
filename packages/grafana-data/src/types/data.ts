@@ -1,19 +1,6 @@
-import { FieldConfig } from './dataFrame';
-import { DataTransformerConfig } from './transformations';
-import { ApplyFieldOverrideOptions } from './fieldOverrides';
+import { FieldConfig } from './fieldConfig';
 
 export type KeyValue<T = any> = { [s: string]: T };
-
-/**
- * Represent panel data loading state.
- */
-export enum LoadingState {
-  NotStarted = 'NotStarted',
-  Loading = 'Loading',
-  Streaming = 'Streaming',
-  Done = 'Done',
-  Error = 'Error',
-}
 
 type PreferredVisualisationType = 'graph' | 'table';
 
@@ -120,12 +107,6 @@ export interface TimeSeries extends QueryResultBase {
   tags?: Labels;
 }
 
-export enum NullValueMode {
-  Null = 'null',
-  Ignore = 'connected',
-  AsZero = 'null as zero',
-}
-
 export interface AnnotationEvent {
   id?: string;
   annotation?: any;
@@ -145,12 +126,4 @@ export interface AnnotationEvent {
 
   // Currently used to merge annotations from alerts and dashboard
   source?: any; // source.type === 'dashboard'
-}
-
-/**
- * Describes and API for exposing panel specific data configurations.
- */
-export interface DataConfigSource {
-  getTransformations: () => DataTransformerConfig[] | undefined;
-  getFieldOverrideOptions: () => ApplyFieldOverrideOptions | undefined;
 }

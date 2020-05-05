@@ -1,7 +1,7 @@
 import { Field } from '../types/dataFrame';
-import { NullValueMode } from '../types/data';
 import { GraphSeriesValue } from '../types/graph';
 import { TimeRange } from '../types/time';
+import { NullValueMode } from '../types';
 
 // Types
 // import { NullValueMode, GraphSeriesValue, Field, TimeRange } from '@grafana/data';

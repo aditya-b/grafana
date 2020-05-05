@@ -1,7 +1,6 @@
 import { ComponentType } from 'react';
 import {
   MatcherConfig,
-  FieldConfig,
   Field,
   DataFrame,
   VariableSuggestionsScope,
@@ -9,9 +8,19 @@ import {
   GrafanaTheme,
   TimeZone,
 } from '../types';
-import { InterpolateFunction } from './panel';
 import { StandardEditorProps, FieldConfigOptionsRegistry } from '../field';
 import { OptionsEditorItem } from './OptionsUIRegistryBuilder';
+import { FieldConfig } from './fieldConfig';
+import { InterpolateFunction } from './ScopedVars';
+import { DataTransformerConfig } from './transformations';
+
+/**
+ * Describes and API for exposing panel specific data configurations.
+ */
+export interface DataConfigSource {
+  getTransformations: () => DataTransformerConfig[] | undefined;
+  getFieldOverrideOptions: () => ApplyFieldOverrideOptions | undefined;
+}
 
 export interface DynamicConfigValue {
   id: string;

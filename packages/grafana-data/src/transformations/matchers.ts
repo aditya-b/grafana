@@ -1,5 +1,5 @@
 // Load the Buildtin matchers
-import { getFieldPredicateMatchers, getFramePredicateMatchers } from './matchers/predicates';
+// import { getFieldPredicateMatchers, getFramePredicateMatchers } from './matchers/predicates';
 import { getFieldNameMatchers, getFrameNameMatchers } from './matchers/nameMatcher';
 import { getFieldTypeMatchers } from './matchers/fieldTypeMatcher';
 import { getRefIdMatchers } from './matchers/refIdMatcher';
@@ -14,7 +14,7 @@ import { Registry } from '../utils/Registry';
 
 export const fieldMatchers = new Registry<FieldMatcherInfo>(() => {
   return [
-    ...getFieldPredicateMatchers(), // Predicates
+    //  ...getFieldPredicateMatchers(), // Predicates
     ...getFieldTypeMatchers(), // by type
     ...getFieldNameMatchers(), // by name
   ];
@@ -22,7 +22,7 @@ export const fieldMatchers = new Registry<FieldMatcherInfo>(() => {
 
 export const frameMatchers = new Registry<FrameMatcherInfo>(() => {
   return [
-    ...getFramePredicateMatchers(), // Predicates
+    //...getFramePredicateMatchers(), // Predicates
     ...getFrameNameMatchers(), // by name
     ...getRefIdMatchers(), // by query refId
   ];

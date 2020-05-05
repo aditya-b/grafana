@@ -1,6 +1,6 @@
 import { getFieldMatcher } from '../matchers';
 import { FieldMatcherID } from './ids';
-import { toDataFrame } from '../../dataframe/processDataFrame';
+import { toDataFrame } from '../../dataframe';
 
 describe('Field Name Matcher', () => {
   it('Match all with wildcard regex', () => {

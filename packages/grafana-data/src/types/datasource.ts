@@ -1,9 +1,9 @@
 import { Observable } from 'rxjs';
 import { ComponentType } from 'react';
 import { GrafanaPlugin, PluginMeta } from './plugin';
-import { PanelData } from './panel';
+import { PanelData, LoadingState } from './panel';
 import { LogRowModel } from './logs';
-import { AnnotationEvent, KeyValue, LoadingState, TableData, TimeSeries } from './data';
+import { AnnotationEvent, KeyValue, TableData, TimeSeries } from './data';
 import { DataFrame, DataFrameDTO } from './dataFrame';
 import { RawTimeRange, TimeRange, AbsoluteTimeRange } from './time';
 import { ScopedVars } from './ScopedVars';
