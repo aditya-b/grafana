@@ -82,7 +82,7 @@ This feature enables even more powerful visualizations and fine grained control 
 
 Another new feature of Grafana 7.0 is the panel inspector. Inspect allows you to view the raw data for any Grafana panel as well as export that data to a CSV file. With Panel inspect you will also be able to perform simple raw data transformations like join, view query stats or detailed execution data.
 
-Learn more about this feature in [Inspect a panel]({{< relref "../panels/inspect-panel.md" >}})
+Learn more about this feature in [Inspect a panel]({{< relref "../panels/inspect-panel.md" >}}).
 
 <div class="clearfix"></div>
 
