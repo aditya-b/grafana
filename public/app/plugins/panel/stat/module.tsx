@@ -34,6 +34,11 @@ export const plugin = new PanelPlugin<StatPanelOptions>(StatPanel)
           ],
         },
       })
+      .addBooleanSwitch({
+        path: 'showTitleAsValue',
+        name: 'Show title as value',
+        defaultValue: false,
+      })
       .addRadio({
         path: 'justifyMode',
         name: 'Justify mode',

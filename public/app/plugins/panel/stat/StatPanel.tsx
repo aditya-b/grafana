@@ -89,6 +89,7 @@ export class StatPanel extends PureComponent<PanelProps<StatPanelOptions>> {
       data: data.series,
       sparkline: options.graphMode !== BigValueGraphMode.None,
       autoMinMax: true,
+      valueAsTitle: options.showTitleAsValue,
       timeZone,
     });
   };

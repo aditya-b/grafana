@@ -184,7 +184,7 @@ export const TabsBarContent: React.FC<{
 
   return (
     <>
-      {width < 352 ? (
+      {width < 340 ? (
         <div className="flex-grow-1" aria-label={selectors.components.PanelEditor.OptionsPane.select}>
           <Select
             options={tabs}

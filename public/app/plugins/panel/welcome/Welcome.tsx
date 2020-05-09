@@ -15,28 +15,7 @@ export const WelcomeBanner: FC = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Welcome to Grafana</h1>
-      <div className={styles.help}>
-        <h3 className={styles.helpText}>Need help?</h3>
-        <div className={styles.smallScreenHelp}>
-          <ButtonSelect
-            defaultValue={helpOptions[0]}
-            variant="secondary"
-            size="sm"
-            onChange={onHelpLinkClick}
-            options={helpOptions}
-          />
-        </div>
-        <div className={styles.helpLinks}>
-          {helpOptions.map((option, index) => {
-            return (
-              <a key={`${option.label}-${index}`} className={styles.helpLink} href={option.href}>
-                {option.label}
-              </a>
-            );
-          })}
-        </div>
-      </div>
+      <h1 className={styles.title}>What's New In Grafana 7</h1>
     </div>
   );
 };
@@ -58,7 +37,7 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
       height: 100%;
       align-items: center;
       padding: 0 16px;
-      justify-content: space-between;
+      justify-content: center;
 
       @media only screen and (max-width: ${theme.breakpoints.xl}) {
         padding: 0 30px 0 100px;

@@ -7,6 +7,7 @@ export interface StatPanelOptions extends SingleStatBaseOptions {
   graphMode: BigValueGraphMode;
   colorMode: BigValueColorMode;
   justifyMode: BigValueJustifyMode;
+  showTitleAsValue: boolean;
 }
 
 export const colorModes: Array<SelectableValue<BigValueColorMode>> = [

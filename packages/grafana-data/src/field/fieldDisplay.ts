@@ -75,6 +75,7 @@ export interface GetFieldDisplayValuesOptions {
   theme: GrafanaTheme;
   autoMinMax?: boolean;
   timeZone?: TimeZone;
+  valueAsTitle?: boolean;
 }
 
 export const DEFAULT_FIELD_DISPLAY_VALUES_LIMIT = 25;
@@ -181,10 +182,16 @@ export const getFieldDisplayValues = (options: GetFieldDisplayValuesOptions): Fi
           for (const calc of calcs) {
             scopedVars[VAR_CALC] = { value: calc, text: calc };
             const displayValue = display(results[calc]);
+
             displayValue.title = replaceVariables(title, {
               ...field.state?.scopedVars, // series and field scoped vars
               ...scopedVars,
             });
+
+            if (options.valueAsTitle) {
+              displayValue.text = displayValue.title;
+              displayValue.title = undefined;
+            }
 
             values.push({
               name: calc,
@@ -251,6 +258,11 @@ export function getDisplayValueAlignmentFactors(values: FieldDisplay[]): Display
       suffixLength = v.suffix.length;
     }
   }
+
+  if (window.location.href.indexOf('preview') > 0) {
+    info.text = 'New panel editor testing 22';
+  }
+
   return info;
 }
 

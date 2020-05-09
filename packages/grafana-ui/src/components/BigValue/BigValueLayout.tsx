@@ -428,10 +428,11 @@ export class StackedWithNoChartLayout extends BigValueLayout {
 }
 
 export function buildLayout(props: Props): BigValueLayout {
-  const { width, height, sparkline } = props;
+  const { width, height, sparkline, alignmentFactors, value } = props;
   const useWideLayout = width / height > 2.5;
+  const title = alignmentFactors ? alignmentFactors.title : value.title;
 
-  if (useWideLayout) {
+  if (useWideLayout && title) {
     if (height > 50 && !!sparkline) {
       return new WideWithChartLayout(props);
     } else {
