@@ -8,6 +8,7 @@ import { StackdriverQuery } from './types';
 
 export const plugin = new DataSourcePlugin<StackdriverDatasource, StackdriverQuery>(StackdriverDatasource)
   .setQueryEditor(QueryEditor)
+  .setExploreQueryField(QueryEditor)
   .setConfigCtrl(StackdriverConfigCtrl)
   .setAnnotationQueryCtrl(StackdriverAnnotationsQueryCtrl)
   .setVariableQueryEditor(StackdriverVariableQueryEditor);
