@@ -4,13 +4,13 @@ import _ from 'lodash';
 // Services & Utils
 import syntax, {
   QUERY_COMMANDS,
-  FUNCTIONS,
   AGGREGATION_FUNCTIONS_STATS,
   STRING_FUNCTIONS,
   DATETIME_FUNCTIONS,
   IP_FUNCTIONS,
   BOOLEAN_FUNCTIONS,
   NUMERIC_OPERATORS,
+  FIELD_AND_FILTER_FUNCTIONS,
 } from './syntax';
 
 // Types
@@ -19,7 +19,7 @@ import { AbsoluteTimeRange, LanguageProvider, HistoryItem } from '@grafana/data'
 
 import { CloudWatchDatasource } from './datasource';
 import { TypeaheadInput, TypeaheadOutput, Token } from '@grafana/ui';
-import { Grammar } from 'prismjs';
+import Prism, { Grammar } from 'prismjs';
 
 export type CloudWatchHistoryItem = HistoryItem<CloudWatchQuery>;
 
@@ -63,6 +63,18 @@ export class CloudWatchLanguageProvider extends LanguageProvider {
 
     return this.startTask;
   };
+
+  isStatsQuery(query: string): boolean {
+    const grammar = this.getSyntax();
+    const tokens = Prism.tokenize(query, grammar) ?? [];
+
+    return !!tokens.find(
+      token =>
+        typeof token !== 'string' &&
+        token.content.toString().toLowerCase() === 'stats' &&
+        token.type === 'query-command'
+    );
+  }
 
   /**
    * Return suggestions based on input that can be then plugged into a typeahead dropdown.
@@ -117,19 +129,43 @@ export class CloudWatchLanguageProvider extends LanguageProvider {
     };
   }
 
-  private fetchFields = _.throttle(async (logGroups: string[]) => {
+  private fetchedFieldsCache:
+    | {
+        time: number;
+        logGroups: string[];
+        fields: string[];
+      }
+    | undefined;
+
+  private fetchFields = async (logGroups: string[]): Promise<string[]> => {
+    if (
+      this.fetchedFieldsCache &&
+      Date.now() - this.fetchedFieldsCache.time < 30 * 1000 &&
+      _.sortedUniq(this.fetchedFieldsCache.logGroups).join('|') === _.sortedUniq(logGroups).join('|')
+    ) {
+      return this.fetchedFieldsCache.fields;
+    }
+
     const results = await Promise.all(
       logGroups.map(logGroup => this.datasource.getLogGroupFields({ logGroupName: logGroup }))
     );
 
-    return [
+    const fields = [
       ...new Set<string>(
         results.reduce((acc: string[], cur) => acc.concat(cur.logGroupFields?.map(f => f.name) as string[]), [])
       ).values(),
     ];
-  }, 30 * 1000);
 
-  private handleKeyword = async (context?: TypeaheadContext): Promise<TypeaheadOutput | null> => {
+    this.fetchedFieldsCache = {
+      time: Date.now(),
+      logGroups,
+      fields,
+    };
+
+    return fields;
+  };
+
+  private handleKeyword = async (context?: TypeaheadContext): Promise<TypeaheadOutput> => {
     const suggs = await this.getFieldCompletionItems(context?.logGroupNames ?? []);
     const functionSuggestions = [
       { prefixMatch: true, label: 'Functions', items: STRING_FUNCTIONS.concat(DATETIME_FUNCTIONS, IP_FUNCTIONS) },
@@ -174,7 +210,7 @@ export class CloudWatchLanguageProvider extends LanguageProvider {
 
     if (['display', 'fields'].includes(queryCommand)) {
       const typeaheadOutput = await this.getFieldCompletionItems(context.logGroupNames ?? []);
-      typeaheadOutput.suggestions.push(...this.getFunctionCompletionItems().suggestions);
+      typeaheadOutput.suggestions.push(...this.getFieldAndFilterFunctionCompletionItems().suggestions);
 
       return typeaheadOutput;
     }
@@ -228,10 +264,8 @@ export class CloudWatchLanguageProvider extends LanguageProvider {
 
   private handleComparison = async (context?: TypeaheadContext) => {
     const fieldsSuggestions = await this.getFieldCompletionItems(context?.logGroupNames ?? []);
-    const boolFuncSuggestions = this.getBoolFuncCompletionItems();
-    const numFuncSuggestions = this.getNumericFuncCompletionItems();
-
-    fieldsSuggestions.suggestions.push(...boolFuncSuggestions.suggestions, ...numFuncSuggestions.suggestions);
+    const comparisonSuggestions = this.getComparisonCompletionItems();
+    fieldsSuggestions.suggestions.push(...comparisonSuggestions.suggestions);
     return fieldsSuggestions;
   };
 
@@ -239,8 +273,8 @@ export class CloudWatchLanguageProvider extends LanguageProvider {
     return { suggestions: [{ prefixMatch: true, label: 'Commands', items: QUERY_COMMANDS }] };
   };
 
-  private getFunctionCompletionItems = (): TypeaheadOutput => {
-    return { suggestions: [{ prefixMatch: true, label: 'Functions', items: FUNCTIONS }] };
+  private getFieldAndFilterFunctionCompletionItems = (): TypeaheadOutput => {
+    return { suggestions: [{ prefixMatch: true, label: 'Functions', items: FIELD_AND_FILTER_FUNCTIONS }] };
   };
 
   private getStatsAggCompletionItems = (): TypeaheadOutput => {
@@ -259,13 +293,13 @@ export class CloudWatchLanguageProvider extends LanguageProvider {
     };
   };
 
-  private getNumericFuncCompletionItems = (): TypeaheadOutput => {
+  private getComparisonCompletionItems = (): TypeaheadOutput => {
     return {
       suggestions: [
         {
           prefixMatch: true,
           label: 'Functions',
-          items: NUMERIC_OPERATORS,
+          items: NUMERIC_OPERATORS.concat(BOOLEAN_FUNCTIONS),
         },
       ],
     };
@@ -281,7 +315,7 @@ export class CloudWatchLanguageProvider extends LanguageProvider {
           label: 'Fields',
           items: fields.map(field => ({
             label: field,
-            insertText: field.match(/@?[_a-zA-Z]+[_.0-9a-zA-Z]*/) ? field : `\`${field}\``,
+            insertText: field.match(/@?[_a-zA-Z]+[_.0-9a-zA-Z]*/) ? undefined : `\`${field}\``,
           })),
         },
       ],
@@ -382,5 +416,5 @@ function isInsideFunctionParenthesis(curToken: Token): boolean {
 
 function isAfterKeyword(keyword: string, token: Token): boolean {
   const prevToken = prevNonWhitespaceToken(token);
-  return prevToken?.types.includes('keyword') && prevToken?.content.toLowerCase() === 'by';
+  return !!(prevToken?.types.includes('keyword') && prevToken?.content.toLowerCase() === 'by');
 }

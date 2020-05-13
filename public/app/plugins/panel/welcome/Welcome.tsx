@@ -1,13 +1,14 @@
 import React, { FC } from 'react';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
-import { ButtonSelect, stylesFactory, useTheme } from '@grafana/ui';
+import { stylesFactory, useTheme } from '@grafana/ui';
+import lightBackground from './img/background_light.svg';
 
 const helpOptions = [
-  { value: 0, label: 'Documentation', href: 'https://grafana.com/docs/grafana/latest/' },
-  { value: 1, label: 'Tutorials', href: 'https://grafana.com/tutorials/' },
-  { value: 2, label: 'Community', href: 'https://community.grafana.com/' },
-  { value: 3, label: 'Public Slack', href: '' },
+  { value: 0, label: 'Documentation', href: 'https://grafana.com/docs/grafana/latest' },
+  { value: 1, label: 'Tutorials', href: 'https://grafana.com/tutorials' },
+  { value: 2, label: 'Community', href: 'https://community.grafana.com' },
+  { value: 3, label: 'Public Slack', href: 'http://slack.grafana.com' },
 ];
 
 export const WelcomeBanner: FC = () => {
@@ -15,19 +16,13 @@ export const WelcomeBanner: FC = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>What's New In Grafana 7</h1>
+      <h1 className={styles.title}>What's new in Grafana 7.0</h1>
     </div>
   );
 };
 
-const onHelpLinkClick = (option: { label: string; href: string }) => {
-  window.open(option.href, '_blank');
-};
-
 const getStyles = stylesFactory((theme: GrafanaTheme) => {
-  const backgroundImage = theme.isDark
-    ? 'public/img/login_background_dark.svg'
-    : 'public/img/login_background_light.svg';
+  const backgroundImage = theme.isDark ? 'public/img/login_background_dark.svg' : lightBackground;
 
   return {
     container: css`
@@ -38,31 +33,28 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
       align-items: center;
       padding: 0 16px;
       justify-content: center;
-
-      @media only screen and (max-width: ${theme.breakpoints.xl}) {
-        padding: 0 30px 0 100px;
-      }
+      padding: 0 ${theme.spacing.lg};
 
       @media only screen and (max-width: ${theme.breakpoints.lg}) {
-        padding: 0 24px 0 44px;
         background-position: 0px;
         flex-direction: column;
         align-items: flex-start;
         justify-content: center;
       }
+
       @media only screen and (max-width: ${theme.breakpoints.sm}) {
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-start;
-        padding: ${theme.spacing.md} ${theme.spacing.md} ${theme.spacing.md} 48px;
+        padding: 0 ${theme.spacing.sm};
       }
     `,
     title: css`
       margin-bottom: 0;
 
+      @media only screen and (max-width: ${theme.breakpoints.lg}) {
+        margin-bottom: ${theme.spacing.sm};
+      }
+
       @media only screen and (max-width: ${theme.breakpoints.md}) {
         font-size: ${theme.typography.heading.h2};
-        margin-bottom: ${theme.spacing.sm};
       }
       @media only screen and (max-width: ${theme.breakpoints.sm}) {
         font-size: ${theme.typography.heading.h3};
@@ -84,14 +76,18 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => {
         display: none;
       }
     `,
-    helpLinks: css``,
+    helpLinks: css`
+      display: flex;
+      flex-wrap: wrap;
+    `,
     helpLink: css`
-      margin-right: 8px;
+      margin-right: ${theme.spacing.md};
       text-decoration: underline;
       text-wrap: no-wrap;
-    `,
-    smallScreenHelp: css`
-      display: none;
+
+      @media only screen and (max-width: ${theme.breakpoints.sm}) {
+        margin-right: 8px;
+      }
     `,
   };
 });
