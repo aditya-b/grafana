@@ -48,13 +48,14 @@ func newSessionCache() *sessionCache {
 // newAwsSession creates a new *session.Session given the Authentication
 // Provider configuration in the given DataSourceInfo.
 func (s *sessionCache) newAwsSession(dsInfo *DatasourceInfo) (*session.Session, error) {
-	regionConfiguration := &aws.Config{
-		Region: aws.String(dsInfo.Region),
+	cfgs := []*aws.Config{
+		{Region: aws.String(dsInfo.Region)},
 	}
-
 	switch dsInfo.AuthType {
 	case "arn":
-		stsSess, err := session.NewSession(regionConfiguration)
+		plog.Debug("Authenticating towards AWS with AssumeRoleProvider", "arn", dsInfo.AssumeRoleArn)
+
+		stsSess, err := session.NewSession(cfgs...)
 		if err != nil {
 			return nil, fmt.Errorf("creating session for AssumeRoleProvider failed: %w", err)
 		}
@@ -66,36 +67,39 @@ func (s *sessionCache) newAwsSession(dsInfo *DatasourceInfo) (*session.Session, 
 			Duration:        15 * time.Minute,
 		}
 
-		return session.NewSession(regionConfiguration, &aws.Config{
+		cfgs = append(cfgs, &aws.Config{
 			Credentials: credentials.NewCredentials(provider),
 		})
 	case "credentials":
-		return session.NewSession(regionConfiguration, &aws.Config{
+		plog.Debug("Authenticating towards AWS with shared credentials", "profile", dsInfo.Profile)
+		cfgs = append(cfgs, &aws.Config{
 			Credentials: credentials.NewSharedCredentials("", dsInfo.Profile),
 		})
 	case "keys":
+		plog.Debug("Authenticating towards AWS with an access key pair")
 		provider := &credentials.StaticProvider{Value: credentials.Value{
 			AccessKeyID:     dsInfo.AccessKey,
 			SecretAccessKey: dsInfo.SecretKey,
 		}}
-		return session.NewSession(regionConfiguration, &aws.Config{
+		cfgs = append(cfgs, &aws.Config{
 			Credentials: credentials.NewCredentials(provider),
 		})
 	case "sdk":
-		return session.NewSession(regionConfiguration)
+		plog.Debug("Authenticating towards AWS with default SDK method")
+	default:
+		return nil, fmt.Errorf(`%q is not a valid authentication type - expected "arn", "credentials", "keys" or "sdk"`,
+			dsInfo.AuthType)
 	}
 
-	return nil, fmt.Errorf(`%q is not a valid authentication type - expected "arn", "credentials", "keys" or "sdk"`, dsInfo.AuthType)
+	return session.NewSession(cfgs...)
 }
 
 // session returns an appropriate session.Session for the configuration given in the
 // DataSourceInfo. This method is primarily used internally by the API-specific
 // methods such as `cloudWatchClient`.
 func (s *sessionCache) session(dsInfo *DatasourceInfo) (*session.Session, error) {
-	region := dsInfo.Region
-
 	s.lock.RLock()
-	sess := s.awsRegionSessions[region]
+	sess := s.awsRegionSessions[dsInfo.Region]
 	s.lock.RUnlock()
 	if sess != nil {
 		return sess, nil
@@ -106,16 +110,16 @@ func (s *sessionCache) session(dsInfo *DatasourceInfo) (*session.Session, error)
 	defer s.lock.Unlock()
 
 	// Someone might've been faster than us so check again
-	sess = s.awsRegionSessions[region]
+	sess = s.awsRegionSessions[dsInfo.Region]
 	if sess != nil {
 		return sess, nil
 	}
 
 	sess, err := s.newAwsSession(dsInfo)
 	if err != nil {
-		return nil, fmt.Errorf("creating new session for region %q failed: %w", region, err)
+		return nil, fmt.Errorf("creating new session for region %q failed: %w", dsInfo.Region, err)
 	}
-	s.awsRegionSessions[region] = sess
+	s.awsRegionSessions[dsInfo.Region] = sess
 
 	return sess, nil
 }
