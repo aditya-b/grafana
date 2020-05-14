@@ -53,7 +53,8 @@ func (s *sessionCache) newAwsSession(dsInfo *DatasourceInfo) (*session.Session, 
 	}
 	switch dsInfo.AuthType {
 	case "arn":
-		plog.Debug("Authenticating towards AWS with AssumeRoleProvider", "arn", dsInfo.AssumeRoleArn)
+		plog.Debug("Authenticating towards AWS with AssumeRoleProvider", "arn", dsInfo.AssumeRoleArn, "region",
+			dsInfo.Region)
 
 		stsSess, err := session.NewSession(cfgs...)
 		if err != nil {
@@ -71,12 +72,13 @@ func (s *sessionCache) newAwsSession(dsInfo *DatasourceInfo) (*session.Session, 
 			Credentials: credentials.NewCredentials(provider),
 		})
 	case "credentials":
-		plog.Debug("Authenticating towards AWS with shared credentials", "profile", dsInfo.Profile)
+		plog.Debug("Authenticating towards AWS with shared credentials", "profile", dsInfo.Profile,
+			"region", dsInfo.Region)
 		cfgs = append(cfgs, &aws.Config{
 			Credentials: credentials.NewSharedCredentials("", dsInfo.Profile),
 		})
 	case "keys":
-		plog.Debug("Authenticating towards AWS with an access key pair")
+		plog.Debug("Authenticating towards AWS with an access key pair", "region", dsInfo.Region)
 		provider := &credentials.StaticProvider{Value: credentials.Value{
 			AccessKeyID:     dsInfo.AccessKey,
 			SecretAccessKey: dsInfo.SecretKey,
@@ -85,13 +87,18 @@ func (s *sessionCache) newAwsSession(dsInfo *DatasourceInfo) (*session.Session, 
 			Credentials: credentials.NewCredentials(provider),
 		})
 	case "sdk":
-		plog.Debug("Authenticating towards AWS with default SDK method")
+		plog.Debug("Authenticating towards AWS with default SDK method", "region", dsInfo.Region)
 	default:
 		return nil, fmt.Errorf(`%q is not a valid authentication type - expected "arn", "credentials", "keys" or "sdk"`,
 			dsInfo.AuthType)
 	}
 
-	return session.NewSession(cfgs...)
+	sess, err := session.NewSession(cfgs...)
+	if err != nil {
+		return nil, err
+	}
+	plog.Debug("Successfully authenticated towards AWS")
+	return sess, nil
 }
 
 // session returns an appropriate session.Session for the configuration given in the
