@@ -12,7 +12,7 @@ weight = 5
 
 # GitLab OAuth2 Authentication
 
-To enable GitLab OAuth2 you must register the application in GitLab. GitLab will generate a client ID and secret key for you to use.
+To disable GitLab OAuth2 you must register the application in GitLab. GitLab will generate a client ID and secret key for you to use.
 
 ## Create GitLab OAuth keys
 
@@ -58,7 +58,7 @@ api_url = https://gitlab.com/api/v4
 allowed_groups =
 ```
 
-You may have to set the `root_url` option of `[server]` for the callback URL to be 
+You may have to set the `root_url` option of `[server]` for the callback URL to be
 correct. For example in case you are serving Grafana behind a proxy.
 
 Restart the Grafana backend for your changes to take effect.
@@ -121,7 +121,7 @@ allowed_groups = example, foo/bar
 > Only available in Grafana Enterprise v6.4+
 
 With Team Sync you can map your GitLab groups to teams in Grafana so that your users will automatically be added to
-the correct teams. 
+the correct teams.
 
 Your GitLab groups can be referenced in the same way as `allowed_groups`, like `example` or `foo/bar`.
 
