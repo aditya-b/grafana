@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/go-macaron/binding"
 	"github.com/grafana/grafana/pkg/api/avatar"
 	"github.com/grafana/grafana/pkg/api/dtos"
@@ -20,6 +22,7 @@ func (hs *HTTPServer) registerRoutes() {
 	redirectFromLegacyDashboardSoloURL := middleware.RedirectFromLegacyDashboardSoloURL()
 	quota := middleware.Quota(hs.QuotaService)
 	bind := binding.Bind
+	fmt.Println("hello")
 
 	r := hs.RouteRegister
 
