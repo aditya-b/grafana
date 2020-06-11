@@ -92,6 +92,8 @@ export class GrafanaApp {
   init() {
     const app = angular.module('grafana', []);
 
+    console.log('hello');
+
     addClassIfNoOverlayScrollbar();
     setLocale(config.bootData.user.locale);
     setTimeZoneResolver(() => config.bootData.user.timeZone);
