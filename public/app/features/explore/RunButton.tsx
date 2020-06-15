@@ -44,7 +44,7 @@ export function RunButton(props: Props) {
       })}
       icon={loading ? 'fa fa-spinner' : 'sync'}
       iconClassName={loading && ' fa-spin run-icon'}
-      aria-label={selectors.pages.Explore.General.runButton}
+      aria-label={selectors.pages.Explore.Toolbar.runButton}
     />
   );
 
