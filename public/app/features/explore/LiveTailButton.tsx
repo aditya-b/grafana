@@ -5,6 +5,7 @@ import { css } from 'emotion';
 import { CSSTransition } from 'react-transition-group';
 import { useTheme, Tooltip, stylesFactory, selectThemeVariant, Icon } from '@grafana/ui';
 import { GrafanaTheme } from '@grafana/data';
+import { selectors } from '@grafana/e2e-selectors';
 
 //Components
 import { ResponsiveButton } from './ResponsiveButton';
@@ -119,7 +120,7 @@ export function LiveTailButton(props: LiveTailButtonProps) {
   const onClickMain = isLive ? (isPaused ? resume : pause) : start;
 
   return (
-    <>
+    <div aria-label={selectors.pages.Explore.Toolbar.liveTailButton}>
       <Tooltip content={defaultLiveTooltip} placement="bottom">
         <ResponsiveButton
           splitted={splitted}
@@ -155,6 +156,6 @@ export function LiveTailButton(props: LiveTailButtonProps) {
           </button>
         </div>
       </CSSTransition>
-    </>
+    </div>
   );
 }
