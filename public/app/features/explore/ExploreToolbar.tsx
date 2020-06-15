@@ -8,6 +8,7 @@ import { css } from 'emotion';
 import { ExploreId, ExploreItemState } from 'app/types/explore';
 import { Icon, IconButton, LegacyForms, SetInterval, ToggleButton, ToggleButtonGroup, Tooltip } from '@grafana/ui';
 import { DataQuery, ExploreMode, RawTimeRange, TimeRange, TimeZone } from '@grafana/data';
+import { selectors } from '@grafana/e2e-selectors';
 import { DataSourcePicker } from 'app/core/components/Select/DataSourcePicker';
 import { StoreState } from 'app/types/store';
 import {
@@ -214,7 +215,12 @@ export class UnConnectedExploreToolbar extends PureComponent<Props> {
               )}
             </div>
             {splitted && (
-              <IconButton className="explore-toolbar-header-close" onClick={() => closeSplit(exploreId)} name="times" />
+              <IconButton
+                className="explore-toolbar-header-close"
+                onClick={() => closeSplit(exploreId)}
+                name="times"
+                aria-label={selectors.pages.Explore.Toolbar.closeSplitButton}
+              />
             )}
           </div>
         </div>
@@ -289,6 +295,7 @@ export class UnConnectedExploreToolbar extends PureComponent<Props> {
                   icon="columns"
                   iconClassName="icon-margin-right"
                   disabled={isLive}
+                  aria-label={selectors.pages.Explore.Toolbar.splitButton}
                 />
               </div>
             ) : null}
@@ -315,6 +322,7 @@ export class UnConnectedExploreToolbar extends PureComponent<Props> {
                   onClick={this.onClearAll}
                   icon="trash-alt"
                   iconClassName="icon-margin-right"
+                  aria-label={selectors.pages.Explore.Toolbar.clearAllButton}
                 />
               </div>
             )}
