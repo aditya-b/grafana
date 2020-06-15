@@ -117,9 +117,16 @@ export const Pages = {
   },
   Explore: {
     url: '/explore',
+    Toolbar: {
+      splitButton: 'Split button',
+      closeSplitButton: 'Close split button',
+      dataSourcePicker: 'Explore datasource picker',
+      clearAllButton: 'Explore Clear all button',
+      runButton: 'Run button',
+      liveTailButton: 'Live tail button',
+    },
     General: {
       container: 'Explore',
-      runButton: 'Run button',
     },
   },
 };
