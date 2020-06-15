@@ -9,15 +9,12 @@ e2e.scenario({
   scenario: () => {
     e2e.pages.Explore.visit();
     e2e.pages.Explore.General.container().should('have.length', 1);
-
-    expectInitialToolbarContent();
-
-    exploreSplitScenario();
-
     const canvases = e2e().get('canvas');
     canvases.should('have.length', 2);
-
     e2e.components.DataSource.TestData.QueryTab.noise().should('have.length', 1);
+
+    expectInitialToolbarContent();
+    exploreSplitScenario();
   },
 });
 
