@@ -9,7 +9,10 @@ e2e.scenario({
   scenario: () => {
     e2e.pages.Explore.visit();
     e2e.pages.Explore.General.container().should('have.length', 1);
-    e2e.pages.Explore.General.runButton().should('have.length', 1);
+
+    expectInitialToolbarContent();
+
+    exploreSplitScenario();
 
     const canvases = e2e().get('canvas');
     canvases.should('have.length', 2);
@@ -17,3 +20,38 @@ e2e.scenario({
     e2e.components.DataSource.TestData.QueryTab.noise().should('have.length', 1);
   },
 });
+
+const expectInitialToolbarContent = () => {
+  // toolbar elements
+  e2e.pages.Explore.Toolbar.splitButton().should('have.length', 1);
+  e2e.pages.Explore.Toolbar.closeSplitButton().should('have.length', 0);
+  e2e.components.DataSourcePicker.container().should('have.length', 1);
+  e2e.pages.Explore.Toolbar.clearAllButton().should('have.length', 1);
+  e2e.pages.Explore.Toolbar.runButton().should('have.length', 1);
+  e2e.pages.Explore.Toolbar.liveTailButton().should('have.length', 0);
+};
+
+const exploreSplitScenario = () => {
+  // explore split - before
+  e2e.pages.Explore.General.container().should('have.length', 1);
+  e2e()
+    .get('canvas')
+    .should('have.length', 2);
+
+  // explore split
+  e2e.pages.Explore.Toolbar.splitButton().click();
+  e2e.pages.Explore.General.container().should('have.length', 2);
+  e2e()
+    .get('canvas')
+    .should('have.length', 4);
+  e2e.pages.Explore.Toolbar.closeSplitButton().should('have.length', 2);
+  e2e.pages.Explore.Toolbar.closeSplitButton()
+    .first()
+    .click();
+
+  // explore split - after
+  e2e.pages.Explore.General.container().should('have.length', 1);
+  e2e()
+    .get('canvas')
+    .should('have.length', 2);
+};
