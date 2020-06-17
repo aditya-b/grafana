@@ -41,8 +41,8 @@ const exploreSplitScenario = () => {
   e2e()
     .get('canvas')
     .should('have.length', 4);
-  e2e.pages.Explore.Toolbar.closeSplitButton().should('have.length', 2);
   e2e.pages.Explore.Toolbar.closeSplitButton()
+    .should('have.length', 2)
     .first()
     .click();
 
