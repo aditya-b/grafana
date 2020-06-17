@@ -243,7 +243,7 @@ export class UnConnectedExploreToolbar extends PureComponent<Props> {
                   />
                 </div>
                 {showModeToggle ? (
-                  <div className="query-type-toggle">
+                  <div className="query-type-toggle" aria-label={selectors.pages.Explore.Toolbar.exploreModeButton}>
                     <ToggleButtonGroup label="" transparent={true}>
                       {[ExploreMode.Metrics, ExploreMode.Logs, ExploreMode.Tracing]
                         .filter(mode => supportedModes.includes(mode))
