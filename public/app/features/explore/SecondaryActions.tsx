@@ -1,6 +1,7 @@
 import React from 'react';
 import { css, cx } from 'emotion';
 import { stylesFactory, Icon } from '@grafana/ui';
+import { selectors } from '@grafana/e2e-selectors';
 
 type Props = {
   addQueryRowButtonDisabled?: boolean;
@@ -23,7 +24,7 @@ export function SecondaryActions(props: Props) {
     <div className="gf-form">
       {!props.addQueryRowButtonHidden && (
         <button
-          aria-label="Add row button"
+          aria-label={selectors.pages.Explore.General.addQueryRowButton}
           className={`gf-form-label gf-form-label--btn ${styles.button}`}
           onClick={props.onClickAddQueryRowButton}
           disabled={props.addQueryRowButtonDisabled}
@@ -33,7 +34,7 @@ export function SecondaryActions(props: Props) {
         </button>
       )}
       <button
-        aria-label="Rich history button"
+        aria-label={selectors.pages.Explore.General.openQueryHistoryButton}
         className={cx(`gf-form-label gf-form-label--btn ${styles.button}`, {
           ['explore-active-button']: props.richHistoryButtonActive,
         })}
