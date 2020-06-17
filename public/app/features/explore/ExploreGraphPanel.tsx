@@ -14,6 +14,7 @@ import {
   Chart,
   Icon,
 } from '@grafana/ui';
+import { selectors } from '@grafana/e2e-selectors';
 
 const MAX_NUMBER_OF_TIME_SERIES = 20;
 
@@ -155,7 +156,7 @@ class UnThemedExploreGraphPanel extends PureComponent<Props, State> {
     const style = getStyles(theme);
 
     return (
-      <>
+      <div aria-label={selectors.pages.Explore.General.metricsGraphContainer}>
         {series && series.length > MAX_NUMBER_OF_TIME_SERIES && !showAllTimeSeries && (
           <div className={cx([style.timeSeriesDisclaimer])}>
             <Icon className={style.disclaimerIcon} name="exclamation-triangle" />
@@ -180,7 +181,7 @@ class UnThemedExploreGraphPanel extends PureComponent<Props, State> {
         )}
 
         {!showPanel && this.renderGraph()}
-      </>
+      </div>
     );
   }
 }
