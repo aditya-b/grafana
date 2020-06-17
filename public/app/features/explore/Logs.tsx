@@ -22,6 +22,7 @@ import store from 'app/core/store';
 import { ExploreGraphPanel } from './ExploreGraphPanel';
 import { MetaInfoText } from './MetaInfoText';
 import { RowContextOptions } from '@grafana/ui/src/components/Logs/LogRowContextProvider';
+import { selectors } from '@grafana/e2e-selectors';
 
 const SETTINGS_KEYS = {
   showLabels: 'grafana.explore.logs.showLabels',
@@ -204,7 +205,7 @@ export class Logs extends PureComponent<Props, State> {
           />
         </div>
         <div className="logs-panel-options">
-          <div className="logs-panel-controls">
+          <div className="logs-panel-controls" aria-label={selectors.pages.Explore.Logs.panelControls}>
             <Switch label="Time" checked={showTime} onChange={this.onChangeTime} transparent />
             <Switch label="Unique labels" checked={showLabels} onChange={this.onChangeLabels} transparent />
             <Switch label="Wrap lines" checked={wrapLogMessage} onChange={this.onChangewrapLogMessage} transparent />
