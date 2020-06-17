@@ -28,6 +28,7 @@ import { selectThemeVariant } from '../../themes/selectThemeVariant';
 import { LogDetails } from './LogDetails';
 import { LogRowMessage } from './LogRowMessage';
 import { LogLabels } from './LogLabels';
+import { selectors } from '@grafana/e2e-selectors';
 
 interface Props extends Themeable {
   highlighterExpressions?: string[];
@@ -151,6 +152,7 @@ class UnThemedLogRow extends PureComponent<Props, State> {
           onMouseEnter={this.addHoverBackground}
           onMouseLeave={this.clearHoverBackground}
           onClick={this.toggleDetails}
+          aria-label={selectors.components.Logs.LogRow}
         >
           {showDuplicates && (
             <td className={style.logsRowDuplicates}>

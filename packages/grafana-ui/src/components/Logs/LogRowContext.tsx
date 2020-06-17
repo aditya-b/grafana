@@ -11,6 +11,7 @@ import { ThemeContext } from '../../themes/ThemeContext';
 import { CustomScrollbar } from '../CustomScrollbar/CustomScrollbar';
 import { List } from '../List/List';
 import { ClickOutsideWrapper } from '../ClickOutsideWrapper/ClickOutsideWrapper';
+import { selectors } from '@grafana/e2e-selectors';
 
 interface LogRowContextProps {
   row: LogRowModel;
@@ -217,7 +218,7 @@ export const LogRowContext: React.FunctionComponent<LogRowContextProps> = ({
 
   return (
     <ClickOutsideWrapper onClick={onOutsideClick}>
-      <div>
+      <div aria-label={selectors.components.Logs.LogRowContext}>
         {context.after && (
           <LogRowContextGroup
             rows={context.after}

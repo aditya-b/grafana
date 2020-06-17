@@ -20,6 +20,7 @@ import { selectThemeVariant } from '../../themes/selectThemeVariant';
 
 //Components
 import { LogDetailsRow } from './LogDetailsRow';
+import { selectors } from '@grafana/e2e-selectors';
 
 type FieldDef = {
   key: string;
@@ -163,6 +164,7 @@ class UnThemedLogDetails extends PureComponent<Props> {
         className={cx(className, styles.logDetailsDefaultCursor)}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
+        aria-label={selectors.components.Logs.LogRowDetails}
       >
         {showDuplicates && <td />}
         <td className={cx(style.logsRowLevel, styles.logsRowLevelDetails)} />

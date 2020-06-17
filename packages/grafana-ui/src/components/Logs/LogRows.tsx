@@ -9,6 +9,7 @@ import { getLogRowStyles } from './getLogRowStyles';
 //Components
 import { LogRow } from './LogRow';
 import { RowContextOptions } from './LogRowContextProvider';
+import { selectors } from '@grafana/e2e-selectors';
 
 export const PREVIEW_LIMIT = 100;
 export const RENDER_LIMIT = 500;
@@ -118,7 +119,7 @@ class UnThemedLogRows extends PureComponent<Props, State> {
     const getRowContext = this.props.getRowContext ? this.props.getRowContext : () => Promise.resolve([]);
 
     return (
-      <div className={horizontalScrollWindow}>
+      <div className={horizontalScrollWindow} aria-label={selectors.components.Logs.container}>
         <table className={logsRowsTable}>
           <tbody>
             {hasData &&
