@@ -117,16 +117,25 @@ export const Pages = {
   },
   Explore: {
     url: '/explore',
+    General: {
+      container: 'Explore',
+      metricsGraphContainer: 'Explore metrics graph response container',
+      tableContainer: 'Explore table response container',
+      addQueryRowButton: 'Explore add query row button',
+      openQueryHistoryButton: 'Explore open query history button',
+      queryRowsContainer: 'Explore query rows container',
+    },
     Toolbar: {
       splitButton: 'Split button',
       closeSplitButton: 'Close split button',
+      exploreModeButton: 'Explore mode button',
       dataSourcePicker: 'Explore datasource picker',
       clearAllButton: 'Explore Clear all button',
       runButton: 'Run button',
       liveTailButton: 'Live tail button',
     },
-    General: {
-      container: 'Explore',
+    Logs: {
+      container: 'Explore logs response container',
     },
   },
 };
