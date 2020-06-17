@@ -10,6 +10,7 @@ import { config } from 'app/core/config';
 import { PANEL_BORDER } from 'app/core/constants';
 import { MetaInfoText } from './MetaInfoText';
 import { FilterItem } from '@grafana/ui/src/components/Table/types';
+import { selectors } from '@grafana/e2e-selectors';
 
 interface TableContainerProps {
   exploreId: ExploreId;
@@ -45,13 +46,15 @@ export class TableContainer extends PureComponent<TableContainerProps> {
     const hasTableResult = tableResult?.length;
 
     return (
-      <Collapse label="Table" loading={loading} collapsible isOpen={showingTable} onToggle={this.onClickTableButton}>
-        {hasTableResult ? (
-          <Table data={tableResult!} width={tableWidth} height={height} onCellFilterAdded={onCellFilterAdded} />
-        ) : (
-          <MetaInfoText metaItems={[{ value: '0 series returned' }]} />
-        )}
-      </Collapse>
+      <div aria-label={selectors.pages.Explore.General.tableContainer}>
+        <Collapse label="Table" loading={loading} collapsible isOpen={showingTable} onToggle={this.onClickTableButton}>
+          {hasTableResult ? (
+            <Table data={tableResult!} width={tableWidth} height={height} onCellFilterAdded={onCellFilterAdded} />
+          ) : (
+            <MetaInfoText metaItems={[{ value: '0 series returned' }]} />
+          )}
+        </Collapse>
+      </div>
     );
   }
 }
