@@ -29,6 +29,7 @@ import { Logs } from './Logs';
 import { LogsCrossFadeTransition } from './utils/LogsCrossFadeTransition';
 import { LiveTailControls } from './useLiveTailControls';
 import { getFieldLinksForExplore } from './utils/links';
+import { selectors } from '@grafana/e2e-selectors';
 
 interface LogsContainerProps {
   datasourceInstance?: DataSourceApi;
@@ -117,7 +118,7 @@ export class LogsContainer extends PureComponent<LogsContainerProps> {
     } = this.props;
 
     return (
-      <>
+      <div aria-label={selectors.pages.Explore.Logs.container}>
         <LogsCrossFadeTransition visible={isLive}>
           <Collapse label="Logs" loading={false} isOpen>
             <LiveTailControls exploreId={exploreId}>
@@ -163,7 +164,7 @@ export class LogsContainer extends PureComponent<LogsContainerProps> {
             />
           </Collapse>
         </LogsCrossFadeTransition>
-      </>
+      </div>
     );
   }
 }
