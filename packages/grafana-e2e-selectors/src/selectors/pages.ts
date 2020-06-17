@@ -136,7 +136,6 @@ export const Pages = {
     },
     Logs: {
       container: 'Explore logs response container',
-      uniqueLabelsToggle: 'Explore logs response unique labels column toggle',
       panelControls: 'Explore logs panel controls',
     },
   },
