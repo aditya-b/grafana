@@ -15,6 +15,14 @@ e2e.scenario({
 
     expectInitialToolbarContent();
     exploreSplitScenario();
+    expectMetricsInitialContent();
+    exploreMetricsScenario();
+
+    exploreModeChangeScenario();
+    expectLogsInitialContent();
+    exploreLogsScenario();
+
+    exploreQueryHistoryScenario();
   },
 });
 
@@ -52,3 +60,22 @@ const exploreSplitScenario = () => {
     .get('canvas')
     .should('have.length', 2);
 };
+
+const expectMetricsInitialContent = () => {
+  // metrics response elements
+  e2e.pages.Explore.General.metricsGraphContainer().should('be.visible');
+  e2e.pages.Explore.General.tableContainer().should('be.visible');
+};
+
+const exploreMetricsScenario = () => {};
+
+const exploreModeChangeScenario = () => {};
+
+const expectLogsInitialContent = () => {
+  // logs response elements
+  e2e.pages.Explore.Logs.container().should('be.visible');
+};
+
+const exploreLogsScenario = () => {};
+
+const exploreQueryHistoryScenario = () => {};
