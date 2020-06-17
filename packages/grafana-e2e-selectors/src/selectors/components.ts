@@ -138,4 +138,10 @@ export const Components = {
     container: 'Time zone picker select container',
   },
   QueryField: { container: 'Query field' },
+  Logs: {
+    container: 'Log rows container',
+    LogRow: 'Log row',
+    LogRowContext: 'Log row context',
+    LogRowDetails: 'Log row details',
+  },
 };
