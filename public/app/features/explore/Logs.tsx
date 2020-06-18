@@ -14,8 +14,17 @@ import {
   GraphSeriesXY,
   LinkModel,
   Field,
+  DataSourceApi,
 } from '@grafana/data';
-import { LegacyForms, LogLabels, ToggleButtonGroup, ToggleButton, LogRows, Button } from '@grafana/ui';
+import {
+  LegacyForms,
+  LogLabels,
+  ToggleButtonGroup,
+  ToggleButton,
+  LogRows,
+  Button,
+  FullWidthButtonContainer,
+} from '@grafana/ui';
 const { Switch } = LegacyForms;
 import store from 'app/core/store';
 
@@ -65,6 +74,10 @@ interface Props {
   onToggleLogLevel: (hiddenLogLevels: LogLevel[]) => void;
   getRowContext?: (row: LogRowModel, options?: RowContextOptions) => Promise<any>;
   getFieldLinks: (field: Field, rowIndex: number) => Array<LinkModel<Field>>;
+  showMoreNewerLogs: () => void;
+  showMoreOlderLogs: () => void;
+  displayMoreLogsBtn: boolean;
+  datasourceInstance?: DataSourceApi;
 }
 
 interface State {
@@ -159,6 +172,10 @@ export class Logs extends PureComponent<Props, State> {
       absoluteRange,
       onChangeTime,
       getFieldLinks,
+      showMoreNewerLogs,
+      showMoreOlderLogs,
+      displayMoreLogsBtn,
+      datasourceInstance,
     } = this.props;
 
     if (!logRows) {
@@ -183,6 +200,8 @@ export class Logs extends PureComponent<Props, State> {
 
     const scanText = scanRange ? `Scanning ${rangeUtil.describeTimeRange(scanRange)}` : 'Scanning...';
     const series = logsSeries ? logsSeries : [];
+
+    const isLoki = datasourceInstance?.meta.id === 'loki';
 
     return (
       <div className="logs-panel">
@@ -225,6 +244,19 @@ export class Logs extends PureComponent<Props, State> {
           </div>
         </div>
 
+        {dedupedRows?.length > 0 && (
+          <MetaInfoText
+            metaItems={[
+              {
+                label: 'Showing logs between',
+                value: `${dedupedRows[dedupedRows.length - 1]?.timeLocal} and ${dedupedRows[0]?.timeLocal} (${
+                  dedupedRows[dedupedRows.length - 1]?.timeFromNow
+                } to ${dedupedRows[0]?.timeFromNow})`,
+              },
+            ]}
+          />
+        )}
+
         {hasData && meta && (
           <MetaInfoText
             metaItems={meta.map(item => {
@@ -234,6 +266,14 @@ export class Logs extends PureComponent<Props, State> {
               };
             })}
           />
+        )}
+
+        {isLoki && !loading && hasData && !scanning && displayMoreLogsBtn && (
+          <FullWidthButtonContainer>
+            <Button variant="secondary" onClick={showMoreNewerLogs}>
+              Show newer logs
+            </Button>
+          </FullWidthButtonContainer>
         )}
 
         <LogRows
@@ -252,6 +292,14 @@ export class Logs extends PureComponent<Props, State> {
           timeZone={timeZone}
           getFieldLinks={getFieldLinks}
         />
+
+        {isLoki && !loading && hasData && !scanning && displayMoreLogsBtn && (
+          <FullWidthButtonContainer>
+            <Button variant="secondary" onClick={showMoreOlderLogs}>
+              Show older logs
+            </Button>
+          </FullWidthButtonContainer>
+        )}
 
         {!loading && !hasData && !scanning && (
           <div className="logs-panel-nodata">
