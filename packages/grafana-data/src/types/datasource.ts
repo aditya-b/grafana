@@ -571,3 +571,8 @@ export abstract class LanguageProvider {
   abstract start: () => Promise<any[]>;
   startTask?: Promise<any[]>;
 }
+
+export enum QueryDirection {
+  backward = 'BACKWARD',
+  forward = 'FORWARD',
+}
