@@ -1,10 +1,10 @@
-import { DataQuery, DataSourceJsonData } from '@grafana/data';
+import { DataQuery, DataSourceJsonData, QueryDirection } from '@grafana/data';
 
 export interface LokiInstantQueryRequest {
   query: string;
   limit?: number;
   time?: string;
-  direction?: 'BACKWARD' | 'FORWARD';
+  direction?: QueryDirection;
 }
 
 export interface LokiRangeQueryRequest {
@@ -13,7 +13,7 @@ export interface LokiRangeQueryRequest {
   start?: number;
   end?: number;
   step?: number;
-  direction?: 'BACKWARD' | 'FORWARD';
+  direction?: QueryDirection;
 }
 
 export enum LokiResultType {
@@ -31,6 +31,7 @@ export interface LokiQuery extends DataQuery {
   legendFormat?: string;
   valueWithRefId?: boolean;
   maxLines?: number;
+  direction?: QueryDirection;
 }
 
 export interface LokiOptions extends DataSourceJsonData {

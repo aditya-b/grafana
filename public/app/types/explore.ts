@@ -15,6 +15,7 @@ import {
   GraphSeriesXY,
   DataFrame,
   ExploreMode,
+  QueryDirection,
 } from '@grafana/data';
 
 import { Emitter } from 'app/core/core';
@@ -221,6 +222,7 @@ export interface QueryOptions {
   showingGraph?: boolean;
   showingTable?: boolean;
   mode?: ExploreMode;
+  direction?: QueryDirection; // only for Loki append queries
 }
 
 export interface QueryTransaction {

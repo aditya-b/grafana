@@ -18,6 +18,7 @@ import {
   ScopedVars,
   TimeRange,
   toDataFrame,
+  QueryDirection,
 } from '@grafana/data';
 import { getBackendSrv, toDataQueryResponse } from '@grafana/runtime';
 import { TemplateSrv } from 'app/features/templating/template_srv';
@@ -340,7 +341,7 @@ export class CloudWatchDatasource extends DataSourceApi<CloudWatchQuery, CloudWa
 
   getLogRowContext = async (
     row: LogRowModel,
-    { limit = 10, direction = 'BACKWARD' }: RowContextOptions = {}
+    { limit = 10, direction = QueryDirection.backward }: RowContextOptions = {}
   ): Promise<{ data: DataFrame[] }> => {
     let logStreamField = null;
     let logField = null;
@@ -361,12 +362,12 @@ export class CloudWatchDatasource extends DataSourceApi<CloudWatchQuery, CloudWa
 
     const requestParams: GetLogEventsRequest = {
       limit,
-      startFromHead: direction !== 'BACKWARD',
+      startFromHead: direction !== QueryDirection.backward,
       logGroupName: parseLogGroupName(logField!.values.get(row.rowIndex)),
       logStreamName: logStreamField!.values.get(row.rowIndex),
     };
 
-    if (direction === 'BACKWARD') {
+    if (direction === QueryDirection.backward) {
       requestParams.endTime = row.timeEpochMs;
     } else {
       requestParams.startTime = row.timeEpochMs;

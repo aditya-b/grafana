@@ -1,11 +1,11 @@
-import { LogRowModel, toDataFrame, Field, FieldCache } from '@grafana/data';
+import { LogRowModel, toDataFrame, Field, FieldCache, QueryDirection } from '@grafana/data';
 import React, { useState, useEffect } from 'react';
 import useAsync from 'react-use/lib/useAsync';
 
 import { DataQueryResponse, DataQueryError } from '@grafana/data';
 
 export interface RowContextOptions {
-  direction?: 'BACKWARD' | 'FORWARD';
+  direction?: QueryDirection;
   limit?: number;
 }
 
@@ -52,7 +52,7 @@ export const getRowContexts = async (
     getRowContext(row, {
       // The start time is inclusive so we will get the one row we are using as context entry
       limit: limit + 1,
-      direction: 'FORWARD',
+      direction: QueryDirection.forward,
     }),
   ];
 

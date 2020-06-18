@@ -4,7 +4,7 @@ import { Observable, from, merge, of } from 'rxjs';
 import { map, filter, catchError, switchMap } from 'rxjs/operators';
 
 // Services & Utils
-import { DataFrame, dateMath, FieldCache } from '@grafana/data';
+import { DataFrame, dateMath, FieldCache, QueryDirection } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
 import { addLabelToQuery } from 'app/plugins/datasource/prometheus/add_label_to_query';
 import { DatasourceRequestOptions } from 'app/core/services/backend_srv';
@@ -53,7 +53,7 @@ const RANGE_QUERY_ENDPOINT = `${LOKI_ENDPOINT}/query_range`;
 const INSTANT_QUERY_ENDPOINT = `${LOKI_ENDPOINT}/query`;
 
 const DEFAULT_QUERY_PARAMS: Partial<LokiRangeQueryRequest> = {
-  direction: 'BACKWARD',
+  direction: QueryDirection.backward,
   limit: DEFAULT_MAX_LINES,
   query: '',
 };
@@ -157,7 +157,11 @@ export class LokiDatasource extends DataSourceApi<LokiQuery, LokiOptions> {
     );
   };
 
-  createRangeQuery(target: LokiQuery, options: RangeQueryOptions): LokiRangeQueryRequest {
+  createRangeQuery(
+    target: LokiQuery,
+    options: RangeQueryOptions,
+    queryDirection?: QueryDirection
+  ): LokiRangeQueryRequest {
     const query = target.expr;
     let range: { start?: number; end?: number; step?: number } = {};
     if (options.range) {
@@ -182,6 +186,7 @@ export class LokiDatasource extends DataSourceApi<LokiQuery, LokiOptions> {
       ...range,
       query,
       limit: Math.min(options.maxDataPoints || Infinity, this.maxLines),
+      direction: queryDirection ?? DEFAULT_QUERY_PARAMS.direction,
     };
   }
 
@@ -376,10 +381,10 @@ export class LokiDatasource extends DataSourceApi<LokiQuery, LokiOptions> {
     const target = this.prepareLogRowContextQueryTarget(
       row,
       (options && options.limit) || 10,
-      (options && options.direction) || 'BACKWARD'
+      (options && options.direction) || QueryDirection.backward
     );
 
-    const reverse = options && options.direction === 'FORWARD';
+    const reverse = options && options.direction === QueryDirection.forward;
     return this._request(RANGE_QUERY_ENDPOINT, target)
       .pipe(
         catchError((err: any) => {
@@ -403,7 +408,7 @@ export class LokiDatasource extends DataSourceApi<LokiQuery, LokiOptions> {
       .toPromise();
   };
 
-  prepareLogRowContextQueryTarget = (row: LogRowModel, limit: number, direction: 'BACKWARD' | 'FORWARD') => {
+  prepareLogRowContextQueryTarget = (row: LogRowModel, limit: number, direction: QueryDirection) => {
     const query = Object.keys(row.labels)
       .map(label => `${label}="${row.labels[label]}"`)
       .join(',');
@@ -420,7 +425,7 @@ export class LokiDatasource extends DataSourceApi<LokiQuery, LokiOptions> {
     const nsField = fieldCache.getFieldByName('tsNs')!;
     const nsTimestamp = nsField.values.get(row.rowIndex);
 
-    if (direction === 'BACKWARD') {
+    if (direction === QueryDirection.backward) {
       return {
         ...commonTargetOptions,
         // convert to ns, we loose some precision here but it is not that important at the far points of the context
