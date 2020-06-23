@@ -1,4 +1,4 @@
-import React, { FC, memo, useCallback, useEffect, useState } from 'react';
+import React, { FC, memo, useCallback, useEffect, useState, ReactNode } from 'react';
 import { css, cx } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
 import { Icon, stylesFactory, useTheme } from '@grafana/ui';
@@ -9,12 +9,13 @@ import { selectors } from '@grafana/e2e-selectors';
 export interface OptionsGroupProps {
   id: string;
   title?: React.ReactNode;
-  renderTitle?: (isExpanded: boolean) => React.ReactNode;
+  renderTitle?: (isExpanded: boolean) => ReactNode;
   defaultToClosed?: boolean;
   className?: string;
   nested?: boolean;
   persistMe?: boolean;
   onToggle?: (isExpanded: boolean) => void;
+  children: ReactNode | ((toggleExpand: () => void) => ReactNode);
 }
 
 export const OptionsGroup: FC<OptionsGroupProps> = ({
@@ -39,9 +40,8 @@ export const OptionsGroup: FC<OptionsGroupProps> = ({
         persistMe={persistMe}
         title={title}
         onToggle={onToggle}
-      >
-        {children}
-      </CollapsibleSectionWithPersistence>
+        children={children}
+      />
     );
   }
 
@@ -54,9 +54,8 @@ export const OptionsGroup: FC<OptionsGroupProps> = ({
       renderTitle={renderTitle}
       title={title}
       onToggle={onToggle}
-    >
-      {children}
-    </CollapsibleSection>
+      children={children}
+    />
   );
 };
 
@@ -90,11 +89,14 @@ const CollapsibleSection: FC<Omit<OptionsGroupProps, 'persistMe'>> = ({
   const [isExpanded, toggleExpand] = useState(defaultToClosed ? false : true);
   const theme = useTheme();
   const styles = getStyles(theme, isExpanded, nested);
+
   useEffect(() => {
     if (onToggle) {
       onToggle(isExpanded);
     }
   }, [isExpanded]);
+
+  let childNode = _.isFunction(children) ? children(toggleExpand) : children;
 
   return (
     <div className={cx(styles.box, className, 'options-group')}>
@@ -108,7 +110,7 @@ const CollapsibleSection: FC<Omit<OptionsGroupProps, 'persistMe'>> = ({
         </div>
         <div style={{ width: '100%' }}>{renderTitle ? renderTitle(isExpanded) : title}</div>
       </div>
-      {isExpanded && <div className={styles.body}>{children}</div>}
+      {isExpanded && <div className={styles.body}>{childNode}</div>}
     </div>
   );
 };
