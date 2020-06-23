@@ -51,8 +51,8 @@ export const getLoginStyles = (theme: GrafanaTheme) => {
       background-repeat: no-repeat;
       min-width: 100%;
       margin-left: 0;
-      background-color: $black;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
     `,
@@ -94,6 +94,7 @@ export const getLoginStyles = (theme: GrafanaTheme) => {
       min-height: 320px;
       border-radius: 3px;
       padding: 20px 0;
+      margin: auto 0;
     `,
     loginOuterBox: css`
       display: flex;

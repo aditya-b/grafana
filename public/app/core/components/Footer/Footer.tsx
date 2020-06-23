@@ -1,6 +1,8 @@
 import React, { FC } from 'react';
 import config from 'app/core/config';
-import { Icon, IconName } from '@grafana/ui';
+import { Icon, IconName, useStyles } from '@grafana/ui';
+import { cx, css } from 'emotion';
+import { GrafanaTheme } from '@grafana/data';
 
 export interface FooterLink {
   text: string;
@@ -67,9 +69,9 @@ export function setVersionLinkFn(fn: typeof getFooterLinks) {
 
 export const Footer: FC = React.memo(() => {
   const links = getFooterLinks().concat(getVersionLinks());
-
+  const styles = useStyles(getFooterStyles);
   return (
-    <footer className="footer">
+    <footer className={cx('footer', styles)}>
       <div className="text-center">
         <ul>
           {links.map(link => (
@@ -84,3 +86,8 @@ export const Footer: FC = React.memo(() => {
     </footer>
   );
 });
+
+const getFooterStyles = (theme: GrafanaTheme) => css`
+  display: block;
+  padding: ${theme.spacing.md} 0;
+`;
