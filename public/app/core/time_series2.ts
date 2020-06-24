@@ -270,10 +270,13 @@ export default class TimeSeries {
       }
 
       if (currentValue !== null) {
-        if (_.isNumber(currentValue)) {
+        const isNum = _.isNumber(currentValue);
+        if (isNum) {
           this.stats.total += currentValue;
           this.allIsNull = false;
           nonNulls++;
+        } else {
+          console.log('NOPE', currentValue);
         }
 
         if (currentValue > this.stats.max) {
@@ -286,7 +289,7 @@ export default class TimeSeries {
 
         if (this.stats.first === null) {
           this.stats.first = currentValue;
-        } else {
+        } else if (isNum) {
           if (previousValue > currentValue) {
             // counter reset
             previousDeltaUp = false;
@@ -305,7 +308,7 @@ export default class TimeSeries {
         }
         previousValue = currentValue;
 
-        if (currentValue < this.stats.logmin && currentValue > 0) {
+        if (isNum && currentValue < this.stats.logmin && currentValue > 0) {
           this.stats.logmin = currentValue;
         }
 

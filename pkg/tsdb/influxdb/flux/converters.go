@@ -70,6 +70,24 @@ var Int64ToOptionalInt64 = data.FieldConverter{
 	},
 }
 
+// Int64ToOptionalInt64 optional int value
+var Int64ToOptionalFloat64 = data.FieldConverter{
+	OutputFieldType: data.FieldTypeNullableFloat64,
+	Converter: func(v interface{}) (interface{}, error) {
+		if v == nil {
+			return nil, nil
+		}
+		val, ok := v.(int64)
+		if !ok { // or return some default value instead of erroring
+			return nil, fmt.Errorf("[int] expected int64 input but got type %T", v)
+		}
+
+		// HACK!!!
+		f := float64(val)
+		return &f, nil
+	},
+}
+
 // UInt64ToOptionalUInt64 optional int value
 var UInt64ToOptionalUInt64 = data.FieldConverter{
 	OutputFieldType: data.FieldTypeNullableUint64,

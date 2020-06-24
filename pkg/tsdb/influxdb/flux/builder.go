@@ -59,7 +59,7 @@ func getConverter(t string) (*data.FieldConverter, error) {
 	case boolDatatype:
 		return &BoolToOptionalBool, nil
 	case longDatatype:
-		return &Int64ToOptionalInt64, nil
+		return &Int64ToOptionalFloat64, nil //Int64ToOptionalInt64, nil
 	case uLongDatatype:
 		return &UInt64ToOptionalUInt64, nil
 	case base64BinaryDataType:
