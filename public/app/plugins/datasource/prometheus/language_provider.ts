@@ -3,6 +3,7 @@ import LRU from 'lru-cache';
 import { Value } from 'slate';
 
 import { dateTime, LanguageProvider, HistoryItem } from '@grafana/data';
+import { getBackendSrv } from '@grafana/runtime';
 import { CompletionItem, TypeaheadInput, TypeaheadOutput, CompletionItemGroup } from '@grafana/ui';
 
 import { parseSelector, processLabels, processHistogramLabels } from './language_utils';
@@ -11,14 +12,11 @@ import PromqlSyntax, { FUNCTIONS, RATE_RANGES } from './promql';
 import { PrometheusDatasource } from './datasource';
 import { PromQuery, PromMetricsMetadata } from './types';
 
-import { JSON_STREAM_DONE } from './workers/consts';
-import StreamJSONResponse, { StreamJSONResponseWorker } from './workers/StreamJSONResponse.worker';
-import { getBackendSrv } from '@grafana/runtime';
-
 const DEFAULT_KEYS = ['job', 'instance'];
 const EMPTY_SELECTOR = '{}';
 const HISTORY_ITEM_COUNT = 5;
 const HISTORY_COUNT_CUTOFF = 1000 * 60 * 60 * 24; // 24h
+const WORKER_REQUEST_CHUNK_SIZE = 20000;
 export const DEFAULT_LOOKUP_METRICS_THRESHOLD = 100000; // number of metrics defining an installation that's too big
 
 const wrapLabel = (label: string): CompletionItem => ({ label });
@@ -122,37 +120,32 @@ export default class PromQlLanguageProvider extends LanguageProvider {
   requestViaWorker(url: string, hasObjectResponse = false): Promise<string[] | PromMetricsMetadata> {
     return new Promise(resolve => {
       let nodes: string[] | PromMetricsMetadata = hasObjectResponse ? {} : [];
-      const streamWorker = new (StreamJSONResponse as any)() as StreamJSONResponseWorker;
 
-      streamWorker.onmessage = e => {
-        if (e.data === JSON_STREAM_DONE) {
-          streamWorker.terminate();
-          resolve(nodes);
-        }
-
-        if (Array.isArray(nodes)) {
-          nodes = nodes.concat(e.data);
-        } else {
-          Object.assign(nodes, e.data);
-        }
+      const observer = {
+        next: (x: any) => {
+          if (Array.isArray(nodes)) {
+            nodes = nodes.concat(x);
+          } else {
+            Object.assign(nodes, x);
+          }
+        },
+        error: () => resolve(nodes),
+        complete: () => resolve(nodes),
       };
 
-      streamWorker.onerror = () => {
-        resolve(nodes);
-      };
-
-      const headers = getBackendSrv().augmentDataSourceRequestHeaders(
-        this.datasource.basicAuth && { Authorization: this.datasource.basicAuth }
-      );
-
-      streamWorker.postMessage({
-        chunkSize: Math.ceil(this.lookupMetricsThreshold / 20),
-        // headers: this.datasource.basicAuth ? { Authorization: this.datasource.basicAuth } : { 'X-Grafana-Org-Id': 1 },
-        headers,
-        limit: this.lookupMetricsThreshold,
-        url: this.datasource.url + url,
-        withCredentials: this.datasource.basicAuth || this.datasource.withCredentials,
-      });
+      getBackendSrv()
+        .datasourceRequestViaWorker(
+          {
+            headers: this.datasource.basicAuth && { Authorization: this.datasource.basicAuth },
+            url: this.datasource.url + url,
+          },
+          {
+            chunkSize: WORKER_REQUEST_CHUNK_SIZE,
+            limit: this.lookupMetricsThreshold,
+            withCredentials: Boolean(this.datasource.basicAuth || this.datasource.withCredentials),
+          }
+        )
+        .subscribe(observer);
     });
   }
 

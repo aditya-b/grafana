@@ -1,4 +1,4 @@
-import { JSON_STREAM_DONE } from '../consts';
+import { StreamJSONCommandOut } from '../consts';
 
 export class MockWorker {
   mockData: any;
@@ -10,7 +10,7 @@ export class MockWorker {
 
   postMessage = jest.fn(function(this: any) {
     this.onmessage({ data: this.mockData });
-    this.onmessage({ data: JSON_STREAM_DONE });
+    this.onmessage({ data: StreamJSONCommandOut.Done });
   });
 
   terminate() {}

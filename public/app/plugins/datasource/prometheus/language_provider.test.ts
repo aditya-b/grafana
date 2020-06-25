@@ -4,6 +4,7 @@ import LanguageProvider from './language_provider';
 import { PrometheusDatasource } from './datasource';
 import { HistoryItem } from '@grafana/data';
 import { PromQuery } from './types';
+// TODO: Adjust tests...
 import StreamJSONResponse from './workers/StreamJSONResponse.worker';
 import { MockWorker } from './workers/mocks/StreamJSONResponse.worker';
 import { BackendSrv } from '@grafana/runtime';

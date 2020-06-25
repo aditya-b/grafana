@@ -3,6 +3,7 @@ import { catchError, filter, map, mergeMap, retryWhen, share, takeUntil, tap, th
 import { fromFetch } from 'rxjs/fetch';
 import { BackendSrv as BackendService, BackendSrvRequest } from '@grafana/runtime';
 import { AppEvents } from '@grafana/data';
+import { FailReason } from 'oboe';
 
 import appEvents from 'app/core/app_events';
 import config from 'app/core/config';
@@ -14,6 +15,8 @@ import { coreModule } from 'app/core/core_module';
 import { Emitter } from '../utils/emitter';
 import { DataSourceResponse } from '../../types/events';
 import { parseInitFromOptions, parseUrlFromOptions } from '../utils/fetch';
+import StreamJSONResponse, { StreamJSONResponseWorker } from './workers/StreamJSONResponse.worker';
+import { StreamJSONCommandIn, StreamJSONCommandOut } from './workers/consts';
 
 export interface DatasourceRequestOptions {
   retry?: number;
@@ -169,6 +172,58 @@ export class BackendSrv implements BackendService {
 
     throw data;
   };
+
+  datasourceRequestViaWorker(options: BackendSrvRequest, { chunkSize, limit, withCredentials }: any) {
+    if (options.requestId) {
+      this.inFlightRequests.next(options.requestId);
+    }
+
+    options = this.parseDataSourceRequestOptions(options);
+
+    // Note: Wrapping this in Observable causes 15-20% increased RAM usage versus
+    // emmiting chunks directly. Might be worthwhile reconsidering if memory consumption
+    // ever becomes a problem.
+    const observable = new Observable(subscriber => {
+      const streamWorker = new (StreamJSONResponse as any)() as StreamJSONResponseWorker;
+
+      streamWorker.onmessage = ({ data }) => {
+        if (data === StreamJSONCommandOut.Done) {
+          subscriber.complete();
+        } else {
+          subscriber.next(data);
+        }
+      };
+
+      streamWorker.onerror = subscriber.error;
+
+      streamWorker.postMessage({
+        chunkSize,
+        headers: options.headers,
+        limit,
+        url: '/' + options.url, // TODO: Figure out why url is transformed in `parseDataSourceRequestOptions`
+        withCredentials,
+      });
+
+      return function unsubscribe() {
+        streamWorker.postMessage(StreamJSONCommandIn.Abort);
+      };
+    });
+
+    return observable.pipe(
+      catchError((err: FailReason) => {
+        const remappedError: ErrorResponse = {
+          status: err.statusCode || -1,
+          statusText: err.thrown.message,
+          data: err.jsonBody || err.body,
+        };
+
+        // this setTimeout hack enables any caller catching this err to set isHandled to true
+        setTimeout(() => this.requestErrorHandler(remappedError), 50);
+        return throwError(remappedError);
+      }),
+      this.handleStreamCancellation(options, CancellationType.request)
+    );
+  }
 
   async request(options: BackendSrvRequest): Promise<any> {
     // A requestId is a unique identifier for a particular query.

@@ -1,5 +1,5 @@
 import { streamJSONResponse } from './StreamJSONResponse.worker';
-import { JSON_STREAM_DONE } from './consts';
+import { StreamJSONCommandOut } from './consts';
 import { MockOboe } from './mocks/oboe';
 import oboeOriginal from 'oboe';
 import Mock = jest.Mock;
@@ -51,7 +51,7 @@ describe('StreamJSONResponse Web Worker', () => {
     });
 
     await cb.waitToHaveBeenCalledTimes(1);
-    expect(cb).toHaveBeenNthCalledWith(1, JSON_STREAM_DONE);
+    expect(cb).toHaveBeenNthCalledWith(1, StreamJSONCommandOut.Done);
 
     cb = streamMockData(
       {},
@@ -61,7 +61,7 @@ describe('StreamJSONResponse Web Worker', () => {
     );
 
     await cb.waitToHaveBeenCalledTimes(1);
-    expect(cb).toHaveBeenNthCalledWith(1, JSON_STREAM_DONE);
+    expect(cb).toHaveBeenNthCalledWith(1, StreamJSONCommandOut.Done);
   });
 
   it('chunks arrays correctly (and returns all nodes if below limit)', async () => {
@@ -74,7 +74,7 @@ describe('StreamJSONResponse Web Worker', () => {
     expect(cb).toHaveBeenNthCalledWith(1, [0, 1]);
     expect(cb).toHaveBeenNthCalledWith(2, [2, 3]);
     expect(cb).toHaveBeenNthCalledWith(3, [4]);
-    expect(cb).toHaveBeenNthCalledWith(4, JSON_STREAM_DONE);
+    expect(cb).toHaveBeenNthCalledWith(4, StreamJSONCommandOut.Done);
   });
 
   it('chunks objects correctly (and returns all nodes if below limit)', async () => {
@@ -97,7 +97,7 @@ describe('StreamJSONResponse Web Worker', () => {
     expect(cb).toHaveBeenNthCalledWith(1, { a: 1, b: 2 });
     expect(cb).toHaveBeenNthCalledWith(2, { c: 3, d: 4 });
     expect(cb).toHaveBeenNthCalledWith(3, { e: 5 });
-    expect(cb).toHaveBeenNthCalledWith(4, JSON_STREAM_DONE);
+    expect(cb).toHaveBeenNthCalledWith(4, StreamJSONCommandOut.Done);
   });
 
   it('truncates array responses at the specified limit', async () => {
@@ -108,7 +108,7 @@ describe('StreamJSONResponse Web Worker', () => {
 
     await cb.waitToHaveBeenCalledTimes(2);
     expect(cb).toHaveBeenNthCalledWith(1, ['foo', 'bar']);
-    expect(cb).toHaveBeenNthCalledWith(2, JSON_STREAM_DONE);
+    expect(cb).toHaveBeenNthCalledWith(2, StreamJSONCommandOut.Done);
   });
 
   it('truncates object responses at the specified limit', async () => {
@@ -127,6 +127,6 @@ describe('StreamJSONResponse Web Worker', () => {
 
     await cb.waitToHaveBeenCalledTimes(2);
     expect(cb).toHaveBeenNthCalledWith(1, { foo: 1, bar: 2 });
-    expect(cb).toHaveBeenNthCalledWith(2, JSON_STREAM_DONE);
+    expect(cb).toHaveBeenNthCalledWith(2, StreamJSONCommandOut.Done);
   });
 });

@@ -1,3 +1,5 @@
+import { Observable } from 'rxjs';
+
 /**
  * Currently implemented with:
  * https://docs.angularjs.org/api/ng/service/$http#usage
@@ -39,6 +41,8 @@ export interface BackendSrv {
 
   // DataSource requests add hooks into the query inspector
   datasourceRequest(options: BackendSrvRequest): Promise<any>;
+
+  datasourceRequestViaWorker(options: BackendSrvRequest, workerOptions: any): Observable<any>;
 
   // Can be used to augment the request headers just like the backend service
   // would anywhere else in the code base. (Obviously, there should be good

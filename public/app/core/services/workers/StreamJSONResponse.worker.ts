@@ -1,33 +1,32 @@
 import oboe from 'oboe';
-import { JSON_STREAM_DONE } from './consts';
+import { StreamJSONCommandIn, StreamJSONCommandOut } from './consts';
 
 // See: https://github.com/microsoft/TypeScript/issues/20595#issuecomment-587297818
 const postMessage = ((self as unknown) as Worker).postMessage;
 let isFetching = false;
+let oboeInstance: oboe.Oboe | null = null;
 
-export type StreamJSONResponsePayload = {
-  data: {
-    url: string;
-    chunkSize?: number;
-    hasObjectResponse?: boolean;
-    headers?: any;
-    limit?: number;
-    path?: string;
-    withCredentials?: boolean;
-  };
+export type StreamJSONResponseOptions = {
+  url: string;
+  chunkSize?: number;
+  hasObjectResponse?: boolean;
+  headers?: any;
+  limit?: number;
+  path?: string;
+  withCredentials?: boolean;
 };
 
 export interface StreamJSONResponseWorker extends Worker {
-  postMessage(message: StreamJSONResponsePayload['data'], transfer: Transferable[]): void;
-  postMessage(message: StreamJSONResponsePayload['data'], options?: PostMessageOptions): void;
+  postMessage(message: StreamJSONResponseOptions | StreamJSONCommandIn, transfer: Transferable[]): void;
+  postMessage(message: StreamJSONResponseOptions | StreamJSONCommandIn, options?: PostMessageOptions): void;
 }
 
 type ArrayChunk = any[];
 type ObjectChunk = { [key: string]: any };
 
 export function streamJSONResponse(
-  data: StreamJSONResponsePayload['data'],
-  callback: (arg: ArrayChunk | ObjectChunk | typeof JSON_STREAM_DONE) => void
+  data: StreamJSONResponseOptions,
+  callback: (arg: ArrayChunk | ObjectChunk | StreamJSONCommandOut) => void
 ) {
   // Node.js doesn't support instantiation via web worker, so checking for whether this
   // instance is already fetching wouldn't work during tests.
@@ -49,7 +48,7 @@ export function streamJSONResponse(
   let totalNodeCount = 0;
 
   // Important to use oboe 2.1.4!! 2.1.5 can't be used in web workers!
-  oboe({ url, headers, withCredentials })
+  oboeInstance = oboe({ url, headers, withCredentials })
     .node(path, function(this: oboe.Oboe, node, _path) {
       totalNodeCount++;
 
@@ -70,7 +69,7 @@ export function streamJSONResponse(
           callback(nodes);
         }
         this.abort();
-        callback(JSON_STREAM_DONE);
+        callback(StreamJSONCommandOut.Done);
         return oboe.drop;
       }
 
@@ -90,12 +89,21 @@ export function streamJSONResponse(
       if (nodes.length > 0 || Object.keys(nodes).length > 0) {
         callback(nodes);
       }
-      callback(JSON_STREAM_DONE);
+      callback(StreamJSONCommandOut.Done);
     });
 }
 
-self.onmessage = function({ data }: StreamJSONResponsePayload) {
-  streamJSONResponse(data, postMessage);
+self.onmessage = function({ data }: { data: StreamJSONResponseOptions | StreamJSONCommandIn }) {
+  if (typeof data === 'object') {
+    // TODO: Remove `postMessage` here and instead use assertion to assign a stricter type to
+    // `postMessage` globally.
+    streamJSONResponse(data, postMessage);
+    return;
+  }
+
+  if (data === StreamJSONCommandIn.Abort) {
+    oboeInstance.abort();
+  }
 };
 
 export default function dummyRequiredForJestMockImplementationToWork() {}
