@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	//nolint: misspell
 	"github.com/unknwon/com"
 
 	"github.com/grafana/grafana/pkg/models"

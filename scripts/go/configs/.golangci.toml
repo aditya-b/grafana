@@ -27,7 +27,7 @@ enable = [
   "govet",
   "ineffassign",
   "interfacer",
-  # "misspell",
+  "misspell",
   "nakedret",
   "rowserrcheck",
   "scopelint",
