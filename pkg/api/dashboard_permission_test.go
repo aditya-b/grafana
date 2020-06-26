@@ -26,14 +26,15 @@ func TestDashboardPermissionApiEndpoint(t *testing.T) {
 
 			cmd := dtos.UpdateDashboardAclCommand{
 				Items: []dtos.DashboardAclUpdateItem{
-					{UserId: 1000, Permission: models.PERMISSION_ADMIN},
+					{UserID: 1000, Permission: models.PERMISSION_ADMIN},
 				},
 			}
 
-			updateDashboardPermissionScenario("When calling POST on", "/api/dashboards/id/1/permissions", "/api/dashboards/id/:id/permissions", cmd, func(sc *scenarioContext) {
-				callUpdateDashboardPermissions(sc)
-				So(sc.resp.Code, ShouldEqual, 404)
-			})
+			updateDashboardPermissionScenario("When calling POST on", "/api/dashboards/id/1/permissions",
+				"/api/dashboards/id/:id/permissions", cmd, func(sc *scenarioContext) {
+					callUpdateDashboardPermissions(sc)
+					So(sc.resp.Code, ShouldEqual, 404)
+				})
 		})
 
 		Convey("Given user has no admin permissions", func() {
@@ -53,7 +54,7 @@ func TestDashboardPermissionApiEndpoint(t *testing.T) {
 
 			cmd := dtos.UpdateDashboardAclCommand{
 				Items: []dtos.DashboardAclUpdateItem{
-					{UserId: 1000, Permission: models.PERMISSION_ADMIN},
+					{UserID: 1000, Permission: models.PERMISSION_ADMIN},
 				},
 			}
 
@@ -99,7 +100,7 @@ func TestDashboardPermissionApiEndpoint(t *testing.T) {
 
 			cmd := dtos.UpdateDashboardAclCommand{
 				Items: []dtos.DashboardAclUpdateItem{
-					{UserId: 1000, Permission: models.PERMISSION_ADMIN},
+					{UserID: 1000, Permission: models.PERMISSION_ADMIN},
 				},
 			}
 
@@ -129,7 +130,7 @@ func TestDashboardPermissionApiEndpoint(t *testing.T) {
 
 			cmd := dtos.UpdateDashboardAclCommand{
 				Items: []dtos.DashboardAclUpdateItem{
-					{UserId: 1000, Permission: models.PERMISSION_ADMIN},
+					{UserID: 1000, Permission: models.PERMISSION_ADMIN},
 				},
 			}
 
@@ -159,7 +160,7 @@ func TestDashboardPermissionApiEndpoint(t *testing.T) {
 
 			cmd := dtos.UpdateDashboardAclCommand{
 				Items: []dtos.DashboardAclUpdateItem{
-					{UserId: 1000, Permission: models.PERMISSION_ADMIN},
+					{UserID: 1000, Permission: models.PERMISSION_ADMIN},
 				},
 			}
 

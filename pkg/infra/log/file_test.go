@@ -26,7 +26,7 @@ func TestLogFile(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("Log file is empty", func() {
-			So(fileLogWrite.maxlines_curlines, ShouldEqual, 0)
+			So(fileLogWrite.maxlinesCurlines, ShouldEqual, 0)
 		})
 
 		Convey("Logging should add lines", func() {
@@ -36,7 +36,7 @@ func TestLogFile(t *testing.T) {
 			So(err, ShouldBeNil)
 			err = fileLogWrite.WriteLine("test3\n")
 			So(err, ShouldBeNil)
-			So(fileLogWrite.maxlines_curlines, ShouldEqual, 3)
+			So(fileLogWrite.maxlinesCurlines, ShouldEqual, 3)
 		})
 
 		fileLogWrite.Close()
