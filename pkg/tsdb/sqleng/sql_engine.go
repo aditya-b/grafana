@@ -539,6 +539,7 @@ func ConvertSqlTimeColumnToEpochMs(values tsdb.RowValues, timeIndex int) {
 }
 
 // ConvertSqlValueColumnToFloat converts timeseries value column to float.
+//nolint: gocyclo
 func ConvertSqlValueColumnToFloat(columnName string, columnValue interface{}) (null.Float, error) {
 	var value null.Float
 
