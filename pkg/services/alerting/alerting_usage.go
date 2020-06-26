@@ -46,9 +46,14 @@ func (ae *AlertEngine) mapRulesToUsageStats(rules []*models.Alert) (DatasourceAl
 	// map of datasourceId type and frequency
 	typeCount := map[int64]int{}
 	for _, a := range rules {
+		if a.Settings == nil {
+			ae.log.Debug("Alert rule has no settings", "id", a.Id)
+			continue
+		}
+
 		dss, err := ae.parseAlertRuleModel(a.Settings)
 		if err != nil {
-			ae.log.Debug("could not parse settings for alert rule", "id", a.Id)
+			ae.log.Debug("Could not parse settings for alert rule", "id", a.Id)
 			continue
 		}
 
@@ -78,13 +83,9 @@ func (ae *AlertEngine) parseAlertRuleModel(settings json.Marshaler) ([]int64, er
 	datasourceIDs := []int64{}
 	model := alertJSONModel{}
 
-	if settings == nil {
-		return datasourceIDs, nil
-	}
-
 	bytes, err := settings.MarshalJSON()
 	if err != nil {
-		return datasourceIDs, err
+		return nil, err
 	}
 
 	err = json.Unmarshal(bytes, &model)

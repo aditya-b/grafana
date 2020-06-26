@@ -94,12 +94,6 @@ func TestParsingAlertRuleSettings(t *testing.T) {
 			expected:  []int64{},
 			shouldErr: require.NoError,
 		},
-		{
-			name:      "can parse blank content",
-			file:      "testdata/settings/invalid_format.json",
-			expected:  []int64{},
-			shouldErr: require.NoError,
-		},
 	}
 
 	ae := &AlertEngine{}
@@ -112,7 +106,8 @@ func TestParsingAlertRuleSettings(t *testing.T) {
 			content, err := ioutil.ReadFile(tc.file)
 			require.NoError(t, err, "expected to be able to read file")
 
-			j, _ := simplejson.NewJson(content)
+			j, err := simplejson.NewJson(content)
+			require.NoError(t, err)
 
 			result, err := ae.parseAlertRuleModel(j)
 
