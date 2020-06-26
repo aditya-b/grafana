@@ -19,6 +19,7 @@ const (
 	darkName  = "dark"
 )
 
+//nolint: gocyclo
 func (hs *HTTPServer) setIndexViewData(c *models.ReqContext) (*dtos.IndexViewData, error) {
 	settings, err := frontend.GetSettingsMap(hs.Cfg, hs.License, hs.RenderService, c)
 	if err != nil {

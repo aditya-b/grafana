@@ -408,11 +408,43 @@ func (e *StackdriverExecutor) unmarshalResponse(res *http.Response) (stackdriver
 	return data, nil
 }
 
+func handleDistributionSeries(series timeSeries, defaultMetricName string, seriesLabels map[string]string,
+	query *stackdriverQuery, queryRes *tsdb.QueryResult) {
+	points := make([]tsdb.TimePoint, 0)
+	for i := len(series.Points) - 1; i >= 0; i-- {
+		point := series.Points[i]
+		value := point.Value.DoubleValue
+
+		if series.ValueType == "INT64" {
+			parsedValue, err := strconv.ParseFloat(point.Value.IntValue, 64)
+			if err == nil {
+				value = parsedValue
+			}
+		}
+
+		if series.ValueType == "BOOL" {
+			if point.Value.BoolValue {
+				value = 1
+			} else {
+				value = 0
+			}
+		}
+
+		points = append(points, tsdb.NewTimePoint(null.FloatFrom(value), float64((point.Interval.EndTime).Unix())*1000))
+	}
+
+	metricName := formatLegendKeys(series.Metric.Type, defaultMetricName, seriesLabels, nil, query)
+
+	queryRes.Series = append(queryRes.Series, &tsdb.TimeSeries{
+		Name:   metricName,
+		Points: points,
+	})
+}
+
 func (e *StackdriverExecutor) parseResponse(queryRes *tsdb.QueryResult, data stackdriverResponse, query *stackdriverQuery) error {
 	labels := make(map[string]map[string]bool)
 
 	for _, series := range data.TimeSeries {
-		points := make([]tsdb.TimePoint, 0)
 		seriesLabels := make(map[string]string)
 		defaultMetricName := series.Metric.Type
 		labels["resource.type"] = map[string]bool{series.Resource.Type: true}
@@ -472,34 +504,7 @@ func (e *StackdriverExecutor) parseResponse(queryRes *tsdb.QueryResult, data sta
 
 		// reverse the order to be ascending
 		if series.ValueType != "DISTRIBUTION" {
-			for i := len(series.Points) - 1; i >= 0; i-- {
-				point := series.Points[i]
-				value := point.Value.DoubleValue
-
-				if series.ValueType == "INT64" {
-					parsedValue, err := strconv.ParseFloat(point.Value.IntValue, 64)
-					if err == nil {
-						value = parsedValue
-					}
-				}
-
-				if series.ValueType == "BOOL" {
-					if point.Value.BoolValue {
-						value = 1
-					} else {
-						value = 0
-					}
-				}
-
-				points = append(points, tsdb.NewTimePoint(null.FloatFrom(value), float64((point.Interval.EndTime).Unix())*1000))
-			}
-
-			metricName := formatLegendKeys(series.Metric.Type, defaultMetricName, seriesLabels, nil, query)
-
-			queryRes.Series = append(queryRes.Series, &tsdb.TimeSeries{
-				Name:   metricName,
-				Points: points,
-			})
+			handleDistributionSeries(series, defaultMetricName, seriesLabels, query, queryRes)
 		} else {
 			buckets := make(map[int]*tsdb.TimeSeries)
 
