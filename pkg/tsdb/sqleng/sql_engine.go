@@ -276,6 +276,106 @@ func (e *sqlQueryEndpoint) transformToTable(query *tsdb.Query, rows *core.Rows, 
 	return nil
 }
 
+func (e *sqlQueryEndpoint) processRow(rowCount int, columnTypes []*sql.ColumnType, rows *core.Rows, timeIndex int,
+	metricIndex int, metricPrefix bool, metricPrefixValue string, columnNames []string,
+	pointsBySeries map[string]*tsdb.TimeSeries, seriesByQueryOrder *list.List, fillMissing bool,
+	tsdbQuery *tsdb.TsdbQuery, fillInterval float64, fillPrevious bool, fillValue null.Float) error {
+	var timestamp float64
+	var value null.Float
+	var metric string
+
+	if rowCount > rowLimit {
+		return fmt.Errorf("query row limit exceeded, limit %d", rowLimit)
+	}
+
+	values, err := e.queryResultTransformer.TransformQueryResult(columnTypes, rows)
+	if err != nil {
+		return err
+	}
+
+	// converts column named time to unix timestamp in milliseconds to make
+	// native mysql datetime types and epoch dates work in
+	// annotation and table queries.
+	ConvertSqlTimeColumnToEpochMs(values, timeIndex)
+
+	switch columnValue := values[timeIndex].(type) {
+	case int64:
+		timestamp = float64(columnValue)
+	case float64:
+		timestamp = columnValue
+	default:
+		return fmt.Errorf("Invalid type for column time, must be of type timestamp or unix timestamp, got: %T %v", columnValue, columnValue)
+	}
+
+	if metricIndex >= 0 {
+		if columnValue, ok := values[metricIndex].(string); ok {
+			if metricPrefix {
+				metricPrefixValue = columnValue
+			} else {
+				metric = columnValue
+			}
+		} else {
+			return fmt.Errorf("Column metric must be of type %s. metric column name: %s type: %s but datatype is %T", strings.Join(e.metricColumnTypes, ", "), columnNames[metricIndex], columnTypes[metricIndex].DatabaseTypeName(), values[metricIndex])
+		}
+	}
+
+	for i, col := range columnNames {
+		if i == timeIndex || i == metricIndex {
+			continue
+		}
+
+		if value, err = ConvertSqlValueColumnToFloat(col, values[i]); err != nil {
+			return err
+		}
+
+		if metricIndex == -1 {
+			metric = col
+		} else if metricPrefix {
+			metric = metricPrefixValue + " " + col
+		}
+
+		series, exist := pointsBySeries[metric]
+		if !exist {
+			series = &tsdb.TimeSeries{Name: metric}
+			pointsBySeries[metric] = series
+			seriesByQueryOrder.PushBack(metric)
+		}
+
+		if fillMissing {
+			var intervalStart float64
+			if !exist {
+				intervalStart = float64(tsdbQuery.TimeRange.MustGetFrom().UnixNano() / 1e6)
+			} else {
+				intervalStart = series.Points[len(series.Points)-1][1].Float64 + fillInterval
+			}
+
+			if fillPrevious {
+				if len(series.Points) > 0 {
+					fillValue = series.Points[len(series.Points)-1][0]
+				} else {
+					fillValue.Valid = false
+				}
+			}
+
+			// align interval start
+			intervalStart = math.Floor(intervalStart/fillInterval) * fillInterval
+
+			for i := intervalStart; i < timestamp; i += fillInterval {
+				series.Points = append(series.Points, tsdb.TimePoint{fillValue, null.FloatFrom(i)})
+				rowCount++
+			}
+		}
+
+		series.Points = append(series.Points, tsdb.TimePoint{value, null.FloatFrom(timestamp)})
+
+		if setting.Env == setting.DEV {
+			e.log.Debug("Rows", "metric", metric, "time", timestamp, "value", value)
+		}
+	}
+
+	return nil
+}
+
 func (e *sqlQueryEndpoint) transformToTimeSeries(query *tsdb.Query, rows *core.Rows, result *tsdb.QueryResult, tsdbQuery *tsdb.TsdbQuery) error {
 	pointsBySeries := make(map[string]*tsdb.TimeSeries)
 	seriesByQueryOrder := list.New()
@@ -349,97 +449,10 @@ func (e *sqlQueryEndpoint) transformToTimeSeries(query *tsdb.Query, rows *core.R
 	}
 
 	for rows.Next() {
-		var timestamp float64
-		var value null.Float
-		var metric string
-
-		if rowCount > rowLimit {
-			return fmt.Errorf("query row limit exceeded, limit %d", rowLimit)
-		}
-
-		values, err := e.queryResultTransformer.TransformQueryResult(columnTypes, rows)
-		if err != nil {
+		if err := e.processRow(rowCount, columnTypes, rows, timeIndex, metricIndex, metricPrefix, metricPrefixValue,
+			columnNames, pointsBySeries, seriesByQueryOrder, fillMissing, tsdbQuery, fillInterval, fillPrevious,
+			fillValue); err != nil {
 			return err
-		}
-
-		// converts column named time to unix timestamp in milliseconds to make
-		// native mysql datetime types and epoch dates work in
-		// annotation and table queries.
-		ConvertSqlTimeColumnToEpochMs(values, timeIndex)
-
-		switch columnValue := values[timeIndex].(type) {
-		case int64:
-			timestamp = float64(columnValue)
-		case float64:
-			timestamp = columnValue
-		default:
-			return fmt.Errorf("Invalid type for column time, must be of type timestamp or unix timestamp, got: %T %v", columnValue, columnValue)
-		}
-
-		if metricIndex >= 0 {
-			if columnValue, ok := values[metricIndex].(string); ok {
-				if metricPrefix {
-					metricPrefixValue = columnValue
-				} else {
-					metric = columnValue
-				}
-			} else {
-				return fmt.Errorf("Column metric must be of type %s. metric column name: %s type: %s but datatype is %T", strings.Join(e.metricColumnTypes, ", "), columnNames[metricIndex], columnTypes[metricIndex].DatabaseTypeName(), values[metricIndex])
-			}
-		}
-
-		for i, col := range columnNames {
-			if i == timeIndex || i == metricIndex {
-				continue
-			}
-
-			if value, err = ConvertSqlValueColumnToFloat(col, values[i]); err != nil {
-				return err
-			}
-
-			if metricIndex == -1 {
-				metric = col
-			} else if metricPrefix {
-				metric = metricPrefixValue + " " + col
-			}
-
-			series, exist := pointsBySeries[metric]
-			if !exist {
-				series = &tsdb.TimeSeries{Name: metric}
-				pointsBySeries[metric] = series
-				seriesByQueryOrder.PushBack(metric)
-			}
-
-			if fillMissing {
-				var intervalStart float64
-				if !exist {
-					intervalStart = float64(tsdbQuery.TimeRange.MustGetFrom().UnixNano() / 1e6)
-				} else {
-					intervalStart = series.Points[len(series.Points)-1][1].Float64 + fillInterval
-				}
-
-				if fillPrevious {
-					if len(series.Points) > 0 {
-						fillValue = series.Points[len(series.Points)-1][0]
-					} else {
-						fillValue.Valid = false
-					}
-				}
-
-				// align interval start
-				intervalStart = math.Floor(intervalStart/fillInterval) * fillInterval
-
-				for i := intervalStart; i < timestamp; i += fillInterval {
-					series.Points = append(series.Points, tsdb.TimePoint{fillValue, null.FloatFrom(i)})
-					rowCount++
-				}
-			}
-
-			series.Points = append(series.Points, tsdb.TimePoint{value, null.FloatFrom(timestamp)})
-
-			if setting.Env == setting.DEV {
-				e.log.Debug("Rows", "metric", metric, "time", timestamp, "value", value)
-			}
 		}
 	}
 

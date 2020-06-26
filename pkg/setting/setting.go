@@ -1,3 +1,4 @@
+//nolint: gocyclo
 // Copyright 2014 Unknwon
 // Copyright 2014 Torkel Ödegaard
 
@@ -610,6 +611,7 @@ func (cfg *Cfg) validateStaticRootPath() error {
 	return nil
 }
 
+//nolint: gocyclo
 func (cfg *Cfg) Load(args *CommandLineArgs) error {
 	setHomePath(args)
 

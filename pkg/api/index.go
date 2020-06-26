@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/grafana/grafana/pkg/api/dtos"
+	"github.com/grafana/grafana/pkg/api/frontend"
 	"github.com/grafana/grafana/pkg/bus"
 	"github.com/grafana/grafana/pkg/models"
 	"github.com/grafana/grafana/pkg/plugins"
@@ -19,7 +20,7 @@ const (
 )
 
 func (hs *HTTPServer) setIndexViewData(c *models.ReqContext) (*dtos.IndexViewData, error) {
-	settings, err := hs.getFrontendSettingsMap(c)
+	settings, err := frontend.GetSettingsMap(hs.Cfg, hs.License, hs.RenderService, c)
 	if err != nil {
 		return nil, err
 	}
