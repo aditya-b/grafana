@@ -38,7 +38,7 @@ enable = [
   "unconvert",
   "unused",
   "varcheck",
-  # "whitespace",
+  "whitespace",
 ]
 
 # Disabled linters (might want them later)

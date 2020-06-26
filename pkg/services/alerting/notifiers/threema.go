@@ -65,7 +65,6 @@ func init() {
       </div>
     `,
 	})
-
 }
 
 // ThreemaNotifier is responsible for sending

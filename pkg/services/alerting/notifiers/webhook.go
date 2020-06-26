@@ -37,7 +37,6 @@ func init() {
       </div>
     `,
 	})
-
 }
 
 // NewWebHookNotifier is the constructor for

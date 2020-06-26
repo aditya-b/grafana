@@ -39,7 +39,6 @@ func init() {
       </div>
     `,
 	})
-
 }
 
 const (

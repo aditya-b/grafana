@@ -23,7 +23,6 @@ func init() {
       </div>
     `,
 	})
-
 }
 
 // NewTeamsNotifier is the constructor for Teams notifier.

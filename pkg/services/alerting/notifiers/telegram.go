@@ -49,7 +49,6 @@ func init() {
       </div>
     `,
 	})
-
 }
 
 // TelegramNotifier is responsible for sending
@@ -228,7 +227,6 @@ func generateImageCaption(evalContext *alerting.EvalContext, ruleURL string, met
 
 	if len(message) > captionLengthLimit {
 		message = message[0:captionLengthLimit]
-
 	}
 
 	if len(ruleURL) > 0 {

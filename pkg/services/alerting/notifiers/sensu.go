@@ -41,7 +41,6 @@ func init() {
       </div>
     `,
 	})
-
 }
 
 // NewSensuNotifier is the constructor for the Sensu Notifier.
