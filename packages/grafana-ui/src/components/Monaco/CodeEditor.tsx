@@ -1,8 +1,32 @@
 import React from 'react';
 import { withTheme } from '../../themes';
 import { Themeable } from '../../types';
-import { KeyCode, editor, KeyMod } from 'monaco-editor/esm/vs/editor/editor.api';
+//import { KeyCode, editor, KeyMod } from 'monaco-editor/esm/vs/editor/editor.api';
 import ReactMonaco from 'react-monaco-editor';
+
+import * as monaco from 'monaco-editor';
+
+// @ts-ignore
+self.MonacoEnvironment = {
+  getWorkerUrl: (moduleId: string, label: string) => {
+    console.log('XGET WORKER URL', moduleId, label);
+    if (label === 'json') {
+      return './json.worker.bundle.js';
+    }
+    if (label === 'css') {
+      return './css.worker.bundle.js';
+    }
+    if (label === 'html') {
+      const v = './public/lib/monaco/min/vs/language/html/htmlWorker.js';
+      console.log('HTML', v);
+      return v;
+    }
+    if (label === 'typescript' || label === 'javascript') {
+      return './ts.worker.bundle.js';
+    }
+    return './editor.worker.bundle.js';
+  },
+};
 
 export interface CodeEditorProps {
   value: string;
@@ -18,7 +42,7 @@ export interface CodeEditorProps {
    *
    * @experimental
    */
-  onEditorDidMount?: (editor: editor.IStandaloneCodeEditor) => void;
+  onEditorDidMount?: (editor: monaco.editor.IStandaloneCodeEditor) => void;
 
   /** Handler to be performed when editor is blurred */
   onBlur?: CodeEditorChangeHandler;
@@ -39,13 +63,13 @@ class UnthemedCodeEditor extends React.PureComponent<Props> {
     }
   };
 
-  editorDidMount = (editor: editor.IStandaloneCodeEditor) => {
+  editorDidMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     const { onSave, onEditorDidMount } = this.props;
 
     this.getEditorValue = () => editor.getValue();
 
     if (onSave) {
-      editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_S, () => {
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => {
         onSave(this.getEditorValue());
       });
     }
