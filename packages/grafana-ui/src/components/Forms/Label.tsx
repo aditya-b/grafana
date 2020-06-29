@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { useTheme, stylesFactory } from '../../themes';
 import { GrafanaTheme } from '@grafana/data';
 import { css, cx } from 'emotion';
@@ -6,8 +6,8 @@ import { Icon } from '../Icon/Icon';
 import tinycolor from 'tinycolor2';
 
 export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
-  children: React.ReactNode;
-  description?: React.ReactNode;
+  children: ReactNode;
+  description?: ReactNode;
   category?: string[];
 }
 
@@ -34,6 +34,15 @@ export const getLabelStyles = stylesFactory((theme: GrafanaTheme) => {
       font-weight: ${theme.typography.weight.regular};
       margin-top: ${theme.spacing.xxs};
       display: block;
+      // Links in descriptions
+      > a {
+        color: ${theme.colors.formDescription};
+        text-decoration: underline;
+
+        &:hover {
+          color: ${theme.colors.text};
+        }
+      }
     `,
     categories: css`
       label: Label-categories;
@@ -52,6 +61,8 @@ export const getLabelStyles = stylesFactory((theme: GrafanaTheme) => {
     `,
   };
 });
+
+const linksRegex = /\[([\w\s\d]+)\]\((https?:\/\/[\w\d./?=\-#]+)\)/;
 
 export const Label: React.FC<LabelProps> = ({ children, description, className, category, ...labelProps }) => {
   const theme = useTheme();
@@ -72,8 +83,42 @@ export const Label: React.FC<LabelProps> = ({ children, description, className, 
           {categories}
           {children}
         </div>
-        {description && <span className={styles.description}>{description}</span>}
+        {description && <span className={styles.description}>{renderDescription(description)}</span>}
       </label>
     </div>
   );
 };
+
+/**
+ * Takes a string and replaces markdown link syntax with real react links
+ */
+function renderDescription(description: ReactNode): ReactNode {
+  if (typeof description !== 'string') {
+    return description;
+  }
+
+  let result = null;
+
+  // reset regex index
+  linksRegex.lastIndex = 0;
+
+  if ((result = linksRegex.exec(description)) !== null) {
+    let output: ReactNode[] = [];
+    let index = result.index;
+    let match = result[0];
+
+    output.push(<span key="1">{description.substring(0, index)}</span>);
+    output.push(
+      <a key="2" href={result[2]} target="_blank">
+        {result[1]}
+      </a>
+    );
+
+    const remainder = description.substring(index + match.length, description.length + 1);
+    output.push(<span key="3">{remainder}</span>);
+
+    return output;
+  } else {
+    return description;
+  }
+}

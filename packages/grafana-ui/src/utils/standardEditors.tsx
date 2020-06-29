@@ -61,7 +61,8 @@ export const getStandardFieldConfigs = () => {
     id: 'unit',
     path: 'unit',
     name: 'Unit',
-    description: '',
+    description:
+      'Select unit or [define a custom unit](https://grafana.com/docs/grafana/latest/panels/field-configuration-options/#custom-units)',
 
     editor: standardEditorsRegistry.get('unit').editor as any,
     override: standardEditorsRegistry.get('unit').editor as any,

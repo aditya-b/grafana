@@ -17,3 +17,7 @@ export const categorised = () => {
     </Label>
   );
 };
+
+export const withLinksInDescription = () => {
+  return <Label description="Option description, [Read more](https://docs.grafana.com)">Option name</Label>;
+};
