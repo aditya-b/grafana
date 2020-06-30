@@ -318,7 +318,7 @@ export function lokiStreamsToDataframes(
         limit,
         stats,
         custom,
-        responseType: 'Logs',
+        preferredVisualisationType: 'logs',
       },
     };
   });
