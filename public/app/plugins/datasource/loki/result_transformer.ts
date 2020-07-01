@@ -155,13 +155,13 @@ function lokiMatrixToTimeSeries(matrixResult: LokiMatrixResult, options: Transfo
 function lokiPointsToTimeseriesPoints(
   data: Array<[number, string]>,
   options: TransformerOptions
-): Array<[number, number]> {
+): Array<[number | null, number]> {
   const stepMs = options.step * 1000;
-  const datapoints: Array<[number, number]> = [];
+  const datapoints: Array<[number | null, number]> = [];
 
   let baseTimestampMs = options.start / 1e6;
   for (const [time, value] of data) {
-    let datapointValue = parseFloat(value);
+    let datapointValue: number | null = parseFloat(value);
     if (isNaN(datapointValue)) {
       datapointValue = null;
     }
@@ -246,7 +246,7 @@ function createMetricLabel(labelData: { [key: string]: string }, options?: Trans
       : renderTemplate(templateSrv.replace(options.legendFormat), labelData);
 
   if (!label) {
-    label = options.query;
+    label = options?.query;
   }
   return label;
 }
