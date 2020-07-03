@@ -200,7 +200,6 @@ export class CloudWatchDatasource extends DataSourceApi<CloudWatchQuery, CloudWa
           }
 
           return {
-            refId: item.refId,
             intervalMs: options.intervalMs,
             maxDataPoints: options.maxDataPoints,
             datasourceId: this.id,
@@ -303,9 +302,9 @@ export class CloudWatchDatasource extends DataSourceApi<CloudWatchQuery, CloudWa
         start,
         timeType: 'ABSOLUTE',
         tz: 'UTC',
-        editorString: curTarget.expression,
+        editorString: curTarget.expression ?? '',
         isLiveTail: false,
-        source: curTarget.logGroupNames,
+        source: curTarget.logGroupNames ?? [],
       };
 
       const encodedUrl = encodeUrl(
@@ -926,7 +925,7 @@ export class CloudWatchDatasource extends DataSourceApi<CloudWatchQuery, CloudWa
 
   getQueryDisplayText(query: CloudWatchQuery) {
     if (query.queryMode === 'Logs') {
-      return query.expression;
+      return query.expression ?? '';
     } else {
       return JSON.stringify(query);
     }
