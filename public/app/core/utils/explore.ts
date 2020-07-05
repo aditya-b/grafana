@@ -286,6 +286,7 @@ export const generateNewKeyAndAddRefIdIfMissing = (target: DataQuery, queries: D
 export function ensureQueries(queries?: DataQuery[]): DataQuery[] {
   if (queries && typeof queries === 'object' && queries.length > 0) {
     const allQueries = [];
+
     for (let index = 0; index < queries.length; index++) {
       const query = queries[index];
       const key = generateKey(index);
@@ -300,9 +301,11 @@ export function ensureQueries(queries?: DataQuery[]): DataQuery[] {
         key,
       });
     }
+
     return allQueries;
   }
-  return [{ ...generateEmptyQuery(queries) }];
+
+  return [{ ...generateEmptyQuery(queries ?? []) }];
 }
 
 /**
@@ -367,8 +370,8 @@ export const getQueryKeys = (queries: DataQuery[], datasourceInstance: DataSourc
 
 export const getTimeRange = (timeZone: TimeZone, rawRange: RawTimeRange): TimeRange => {
   return {
-    from: dateMath.parse(rawRange.from, false, timeZone as any),
-    to: dateMath.parse(rawRange.to, true, timeZone as any),
+    from: dateMath.parse(rawRange.from, false, timeZone as any)!,
+    to: dateMath.parse(rawRange.to, true, timeZone as any)!,
     raw: rawRange,
   };
 };
@@ -402,13 +405,13 @@ const parseRawTime = (value: any): TimeFragment | null => {
 
 export const getTimeRangeFromUrl = (range: RawTimeRange, timeZone: TimeZone): TimeRange => {
   const raw = {
-    from: parseRawTime(range.from),
-    to: parseRawTime(range.to),
+    from: parseRawTime(range.from) ?? '1h',
+    to: parseRawTime(range.to) ?? 'now',
   };
 
   return {
-    from: dateMath.parse(raw.from, false, timeZone as any),
-    to: dateMath.parse(raw.to, true, timeZone as any),
+    from: dateMath.parse(raw.from, false, timeZone as any)!,
+    to: dateMath.parse(raw.to, true, timeZone as any)!,
     raw,
   };
 };

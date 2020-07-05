@@ -97,14 +97,14 @@ export const makeExploreItemState = (): ExploreItemState => ({
   queries: [],
   initialized: false,
   range: {
-    from: null,
-    to: null,
+    from: null, // TODO: this is not an allowed value
+    to: null, // TODO this is not an allowed value
     raw: DEFAULT_RANGE,
-  },
+  } as any,
   absoluteRange: {
-    from: null,
-    to: null,
-  },
+    from: null, // TODO: this is not an allowed value
+    to: null, // TODO: this is not an allowed value
+  } as any,
   scanning: false,
   showingGraph: true,
   showingTable: true,
